@@ -1,5 +1,5 @@
 /**
- * 
+ * The Main-class.
  * @author Lukas J. Wensby
  * @version 2013-05-15
  */
