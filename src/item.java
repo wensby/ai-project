@@ -27,7 +27,6 @@ public class Item {
 
         this.categories.add(123);
 
-        //BLKAH
 
 
         ///////////
