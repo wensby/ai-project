@@ -13,54 +13,17 @@ import java.util.StringTokenizer;
 public class ItemParser {
 	
 	
-	public static ArrayList<Item> readItemFromFile(String filepath)
+	public static Item readItemFromFile(String line)
 	{
-		ArrayList<Item> items = new ArrayList<Item>();
-
-		try {
-			FileReader fIS = new FileReader(filepath);
-			BufferedReader bReader= new BufferedReader(fIS);
-			
-			boolean fileEnd = false;
-			while (!fileEnd)
-			{
-				try {
-					String line = bReader.readLine();
-					fileEnd = (line == null);
-					
-					if (!fileEnd)
-					{
-						StringTokenizer sTok = new StringTokenizer(line);
-						int id;
-						String cat, keywords;
-						
-						id = Integer.parseInt(sTok.nextToken());
-						cat = sTok.nextToken();
-						keywords = sTok.nextToken();
-						
-						items.add(new Item(id, cat, keywords));
-					}
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					fileEnd = true;
-				}
-			}
-			
-			try {
-				bReader.close();
-				fIS.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		StringTokenizer sTok = new StringTokenizer(line);
+		int id;
+		String cat, keywords;
 		
-		return items;
+		id = Integer.parseInt(sTok.nextToken());
+		cat = sTok.nextToken();
+		keywords = sTok.nextToken();
+						
+		return new Item(id, cat, keywords);
 	}
 
 }
