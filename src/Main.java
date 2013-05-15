@@ -4,8 +4,15 @@
  * @version 2013-05-15
  */
 
-public class Main {
+public class Main{
 
-	// Can you see this
+
+    public static void main(String args[]){
+
+        Data.test_readUserProfileIntoArray();
+
+    }
+
+    // Can you see this
     // YES I can! :D
 }
