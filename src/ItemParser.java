@@ -28,18 +28,16 @@ public class ItemParser {
 					String line = bReader.readLine();
 					fileEnd = (line == null);
 					
-					if (!fileEnd)
-					{
-						StringTokenizer sTok = new StringTokenizer(line);
-						int id;
-						String cat, keywords;
-						
-						id = Integer.parseInt(sTok.nextToken());
-						cat = sTok.nextToken();
-						keywords = sTok.nextToken();
-						
-						items.add(new Item(id, cat, keywords));
-					}
+					StringTokenizer sTok = new StringTokenizer(line,line);
+					int id;
+					String cat, keywords;
+					
+					id = Integer.parseInt(sTok.nextToken());
+					cat = sTok.nextToken();
+					keywords = sTok.nextToken();
+					
+					items.add(new Item(id, cat, keywords));
+					
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
