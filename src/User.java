@@ -1,11 +1,5 @@
 import java.util.*;
-/**
- * Created with IntelliJ IDEA.
- * User: tormodhau
- * Date: 5/15/13
- * Time: 1:08 PM
- * To change this template use File | Settings | File Templates.
- */
+
 public class User {
 	private final int userID;
 	private final int year_of_birth;
@@ -14,15 +8,13 @@ public class User {
 	private final HashMap<Integer, Double> keywords = new HashMap();
 	private final int[][][][] actions;
 	private final int[] follows;
-<<<<<<< HEAD
-	
-	
-	
-	public User(){
-		
-	}
-	
-	
-=======
->>>>>>> branch 'master' of https://github.com/wensby/ai-project.git
+
+    public User(int userID, int year_of_birth, int gender, int numberOfTweets, int[][][][] actions, int[] follows) {
+        this.userID = userID;
+        this.year_of_birth = year_of_birth;
+        this.gender = gender;
+        this.numberOfTweets = numberOfTweets;
+        this.actions = actions;
+        this.follows = follows;
+    }
 }
