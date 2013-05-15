@@ -1,29 +1,29 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Parser {
-	public int[] user_profile_txt(String input_line){
+	public void user_profile_txt(String input_line){
+		
 		//Given line from user_profile_txt: Parse out (userID) (birthyear) (gender) (#tweets) (Tag-IDs) 
-		Pattern p = Pattern.compile("([0-9]+?) ([0-9]+?) ([0-9]+?) ([0-9]+?) ([0-9]+?;.*+)");
-		Matcher m = p.matcher(input_line);
+		StringTokenizer st = new StringTokenizer(line);
 		
-		m.find();
-		int userID =Integer.parseInt(m.group(1));
-		int birthYear =Integer.parseInt(m.group(2));
-		int gender =Integer.parseInt(m.group(3));
-		int tweets =Integer.parseInt(m.group(4));
+		int userID =Integer.parseInt(st.nextToken());
+		String birthYear =st.nextToken();
+		int gender =Integer.parseInt(st.nextToken());
+		int tweets =Integer.parseInt(st.nextToken());
+		String tagIDs_not_parsed =m.group(st.nextToken());
 		
-		String tagIDs_not_parsed =m.group(5);
-		//Given (Tag-IDs) extracted from input line, extract each tag
+		//Given (tagIDs_not_parsed) extracted from input line, extract each tag
+		StringTokenizer stTagID = new StringTokenizer(tagIDs_not_parsed,';');
 		
 		List<Integer> tagIDs= new ArrayList<Integer>();
-		Pattern p = Pattern.compile("([0-9]+?);");
-		Matcher m = p.matcher(tagIDs_not_parsed);
-		while(m.find()){
-			Integer tagID = Integer.parseInt(m.group(1));
-			
+		
+		while(st.hasMoreTokens()){
+			Integer tagID = Integer.parseInt(stTagID.nextToken());
+					tagIDs.add(tagID);
 		}
 	}
 }
