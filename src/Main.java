@@ -7,9 +7,13 @@
 public class Main{
 
 
-    public static void main(String args[]){
+    public static void main(String []args){
 
-        Data.test_readUserProfileIntoArray();
+
+
+        System.out.println("start");
+        TwitterData.ReadFile_UserProfile();
+        System.out.println("stop");
 
     }
 
