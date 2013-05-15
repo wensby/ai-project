@@ -27,7 +27,6 @@ public class Item {
 
         this.categories.add(123);
 
-        //BLKAH
 
 
         ///////////
@@ -44,11 +43,10 @@ public class Item {
 
     }
 
-
-    // Commenting away, just to check. 
-    /*public List<Integer> getKeywords() {
+ 
+    public List<Integer> getKeywords() {
         return keywords;
-    }*/
+    }
 
     public List<Integer> getCategories() {
         return categories;
