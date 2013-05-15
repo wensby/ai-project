@@ -7,13 +7,16 @@ import java.util.List;
  * Date: 5/15/13
  * Time: 1:05 PM
  * To change this template use File | Settings | File Templates.
+ * 
+ * @author Lukas J. Wensby
+ * @author Tormod
  */
 public class Item {
     private final int id;
     private final List<Integer> categories = new ArrayList<Integer>();
     private final List<Integer> keywords = new ArrayList<Integer>();
 
-    Item(int id, String categories, String keywords){
+    Item(int id, String categories, String keywords) {
         this.id = id;
         parseCategories(categories);
         parseKeywords(keywords);
@@ -41,9 +44,10 @@ public class Item {
     }
 
 
-    public List<Integer> getKeywords() {
+    // Commenting away, just to check. 
+    /*public List<Integer> getKeywords() {
         return keywords;
-    }
+    }*/
 
     public List<Integer> getCategories() {
         return categories;
