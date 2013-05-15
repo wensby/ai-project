@@ -27,7 +27,7 @@ import java.sql.Statement;
  */
 
 public class Database {
-    public static String PATH_INSIDE_CURRENT_PROJECT = "Data.sqlite";    // DATABASE NAME AND (optional) PATH
+    public static String PATH_INSIDE_CURRENT_PROJECT = "/Users/tormodhau/Dropbox/Fag/Fag/Machine Learning (CS570)/Project/Database/twitterDB.sqlite";    // DATABASE NAME AND (optional) PATH
     public static final String JDBC_DRIVER = "org.sqlite.JDBC";
     public static final String JDBC_URL = "jdbc:sqlite:" + PATH_INSIDE_CURRENT_PROJECT;
     public static final String JDBC_USER = "root";
@@ -101,6 +101,71 @@ public class Database {
     }
 
     public static void getItemFromID(int id) throws Exception{
+
+    }
+
+
+
+    // INSERTING 10 000 000 elements takes 48 seconds.
+    // READING 10 000 000 elements with individual searches takes 150 seconds. This was done by rowID of people_test
+    // After INDEXING it takes
+    public static void testDB(){
+        Connection conn = null;
+        ResultSet rs = null;
+        Statement stat = null;
+
+        try {
+            Class.forName(JDBC_DRIVER);
+            conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
+            stat = conn.createStatement();
+            //stat.executeUpdate("drop table if exists people_test;");
+            //stat.executeUpdate("create table people_test (name, occupation);");
+            //PreparedStatement prep = conn.prepareStatement("insert into people_test values (?, ?);");
+        /*
+            for ( int i = 0; i<10000000;i++){
+                prep.setString(1,"lalalalallaallala alalalalall;;;;ALKSDLKJDLKAM;SD;MLAKSND");
+                prep.setString(2,"ksdjkj ksjdkjsd ");
+                prep.addBatch();
+
+                if (i % 1000 ==0){
+                    conn.setAutoCommit(false);
+                    prep.executeBatch();
+                    conn.setAutoCommit(true);
+                }
+
+            }
+
+            conn.setAutoCommit(false);
+            prep.executeBatch();
+            conn.setAutoCommit(true);
+        */
+
+            String sql = "SELECT * FROM people_test WHERE rowid = ?";
+            PreparedStatement prep = conn.prepareStatement(sql);
+
+            for (int i = 0; i<10000000; i++){
+                prep.setInt(1,i);
+                ResultSet rs1 = prep.executeQuery();
+                while (rs1.next()){
+                    rs1.getString(1);
+                    rs1.getString(2);
+                }
+            }
+        /*
+            rs = stat.executeQuery("select * from people_test;");
+            while (rs.next()) {
+                System.out.println("name = " + rs.getString("name"));
+                System.out.println("job = " + rs.getString("occupation"));
+            }
+            rs.close();
+
+        */
+            conn.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
 
     }
 

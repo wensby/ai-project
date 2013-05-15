@@ -7,13 +7,22 @@
 public class Main{
 
 
-    public static void main(String []args){
+    public static void main(String []args) throws Exception{            ///REMOVE THROWS EXCEPTION
 
-
+        // Start timer
+        long startTime = System.currentTimeMillis();
 
         System.out.println("start");
-        TwitterData.ReadFile_UserProfile();
+        //TwitterData.ReadFile_UserProfile();
+        Database.testDB();
+        //Database.testDatabaseSettings();
         System.out.println("stop");
+
+        // Stop timer
+        long stopTime = System.currentTimeMillis();
+        long elapsedTime = stopTime - startTime;
+        System.out.println(elapsedTime);
+
 
     }
 

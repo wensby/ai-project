@@ -14,7 +14,6 @@ public class Item {
         parseKeywords(keywords);
     }
 
-
     private void parseCategories(String catString){
     	StringTokenizer st = new StringTokenizer(catString,".");
     	while(st.hasMoreTokens())
@@ -30,7 +29,6 @@ public class Item {
     		keywords.add(Integer.parseInt(st.nextToken()));
     	}
     }
-
  
     public List<Integer> getKeywords() {
         return keywords;
