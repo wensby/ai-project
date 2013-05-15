@@ -14,15 +14,5 @@ public class User {
 	private final HashMap<Integer, Double> keywords = new HashMap();
 	private final int[][][][] actions;
 	private final int[] follows;
-<<<<<<< HEAD
-	
-	
-	
-	public User(){
-		
-	}
-	
-	
-=======
->>>>>>> branch 'master' of https://github.com/wensby/ai-project.git
+
 }
