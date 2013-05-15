@@ -2,7 +2,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-
+/**
+ * Created with IntelliJ IDEA.
+ * User: tormodhau
+ * Date: 5/15/13
+ * Time: 1:15 PM
+ * To change this template use File | Settings | File Templates.
+ * 
+ * @author Lukas J. Wensby
+ * @author Tormod
+ */
 public class Item {
     private final int id;
     private final ArrayList<Integer> categories = new ArrayList<Integer>();

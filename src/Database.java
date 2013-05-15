@@ -72,6 +72,7 @@ public class Database {
             }
             rs.close();
             conn.close();
+            System.out.println("TEST COMPLETE");
         }
         catch (Exception e)
         {
