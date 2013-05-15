@@ -8,8 +8,4 @@ public class Action {
 	int type;
 	User source;
 	User destination;
-	
-	public Action() {
-		
-	}
 }

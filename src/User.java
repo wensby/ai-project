@@ -1,8 +1,5 @@
 import java.util.*;
 
-
-
-
 public class User {
 	private final int userID;
 	private final int year_of_birth;
