@@ -5,7 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Parser {
-	public void user_profile_txt(String input_line){
+	public static void user_profile_txt(String input_line){
 		
 		//Given line from user_profile_txt: Parse out (userID) (birthyear) (gender) (#tweets) (Tag-IDs) 
 		StringTokenizer st = new StringTokenizer(line);
@@ -20,7 +20,7 @@ public class Parser {
 		StringTokenizer stTagID = new StringTokenizer(tagIDs_not_parsed,';');
 		
 		List<Integer> tagIDs= new ArrayList<Integer>();
-		
+
 		while(st.hasMoreTokens()){
 			Integer tagID = Integer.parseInt(stTagID.nextToken());
 					tagIDs.add(tagID);
