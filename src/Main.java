@@ -7,14 +7,8 @@
 public class Main{
 
 
-    public static void main(String []args){
-
-
-
-        System.out.println("start");
-        TwitterData.ReadFile_UserProfile();
-        System.out.println("stop");
-
+    public static void main(String []args) throws Exception{
+    	Database.testDatabaseSettings();
     }
 
     // Can you see this
