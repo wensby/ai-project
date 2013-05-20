@@ -18,7 +18,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 public class Database {
-    public static String PATH_INSIDE_CURRENT_PROJECT = "/Users/tormodhau/Dropbox/Fag/Fag/Machine Learning (CS570)/Project/Database/twitterDB.sqlite";    // DATABASE NAME AND (optional) PATH
+    public static String PATH_INSIDE_CURRENT_PROJECT = "/Users/tormodhau/Dropbox/Fag/Fag/Machine Learning (CS570)/Project/Database/ML_projecter_twitter.sqlite";    // DATABASE NAME AND (optional) PATH
     public static final String JDBC_DRIVER = "org.sqlite.JDBC";
     public static final String JDBC_URL = "jdbc:sqlite:" + PATH_INSIDE_CURRENT_PROJECT;
     public static final String JDBC_USER = "root";

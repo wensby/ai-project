@@ -7,8 +7,12 @@
 public class Main{
 
 
+    public static final boolean PRINT = true;
+
+
     public static void main(String []args) throws Exception{            ///REMOVE THROWS EXCEPTION
 
+        /*
         // Start timer
         long startTime = System.currentTimeMillis();
 
@@ -23,12 +27,14 @@ public class Main{
         long elapsedTime = stopTime - startTime;
         System.out.println(elapsedTime);
 
-    	toDB.item2DB();
-    	toDB.rec_log_train2DB();
-    	toDB.user_action2DB();
-    	toDB.user_key_word2DB();
-    	toDB.user_sns2DB();
-    	toDB.userProfile2DB();
+        */
+
+    	//toDB.item2DB();
+    	toDB.rec_log_train2DB(2624645);
+    	//toDB.user_action2DB();
+    	//toDB.user_key_word2DB();
+    	//toDB.user_sns2DB();
+    	//toDB.userProfile2DB();
     }
 
     // Can you see this
