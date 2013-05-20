@@ -1,11 +1,11 @@
-<<<<<<< HEAD
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="sqlite-jdbc-3.7.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="sqlite-jdbc-3.7.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
+<<<<<<< HEAD
 =======
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
@@ -23,3 +23,5 @@
 	<classpathentry kind="output" path="bin"/>
 </classpath>
 >>>>>>> branch 'master' of https://github.com/wensby/ai-project.git
+=======
+>>>>>>> a0d157b84e9ecad35f6a83b681f9383d9ae4657a

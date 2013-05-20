@@ -14,7 +14,7 @@ public class Main{
 
         System.out.println("start");
         //TwitterData.ReadFile_UserProfile();
-        Database.testDB();
+        //Database.testDB();
         //Database.testDatabaseSettings();
         System.out.println("stop");
 
@@ -23,7 +23,12 @@ public class Main{
         long elapsedTime = stopTime - startTime;
         System.out.println(elapsedTime);
 
-
+    	toDB.item2DB();
+    	toDB.rec_log_train2DB();
+    	toDB.user_action2DB();
+    	toDB.user_key_word2DB();
+    	toDB.user_sns2DB();
+    	toDB.userProfile2DB();
     }
 
     // Can you see this

@@ -1,3 +1,4 @@
+
 /**
  * Created with IntelliJ IDEA.
  * User: tormodhau
@@ -14,18 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
-
-/*********
- HOW TO SELECT A SPECIFIC DATABASE FILE AND SET A DIRECTORY:
- _______________
-
- LOCAL_DB_PATH = "/home/leo/work/mydatabase.db" gives the following URL:
- Connection connection = DriverManager.getConnection("jdbc:sqlite:/home/leo/work/mydatabase.db");
-
-
-
- */
+import java.util.ArrayList;
 
 public class Database {
     public static String PATH_INSIDE_CURRENT_PROJECT = "/Users/tormodhau/Dropbox/Fag/Fag/Machine Learning (CS570)/Project/Database/twitterDB.sqlite";    // DATABASE NAME AND (optional) PATH
@@ -38,12 +28,10 @@ public class Database {
     private Statement stat = null;
     private ResultSet rs = null;
     
+    //Connection stuff
     public Database() throws Exception{
     	open_connection();
-    }
-    public void insert(String table, String values) throws SQLException{
-        stat.executeUpdate("INSERT INTO "+ table + "VALUES(" +values+ ")");
-    }
+    } 
     public void open_connection() throws SQLException{
         try {
             Class.forName(JDBC_DRIVER);
@@ -160,6 +148,27 @@ public class Database {
 
 
 
+    
+    //Useful tools
+    public static String valueFormatter(ArrayList<String> values){
+    	String returnvalue = "("; 
+    	for(String v: values){
+    		returnvalue += v+",";
+    	}
+    	returnvalue= returnvalue.substring(0, returnvalue.length()-1);
+    	returnvalue += ")";
+    	return returnvalue;
+    }    
+    
+    //Queries 
+    public void insert(String table, String values) throws SQLException{
+    	//System.out.println("INSERT INTO "+ table + " VALUES" +values+ "");
+    	stat.executeUpdate("INSERT INTO "+ table + " VALUES " +values+ ";");
+    }
+
+    
+    
+    
 
 }
 
