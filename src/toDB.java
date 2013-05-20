@@ -59,11 +59,6 @@ public class toDB {
 			
 			Parser.rec_log_train u_p = new Parser.rec_log_train(file.next());	
 
-            // counter
-            if(counter%10000 == 0){
-                System.out.println("Progression:   " + counter);
-            }
-            counter++;
 
 
 			entry_values.add(Integer.toString(autoid));
@@ -71,10 +66,19 @@ public class toDB {
 			entry_values.add(Integer.toString(u_p.ItemID));
 			entry_values.add(Integer.toString(u_p.result));
 			entry_values.add(Integer.toString(u_p.timeStamp));
-			values = Database.valueFormatter(entry_values);
-			autoid++;
-			db.insert(table_name, values);
+			values = Database.valueFormatter(entry_values);         //This is a string
+            db.addToBatch(table_name,values);
+
+            // counter
+            if(counter%100000 == 0){
+                System.out.println("Progression:   " + counter);
+                db.executeBatch();
+            }
+            counter++;
+            autoid++;
 		}
+
+        db.executeBatch();
 		
 	}
 
@@ -87,6 +91,8 @@ public class toDB {
 		int autoid=offset+1;
         file.SkipToOffset(offset);
 
+        int counter = 0;
+
 		while(file.hasNext()){
 			ArrayList<String> entry_values = new ArrayList<String>();
 			Parser.User_action u_p = new Parser.User_action(file.next());	
@@ -97,9 +103,15 @@ public class toDB {
 			entry_values.add(Integer.toString(u_p.reTweet));
 			entry_values.add(Integer.toString(u_p.comment));
 			values = Database.valueFormatter(entry_values);
-			autoid++;
+            db.addToBatch(table_name,values);
 
-			db.insert(table_name, values);
+            // counter
+            if(counter%100000 == 0){
+                System.out.println("Progression:   " + counter);
+                db.executeBatch();
+            }
+            counter++;
+            autoid++;
 		}
 		
 	}

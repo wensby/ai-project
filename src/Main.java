@@ -30,8 +30,8 @@ public class Main{
         */
 
     	//toDB.item2DB();
-    	toDB.rec_log_train2DB(2624645);
-    	//toDB.user_action2DB();
+    	toDB.rec_log_train2DB(4272929);
+    	//toDB.user_action2DB(0);
     	//toDB.user_key_word2DB();
     	//toDB.user_sns2DB();
     	//toDB.userProfile2DB();

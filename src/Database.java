@@ -27,6 +27,7 @@ public class Database {
     private Connection conn = null;
     private Statement stat = null;
     private ResultSet rs = null;
+    private PreparedStatement prep = null;
     
     //Connection stuff
     public Database() throws Exception{
@@ -72,82 +73,6 @@ public class Database {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-    // INSERTING 10 000 000 elements takes 48 seconds.
-    // READING 10 000 000 elements with individual searches takes 150 seconds. This was done by rowID of people_test
-    // After INDEXING it takes
-    public static void testDB(){
-        Connection conn = null;
-        ResultSet rs = null;
-        Statement stat = null;
-
-        try {
-            Class.forName(JDBC_DRIVER);
-            conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
-            stat = conn.createStatement();
-            //stat.executeUpdate("drop table if exists people_test;");
-            //stat.executeUpdate("create table people_test (name, occupation);");
-            //PreparedStatement prep = conn.prepareStatement("insert into people_test values (?, ?);");
-        /*
-            for ( int i = 0; i<10000000;i++){
-                prep.setString(1,"lalalalallaallala alalalalall;;;;ALKSDLKJDLKAM;SD;MLAKSND");
-                prep.setString(2,"ksdjkj ksjdkjsd ");
-                prep.addBatch();
-
-                if (i % 1000 ==0){
-                    conn.setAutoCommit(false);
-                    prep.executeBatch();
-                    conn.setAutoCommit(true);
-                }
-
-            }
-
-            conn.setAutoCommit(false);
-            prep.executeBatch();
-            conn.setAutoCommit(true);
-        */
-
-            String sql = "SELECT * FROM people_test WHERE rowid = ?";
-            PreparedStatement prep = conn.prepareStatement(sql);
-
-            for (int i = 0; i<10000000; i++){
-                prep.setInt(1,i);
-                ResultSet rs1 = prep.executeQuery();
-                while (rs1.next()){
-                    rs1.getString(1);
-                    rs1.getString(2);
-                }
-            }
-        /*
-            rs = stat.executeQuery("select * from people_test;");
-            while (rs.next()) {
-                System.out.println("name = " + rs.getString("name"));
-                System.out.println("job = " + rs.getString("occupation"));
-            }
-            rs.close();
-
-        */
-            conn.close();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-    }
-
-
-
     
     //Useful tools
     public static String valueFormatter(ArrayList<String> values){
@@ -166,11 +91,21 @@ public class Database {
     	stat.executeUpdate("INSERT INTO "+ table + " VALUES " +values+ ";");
     }
 
-    
-    
-    
+    //Queries
+    public void addToBatch(String table, String values) throws SQLException{
+        this.stat.addBatch("INSERT INTO "+ table + " VALUES " +values+ ";");
+    }
+
+    public void executeBatch()throws Exception{
+        this.stat.executeBatch();
+    }
 
 }
+
+
+
+    
+
 
 
 //   CREATE  TABLE "main"."item" ("ItemID" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "ItemCat" TEXT NOT NULL , "Keywords" TEXT NOT NULL ) {
@@ -292,3 +227,72 @@ public class Database {
 ////   CREATE  TABLE "main"."item" ("ItemID" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "ItemCat" TEXT NOT NULL , "Keywords" TEXT NOT NULL ) {
 //
 //
+
+
+//
+//
+//
+//    // INSERTING 10 000 000 elements takes 48 seconds.
+//    // READING 10 000 000 elements with individual searches takes 150 seconds. This was done by rowID of people_test
+//    // After INDEXING it takes
+//    public static void testDB(){
+//        Connection conn = null;
+//        ResultSet rs = null;
+//        Statement stat = null;
+//
+//        try {
+//            Class.forName(JDBC_DRIVER);
+//            conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
+//            stat = conn.createStatement();
+//            //stat.executeUpdate("drop table if exists people_test;");
+//            //stat.executeUpdate("create table people_test (name, occupation);");
+//            //PreparedStatement prep = conn.prepareStatement("insert into people_test values (?, ?);");
+//        /*
+//            for ( int i = 0; i<10000000;i++){
+//                prep.setString(1,"lalalalallaallala alalalalall;;;;ALKSDLKJDLKAM;SD;MLAKSND");
+//                prep.setString(2,"ksdjkj ksjdkjsd ");
+//                prep.addBatch();
+//
+//                if (i % 1000 ==0){
+//                    conn.setAutoCommit(false);
+//                    prep.executeBatch();
+//                    conn.setAutoCommit(true);
+//                }
+//
+//            }
+//
+//            conn.setAutoCommit(false);
+//            prep.executeBatch();
+//            conn.setAutoCommit(true);
+//        */
+//
+//            String sql = "SELECT * FROM people_test WHERE rowid = ?";
+//            PreparedStatement prep = conn.prepareStatement(sql);
+//
+//            for (int i = 0; i<10000000; i++){
+//                prep.setInt(1,i);
+//                ResultSet rs1 = prep.executeQuery();
+//                while (rs1.next()){
+//                    rs1.getString(1);
+//                    rs1.getString(2);
+//                }
+//            }
+//        /*
+//            rs = stat.executeQuery("select * from people_test;");
+//            while (rs.next()) {
+//                System.out.println("name = " + rs.getString("name"));
+//                System.out.println("job = " + rs.getString("occupation"));
+//            }
+//            rs.close();
+//
+//        */
+//            conn.close();
+//        }
+//        catch (Exception e)
+//        {
+//            e.printStackTrace();
+//        }
+//
+//    }
+//
+//}
