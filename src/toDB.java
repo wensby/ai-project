@@ -39,7 +39,7 @@ public class toDB {
 			values = Database.valueFormatter(entry_values);
 			db.insert(table_name, values);
 		}
-		
+		db.close_connection();
 	}
 	public static void rec_log_train2DB(int offset) throws Exception{
 		String file_place = "../data/rec_log_train.txt";
@@ -77,9 +77,8 @@ public class toDB {
 		}
 
         db.executeBatch();
-		
+		db.close_connection();
 	}
-
 	public static void user_action2DB(int offset) throws Exception{
 		String file_place = "../data/user_action.txt";
 		String table_name = "user_action";
@@ -111,9 +110,8 @@ public class toDB {
             counter++;
             autoid++;
 		}
-		
+		db.close_connection();
 	}
-
 	public static void user_key_word2DB(int offset) throws Exception{
 		String file_place = "../data/user_key_word.txt";
 		String table_name = "user_key_word";
@@ -134,9 +132,8 @@ public class toDB {
 			db.insert(table_name, values);
 			autoid++;
 		}
-		
+		db.close_connection();
 	}
-	
 	public static void user_sns2DB(int offset) throws Exception{
 		String file_place = "../data/user_sns.txt";
 		String table_name = "userSNS";
@@ -155,7 +152,8 @@ public class toDB {
 			values = Database.valueFormatter(entry_values);
 			db.insert(table_name, values);
 			autoID++;
-		}	
+		}
+		db.close_connection();
 	}
 }
 

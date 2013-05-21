@@ -8,11 +8,11 @@ public class Main{
     public static void main(String []args) throws Exception {
     	Database db = new Database();
 //    	db.getOneRow(0, "item");
-    	// loadEverythingIntoDatabase();
+//    	loadEverythingIntoDatabase();
     }
     
     public static void loadEverythingIntoDatabase() throws Exception {
-    	/*
+        /*
         // Start timer
         long startTime = System.currentTimeMillis();
 
@@ -44,14 +44,12 @@ public class Main{
     	//toDB.rec_log_train2DB(50059843);
 //        System.out.println("Running user_action");
 //    	toDB.user_action2DB(185610+1);
-        System.out.println("Running user_key_word");
-    	toDB.user_key_word2DB(0);
+//        System.out.println("Running user_key_word");
+//    	toDB.user_key_word2DB(0);
 //        System.out.println("Running user_sns");
 //    	toDB.user_sns2DB(0);
 //        System.out.println("Running user_profile");
 //    	toDB.userProfile2DB(0);
 //        System.out.println("Done!");
     }
-    
-    
 }
