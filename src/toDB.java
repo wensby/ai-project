@@ -59,8 +59,6 @@ public class toDB {
 			
 			Parser.rec_log_train u_p = new Parser.rec_log_train(file.next());	
 
-
-
 			entry_values.add(Integer.toString(autoid));
 			entry_values.add(Integer.toString(u_p.userID));
 			entry_values.add(Integer.toString(u_p.ItemID));
@@ -160,7 +158,6 @@ public class toDB {
 		}
 		
 	}
-
 
 
 

@@ -91,6 +91,17 @@ public class Database {
     	stat.executeUpdate("INSERT INTO "+ table + " VALUES " +values+ ";");
     }
 
+    public int length(String table) throws SQLException{
+    	//System.out.println("INSERT INTO "+ table + " VALUES" +values+ "");
+    	rs = stat.executeQuery("SELECT COUNT(*) FROM "+ table + ";");
+
+        if (rs.next()){
+            return rs.getInt(1);
+        } else{
+            return 0;
+        }
+    }
+
     //Queries
     public void addToBatch(String table, String values) throws SQLException{
         this.stat.addBatch("INSERT INTO "+ table + " VALUES " +values+ ";");
@@ -100,7 +111,73 @@ public class Database {
         this.stat.executeBatch();
     }
 
+    public static void count_file_lines(String file_place) throws Exception{
+        //EX: file_place = "../data/rec_log_train.txt";
+        Parser.txt file = new Parser.txt(file_place);
+        int counter = 0;
+        while(file.hasNext()){
+            file.next();
+            counter++;
+        }
+        System.out.println("Final line count of file "+ file_place + " :   " + counter);
+    }
+
+
+
+    public static void get_read_performance_of_rec_log() throws Exception{
+        String table_name = "rec_log_train";
+        Database db = new Database();
+
+        // Start timer
+        long startTime = System.currentTimeMillis();
+
+        int table_length = db.length(table_name);
+        String sql = "SELECT * FROM " + table_name + " WHERE autoID = ?";
+        db.prep = db.conn.prepareStatement(sql);
+
+        int i = 0;
+        while(table_length > i){
+            db.prep.setInt(1,i);
+            ResultSet rs1 = db.prep.executeQuery();
+            while (rs1.next()){
+                // System.out.println(rs1.getString(1) + "   " + rs1.getString(2) +"   "  + rs1.getString(3) + "   " +
+                //        rs1.getString(4)+ "  "+ rs1.getString(5));
+                rs1.getString(1);
+                rs1.getString(2);
+                rs1.getString(3);
+                rs1.getString(4);
+                rs1.getString(5);
+            }
+            if(i%1000000 == 0){
+                System.out.println("Progression:  " + i);
+            }
+            i++;
+        }
+
+        // Stop timer
+        long stopTime = System.currentTimeMillis();
+        long elapsedTime = stopTime - startTime;
+        System.out.println("Time elapsed to extract " + table_length + " elements from table " + table_name + " in Ms: " + elapsedTime);
+    }
+
+
+
+
+
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 

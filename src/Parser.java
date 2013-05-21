@@ -33,7 +33,7 @@ public class Parser {
 
         public void SkipToOffset(int offset) throws Exception{
             int counter = 0;
-            while(offset >= counter){
+            while(offset > counter){
                 this.hasNext();
                 this.next();
 
