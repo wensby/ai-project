@@ -39,6 +39,8 @@ public class Database {
             this.conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
             this.stat = conn.createStatement();
             System.out.println("Database opened from location:  " + PATH_INSIDE_CURRENT_PROJECT);
+            
+            		
         }
         catch (Exception e)
         {
@@ -49,6 +51,19 @@ public class Database {
     public void close_connection() throws SQLException{
 
         // If user exists, then update user
+    }
+    
+    public void ensureKeywordsTableExist()
+    {
+        try {
+			this.stat.executeUpdate("CREATE TABLE IF NOT EXISTS user_keywords ("
+					+ "\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT, "
+					+ "\"UserID\" INTEGER NOT NULL, "
+					+ "\"Keyword\" INTEGER NOT NULL, "
+					+ "\"Weight\" DOUBLE NOT NULL)");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
     }
 
     public static void updateUser() throws Exception {
