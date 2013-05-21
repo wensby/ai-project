@@ -42,15 +42,24 @@ public class Main{
 
     	//toDB.item2DB();
     	//toDB.rec_log_train2DB(50059843);
+/*
         System.out.println("Running user_action");
-    	toDB.user_action2DB(185610+1);
-        System.out.println("Running user_key_word");
-    	toDB.user_key_word2DB(0);
+    	toDB.user_action2DB(6220243);
+
+        System.out.println("Running user_key_word");          //TODO This function runs actions not keywords!
+    	//toDB.user_key_word2DB(0);
+
         System.out.println("Running user_sns");
     	toDB.user_sns2DB(0);
+
         System.out.println("Running user_profile");
     	toDB.userProfile2DB(0);
+
         System.out.println("Done!");
+*/
+
+
+        Test.demo();
     }
 
     // Can you see this
