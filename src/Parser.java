@@ -173,7 +173,7 @@ public class Parser {
 			this.keywords = this.keyword_rank_parser(this.keywordsString);
 		}
 		private HashMap<Integer, Double> keyword_rank_parser(String keywords_not_parsed){
-			HashMap<Integer, Double> keyword= new HashMap<Integer, Double>();
+			HashMap<Integer, Double> result= new HashMap<Integer, Double>();
 			
 			StringTokenizer sTok = new StringTokenizer(keywords_not_parsed,";");
 			
@@ -181,9 +181,9 @@ public class Parser {
 				StringTokenizer stKeyword = new StringTokenizer(sTok.nextToken(),":");
 				Integer k = Integer.parseInt(stKeyword.nextToken());
 				Double w = Double.parseDouble(stKeyword.nextToken());
-				keyword.put(k, w);
+				result.put(k, w);
 			}
-			return keywords;
+			return result;
 		}
 	}
 }

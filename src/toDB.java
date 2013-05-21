@@ -1,4 +1,8 @@
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.Set;
 
 public class toDB {
 	public static void userProfile2DB(int offset) throws Exception{
@@ -21,6 +25,7 @@ public class toDB {
 			db.insert(table_name, values);
 		}
 		
+		db.close_connection();
 	}
 	public static void item2DB(int offset) throws Exception{
 		String file_place = "../data/item.txt";
@@ -39,6 +44,7 @@ public class toDB {
 			values = Database.valueFormatter(entry_values);
 			db.insert(table_name, values);
 		}
+		
 		db.close_connection();
 	}
 	public static void rec_log_train2DB(int offset) throws Exception{
@@ -110,11 +116,13 @@ public class toDB {
             counter++;
             autoid++;
 		}
+		
 		db.close_connection();
 	}
-	public static void user_key_word2DB(int offset) throws Exception{
-		String file_place = "../data/user_key_word.txt";
-		String table_name = "user_key_word";
+
+	public static void user_keyword2DB(int offset) throws Exception{
+		String file_place = "../Provided Data/KDD Cup Track 1 Data/track1/user_key_word.txt";
+		String table_name = "user_keywords";
 		Parser.txt file = new Parser.txt(file_place); 
 		Database db = new Database();
 		String values;
@@ -122,18 +130,30 @@ public class toDB {
         file.SkipToOffset(offset);
 
 		while(file.hasNext()){
-			ArrayList<String> entry_values = new ArrayList<String>();
-			Parser.User_action u_p = new Parser.User_action(file.next());	
-			entry_values.add(Integer.toString(autoid));
-			entry_values.add(Integer.toString(u_p.userID));
-			entry_values.add(Integer.toString(u_p.destinationUserID));
+			Parser.User_key_word user_keyword = new Parser.User_key_word(file.next());
 			
-			values = Database.valueFormatter(entry_values);
-			db.insert(table_name, values);
-			autoid++;
+			int userID = user_keyword.UserID;
+			HashMap<Integer, Double> keywords = user_keyword.keywords;
+			Iterator<Entry<Integer, Double>> iterator = keywords.entrySet().iterator();
+			
+			while (iterator.hasNext())
+			{
+				ArrayList<String> entry_values = new ArrayList<String>();
+				Entry<Integer,Double> entry = iterator.next();
+			
+				entry_values.add(Integer.toString(autoid++));
+				entry_values.add(Integer.toString(userID));
+				entry_values.add(Integer.toString(entry.getKey()));
+				entry_values.add(Double.toString(entry.getValue()));
+				
+				values = Database.valueFormatter(entry_values);
+				db.insert(table_name, values);
+			}
 		}
+
 		db.close_connection();
 	}
+	
 	public static void user_sns2DB(int offset) throws Exception{
 		String file_place = "../data/user_sns.txt";
 		String table_name = "userSNS";
@@ -153,6 +173,7 @@ public class toDB {
 			db.insert(table_name, values);
 			autoID++;
 		}
+		
 		db.close_connection();
 	}
 }
