@@ -120,7 +120,7 @@ public class toDB {
 		db.close_connection();
 	}
 
-	public static void user_keyword2DB() throws Exception{
+	public static void user_keyword2DB(int offset) throws Exception{
 		String file_place = "../Provided Data/KDD Cup Track 1 Data/track1/user_key_word.txt";
 		String table_name = "user_keywords";
 		Parser.txt file = new Parser.txt(file_place); 
