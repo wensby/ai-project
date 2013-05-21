@@ -6,10 +6,6 @@
 
 public class Main{
 
-
-    public static final boolean PRINT = true;
-
-
     public static void main(String []args) throws Exception{            ///REMOVE THROWS EXCEPTION
 
         /*
@@ -59,9 +55,15 @@ public class Main{
 */
 
 
-        Test.demo();
+//    	toDB.rec_log_train2DB(0);
+//        System.out.println("Running user_action");
+//    	toDB.user_action2DB(185610+1);
+//        System.out.println("Running user_key_word");
+//    	toDB.user_key_word2DB(0);
+//        System.out.println("Running user_sns");
+//    	toDB.user_sns2DB(0);
+//        System.out.println("Running user_profile");
+//    	toDB.userProfile2DB(0);
+//        System.out.println("Done!");
     }
-
-    // Can you see this
-    // YES I can! :D
 }

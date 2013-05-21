@@ -1,11 +1,4 @@
 
-/**
- * Created with IntelliJ IDEA.
- * User: tormodhau
- * Date: 5/13/13
- * Time: 11:51 PM
- * To change this template use File | Settings | File Templates.
- */
 
 //package com.rungeek.sqlite;
 
@@ -39,6 +32,8 @@ public class Database {
             this.conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
             this.stat = conn.createStatement();
             System.out.println("Database opened from location:  " + PATH_INSIDE_CURRENT_PROJECT);
+            
+            		
         }
         catch (Exception e)
         {
@@ -49,6 +44,19 @@ public class Database {
     public void close_connection() throws SQLException{
 
         // If user exists, then update user
+    }
+    
+    public void ensureKeywordsTableExist()
+    {
+        try {
+			this.stat.executeUpdate("CREATE TABLE IF NOT EXISTS user_keywords ("
+					+ "\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT, "
+					+ "\"UserID\" INTEGER NOT NULL, "
+					+ "\"Keyword\" INTEGER NOT NULL, "
+					+ "\"Weight\" DOUBLE NOT NULL)");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
     }
 
     public static void updateUser() throws Exception {
@@ -86,6 +94,21 @@ public class Database {
     	returnvalue += ")";
     	return returnvalue;
     }    
+
+    /**
+     * @return an array of Object, corresponding to each column of that row
+     */
+    public Object[] getOneRow(int offset, String tableName) throws SQLException {
+		ResultSet result = stat.executeQuery("SELECT * FROM " + tableName + " LIMIT 1 OFFSET " + offset);
+		int numColumns = result.getMetaData().getColumnCount();
+		
+		Object[] arrayResult = new Object[numColumns];
+		for (int i = 0; i < numColumns; i++) {
+			arrayResult[i] 	= result.getObject(i + 1);
+		}
+		
+    	return arrayResult;
+    }
     
 
     public void insert(String table, String values) throws SQLException{

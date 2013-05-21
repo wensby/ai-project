@@ -13,4 +13,14 @@ public class Debug {
 	public static void pl(Object o) {
 		if (toggle) System.out.println(o);
 	}
+	
+	/**
+	 * Prints every object in the specified array.
+	 */
+	public static void pal(Object[] o) {
+		if (toggle) {
+			for (Object object : o) p(object.toString() + " \t");
+		}
+		pl("");
+	}
 }

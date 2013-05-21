@@ -37,7 +37,9 @@ public class Parser {
                 this.hasNext();
                 this.next();
 
-                if(counter%10000 == 0){
+
+                if(counter%10000 == 0 && Debug.toggle){
+
                     System.out.println("Skipped  " + counter + "    Current line:   " +  this.next());
                 }
                 counter++;
@@ -165,16 +167,16 @@ public class Parser {
 	public static class  User_key_word{
 		public int UserID;
 		public String keywordsString;
-		//public HashMap<Integer, Double> keywords = new HashMap<Integer, Double>();
+		public HashMap<Integer, Double> keywords = new HashMap<Integer, Double>();
 	
 		public User_key_word(String line){
 			StringTokenizer sTok = new StringTokenizer(line);
 			this.UserID = Integer.parseInt(sTok.nextToken());
 			this.keywordsString = sTok.nextToken();
-			//this.keywords = this.keyword_rank_parser(this.keywordsString);
+			this.keywords = this.keyword_rank_parser(this.keywordsString);
 		}
 		private HashMap<Integer, Double> keyword_rank_parser(String keywords_not_parsed){
-			HashMap<Integer, Double> keyword= new HashMap<Integer, Double>();
+			HashMap<Integer, Double> result= new HashMap<Integer, Double>();
 			
 			StringTokenizer sTok = new StringTokenizer(keywords_not_parsed,";");
 			
@@ -182,9 +184,9 @@ public class Parser {
 				StringTokenizer stKeyword = new StringTokenizer(sTok.nextToken(),":");
 				Integer k = Integer.parseInt(stKeyword.nextToken());
 				Double w = Double.parseDouble(stKeyword.nextToken());
-				keyword.put(k, w);
+				result.put(k, w);
 			}
-			return keyword;
+			return result;
 		}
 	}
 }
