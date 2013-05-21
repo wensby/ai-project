@@ -11,6 +11,7 @@
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -61,9 +62,15 @@ public class Database {
     	stat.executeUpdate("INSERT INTO "+ table + " VALUES " +values+ ";");
     }
 
-    
-    
-    
+    /**
+     * TODO finish this stuff, not finished
+     */
+    public Object[] getOneRow(int offset, String tableName) throws SQLException {
+		stat.execute("SELECT * FROM " + tableName + " LIMIT 1 OFFSET " + offset);
+		ResultSet result = stat.getResultSet();
+		Debug.pl(result.getString(3));
+    	return null;
+    }
 
 }
 

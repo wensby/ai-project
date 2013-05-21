@@ -5,9 +5,13 @@
  */
 
 public class Main{
-
-
-    public static void main(String []args) throws Exception{
+    public static void main(String []args) throws Exception {
+    	Database db = new Database();
+    	db.getOneRow(0, "item");
+    	// loadEverythingIntoDatabase();
+    }
+    
+    public static void loadEverythingIntoDatabase() throws Exception {
     	toDB.item2DB();
     	toDB.rec_log_train2DB();
     	toDB.user_action2DB();
@@ -15,7 +19,6 @@ public class Main{
     	toDB.user_sns2DB();
     	toDB.userProfile2DB();
     }
-
-    // Can you see this
-    // YES I can! :D
+    
+    
 }
