@@ -1,12 +1,13 @@
 import java.util.ArrayList;
 
 public class toDB {
-	public static void userProfile2DB() throws Exception{
-		String file_place = "../Provided Data/KDD Cup Track 1 Data/track1/user_profile.txt";
+	public static void userProfile2DB(int offset) throws Exception{
+		String file_place = "../data/user_profile.txt";
 		String table_name = "user_profile";
 		Parser.txt file = new Parser.txt(file_place); 
 		Database db = new Database();
 		String values;
+        file.SkipToOffset(offset);
 		
 		while(file.hasNext()){
 			ArrayList<String> entry_values = new ArrayList<String>();
@@ -21,13 +22,14 @@ public class toDB {
 		}
 		
 	}
-	public static void item2DB() throws Exception{
-		String file_place = "../Provided Data/KDD Cup Track 1 Data/track1/item.txt";
+	public static void item2DB(int offset) throws Exception{
+		String file_place = "../data/item.txt";
 		String table_name = "item";
 		Parser.txt file = new Parser.txt(file_place); 
 		Database db = new Database();
 		String values;
-		
+        file.SkipToOffset(offset);
+
 		while(file.hasNext()){
 			ArrayList<String> entry_values = new ArrayList<String>();
 			Parser.Item u_p = new Parser.Item(file.next());	
@@ -39,37 +41,55 @@ public class toDB {
 		}
 		
 	}
-	public static void rec_log_train2DB() throws Exception{
-		String file_place = "../Provided Data/KDD Cup Track 1 Data/track1/rec_log_train.txt";
+	public static void rec_log_train2DB(int offset) throws Exception{
+		String file_place = "../data/rec_log_train.txt";
 		String table_name = "rec_log_train";
 		Parser.txt file = new Parser.txt(file_place); 
 		Database db = new Database();
 		String values;
-		int autoid=1;
+		int autoid=offset+1;
+        file.SkipToOffset(offset);
+
+
+        // counter
+        int counter = 0;
+
 		while(file.hasNext()){
-			ArrayList<String> entry_values = new ArrayList<String>();
+            ArrayList<String> entry_values = new ArrayList<String>();
 			
 			Parser.rec_log_train u_p = new Parser.rec_log_train(file.next());	
-			
+
 			entry_values.add(Integer.toString(autoid));
 			entry_values.add(Integer.toString(u_p.userID));
 			entry_values.add(Integer.toString(u_p.ItemID));
 			entry_values.add(Integer.toString(u_p.result));
 			entry_values.add(Integer.toString(u_p.timeStamp));
-			values = Database.valueFormatter(entry_values);
-			autoid++;
-			db.insert(table_name, values);
+			values = Database.valueFormatter(entry_values);         //This is a string
+            db.addToBatch(table_name,values);
+
+            // counter
+            if(counter%100000 == 0){
+                System.out.println("Progression:   " + counter);
+                db.executeBatch();
+            }
+            counter++;
+            autoid++;
 		}
+
+        db.executeBatch();
 		
 	}
 
-	public static void user_action2DB() throws Exception{
-		String file_place = "../Provided Data/KDD Cup Track 1 Data/track1/user_action.txt";
+	public static void user_action2DB(int offset) throws Exception{
+		String file_place = "../data/user_action.txt";
 		String table_name = "user_action";
 		Parser.txt file = new Parser.txt(file_place); 
 		Database db = new Database();
 		String values;
-		int autoid=1;
+		int autoid=offset+1;
+        file.SkipToOffset(offset);
+
+        int counter = 0;
 
 		while(file.hasNext()){
 			ArrayList<String> entry_values = new ArrayList<String>();
@@ -81,20 +101,27 @@ public class toDB {
 			entry_values.add(Integer.toString(u_p.reTweet));
 			entry_values.add(Integer.toString(u_p.comment));
 			values = Database.valueFormatter(entry_values);
-			autoid++;
+            db.addToBatch(table_name,values);
 
-			db.insert(table_name, values);
+            // counter
+            if(counter%100000 == 0){
+                System.out.println("Progression:   " + counter);
+                db.executeBatch();
+            }
+            counter++;
+            autoid++;
 		}
 		
 	}
 
-	public static void user_key_word2DB() throws Exception{
-		String file_place = "../Provided Data/KDD Cup Track 1 Data/track1/user_key_word.txt";
+	public static void user_key_word2DB(int offset) throws Exception{
+		String file_place = "../data/user_key_word.txt";
 		String table_name = "user_key_word";
 		Parser.txt file = new Parser.txt(file_place); 
 		Database db = new Database();
 		String values;
-		int autoid=1;
+		int autoid=offset+1;
+        file.SkipToOffset(offset);
 
 		while(file.hasNext()){
 			ArrayList<String> entry_values = new ArrayList<String>();
@@ -110,13 +137,15 @@ public class toDB {
 		
 	}
 	
-	public static void user_sns2DB() throws Exception{
-		String file_place = "../Provided Data/KDD Cup Track 1 Data/track1/user_sns.txt";
+	public static void user_sns2DB(int offset) throws Exception{
+		String file_place = "../data/user_sns.txt";
 		String table_name = "userSNS";
 		Parser.txt file = new Parser.txt(file_place); 
 		Database db = new Database();
 		String values;
-		int autoID = 1;
+		int autoID = offset+1;
+        file.SkipToOffset(offset);
+
 		while(file.hasNext()){
 			ArrayList<String> entry_values = new ArrayList<String>();
 			Parser.User_sns u_p = new Parser.User_sns(file.next());	
@@ -126,8 +155,7 @@ public class toDB {
 			values = Database.valueFormatter(entry_values);
 			db.insert(table_name, values);
 			autoID++;
-		}
-		
+		}	
 	}
 }
 

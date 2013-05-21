@@ -6,3 +6,23 @@
 	<classpathentry kind="lib" path="C:/Users/Lukas/Downloads/sqlite-jdbc-3.7.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
+<<<<<<< HEAD
+=======
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+<<<<<<< HEAD
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/sqlite-jdbc-3.7.2"/>
+=======
+	<classpathentry kind="lib" path="D:/Dev/Java/sqlite/sqlite-jdbc-3.7.2.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:file:/D:/Dev/Java/sqlite/sqlite-jdbc-3.7.2-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+>>>>>>> 149832a07ba500cfecc3d7250468106d1a51e33f
+	<classpathentry kind="output" path="bin"/>
+</classpath>
+>>>>>>> branch 'master' of https://github.com/wensby/ai-project.git
+=======
+>>>>>>> a0d157b84e9ecad35f6a83b681f9383d9ae4657a

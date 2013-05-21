@@ -31,6 +31,20 @@ public class Parser {
 			return next_line;
 		}
 
+        public void SkipToOffset(int offset) throws Exception{
+            int counter = 0;
+            while(offset > counter){
+                this.hasNext();
+                this.next();
+
+                if(counter%10000 == 0 && Debug.toggle){
+                    System.out.println("Skipped  " + counter + "    Current line:   " +  this.next());
+                }
+                counter++;
+            }
+            System.out.println("Skipped to line:  " + offset+1);
+
+        }
 	}
 	
 	public static int parse_year(String birthYear){	
