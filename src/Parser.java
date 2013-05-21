@@ -43,7 +43,6 @@ public class Parser {
                 counter++;
             }
             System.out.println("Skipped to line:  " + offset+1);
-
         }
 	}
 	

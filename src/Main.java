@@ -7,7 +7,9 @@
 public class Main{
     public static void main(String []args) throws Exception {
     	Database db = new Database();
-//    	db.getOneRow(0, "item");
+    	Object[] result = db.getOneRow(0, "item");
+    	Debug.pal(result);
+    	db.close_connection();
 //    	loadEverythingIntoDatabase();
     }
     
@@ -40,8 +42,8 @@ public class Main{
 
         //Database.get_read_performance_of_rec_log();
 
-    	//toDB.item2DB();
-    	//toDB.rec_log_train2DB(50059843);
+    	toDB.item2DB(0);
+//    	toDB.rec_log_train2DB(0);
 //        System.out.println("Running user_action");
 //    	toDB.user_action2DB(185610+1);
 //        System.out.println("Running user_key_word");

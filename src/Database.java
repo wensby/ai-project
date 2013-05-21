@@ -86,13 +86,18 @@ public class Database {
     }    
 
     /**
-     * TODO finish this stuff, not finished
+     * @return an array of Object, corresponding to each column of that row
      */
     public Object[] getOneRow(int offset, String tableName) throws SQLException {
-		stat.execute("SELECT * FROM " + tableName + " LIMIT 1 OFFSET " + offset);
-		ResultSet result = stat.getResultSet();
-		Debug.pl(result.getString(3));
-    	return null;
+		ResultSet result = stat.executeQuery("SELECT * FROM " + tableName + " LIMIT 1 OFFSET " + offset);
+		int numColumns = result.getMetaData().getColumnCount();
+		
+		Object[] arrayResult = new Object[numColumns];
+		for (int i = 0; i < numColumns; i++) {
+			arrayResult[i] 	= result.getObject(i + 1);
+		}
+		
+    	return arrayResult;
     }
     
     //Queries 
