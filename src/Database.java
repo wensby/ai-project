@@ -96,11 +96,13 @@ public class Database {
     }    
 
     /**
+     * Returns an array of Object, where each element corresponds to the columns.
+     * This method may be prone to send exceptions.
      * @return an array of Object, corresponding to each column of that row
      */
-    public Object[] getOneRow(int offset, String tableName) throws SQLException {
+    public Object[] getOneRow(String tableName, int offset) throws SQLException {
 		ResultSet result = stat.executeQuery("SELECT * FROM " + tableName + " LIMIT 1 OFFSET " + offset);
-		int numColumns = result.getMetaData().getColumnCount();
+		int numColumns = result.getMetaData().getColumnCount(); 
 		
 		Object[] arrayResult = new Object[numColumns];
 		for (int i = 0; i < numColumns; i++) {
@@ -110,7 +112,17 @@ public class Database {
     	return arrayResult;
     }
     
-
+    /**
+     * TODO not finished
+     */
+    public Object[][] getMultipleRows(String tableName, int offset, int numRow) throws SQLException {
+    	ResultSet result = stat.executeQuery("SELECT * FROM " + tableName + " LIMIT " + numRow + " OFFSET " + offset);
+//    	int numColumns
+    	
+		return null;
+    }
+    
+    //Queries 
     public void insert(String table, String values) throws SQLException{
     	//System.out.println("INSERT INTO "+ table + " VALUES" +values+ "");
     	stat.executeUpdate("INSERT INTO "+ table + " VALUES " +values+ ";");
@@ -183,7 +195,7 @@ public class Database {
         Class.forName(JDBC_DRIVER);
         Connection nConn = DriverManager.getConnection(nURL, JDBC_USER, JDBC_PASSWORD);
         Statement nStat = nConn.createStatement();
-        System.out.println("New database created to location:  " + "../Database/" + new_DB_name);
+        System.out.println("New database created to location:  " + "../Database/Backups" + new_DB_name);
 
         // Create tables:
         nStat.executeUpdate("CREATE TABLE \"item\" (\"itemID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"categoriesString\" TEXT NOT NULL , \"keywordsString\" TEXT NOT NULL );");
@@ -193,9 +205,35 @@ public class Database {
         nStat.executeUpdate("CREATE TABLE user_keywords (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT, \"UserID\" INTEGER NOT NULL, \"Keyword\" INTEGER NOT NULL, \"Weight\" DOUBLE NOT NULL);");
         nStat.executeUpdate("CREATE TABLE \"user_profile\" (\"userID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"birthYear\" INTEGER NOT NULL , \"gender\" INTEGER NOT NULL , \"tweets\" INTEGER NOT NULL , \"tagIDstring\" TEXT NOT NULL );");
         nStat.executeUpdate("CREATE TABLE \"tags\" (\"autoID\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE , \"userID\" INTEGER NOT NULL , \"tag\" INTEGER NOT NULL );");
+        nStat.executeUpdate("CREATE TABLE \"itemKey\" (\"autoID\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE , \"itemID\" INTEGER NOT NULL , \"key\" INTEGER NOT NULL );");
 
+        System.out.println("Tables created in backup");
 
+        // Attach the old database to the new one
+        nStat.execute("ATTACH '"+ PATH_INSIDE_CURRENT_PROJECT +"' AS oldDatabase");
+        nStat.execute("ATTACH '../Database/Backups/"+ new_DB_name +".sqlite' AS newDatabase");
 
+        System.out.println("Databases attached");
+
+        // Now start to load it into the new stuff
+        nStat.executeUpdate("INSERT INTO newDatabase.item(itemID, categoriesString, keywordsString) SELECT * FROM oldDatabase.item;");
+        System.out.println("Table items transferred");
+        nStat.executeUpdate("INSERT INTO newDatabase.rec_log_train(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM oldDatabase.rec_log_train;");
+        System.out.println("Table rec_log_train transferred");
+        nStat.executeUpdate("INSERT INTO newDatabase.userSNS(userSnsID, followerUserID, followeeUserID) SELECT * FROM oldDatabase.userSNS;");
+        System.out.println("Table userSNS transferred");
+        nStat.executeUpdate("INSERT INTO newDatabase.user_action(actionID, userID, destinationUserID, atAction, reTweet, comment) SELECT * FROM oldDatabase.user_action;");
+        System.out.println("Table user_action transferred");
+        nStat.executeUpdate("INSERT INTO newDatabase.user_keywords(ID, UserID, Keyword, Weight) SELECT * FROM oldDatabase.user_keywords;");
+        System.out.println("Table user_keywords transferred");
+        nStat.executeUpdate("INSERT INTO newDatabase.user_profile(UserID, birthYear, gender, tweets, tagIDstring) SELECT * FROM oldDatabase.user_profile;");
+        System.out.println("Table user_profile transferred");
+        nStat.executeUpdate("INSERT INTO newDatabase.tags(autoID, userID, tag) SELECT * FROM oldDatabase.tags;");
+        System.out.println("Table tags transferred");
+        nStat.executeUpdate("INSERT INTO newDatabase.itemKey(autoID, itemID, key) SELECT * FROM oldDatabase.itemKey;");
+        System.out.println("Table itemKey transferred");
+
+        Debug.pl("Backup finished!");
     }
 }
 
