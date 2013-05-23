@@ -7,7 +7,7 @@
 public class Main{
     public static void main(String []args) throws Exception {
     	Database db = new Database();
-    	db.MoveIntoEmptyDatabase("hopefully_not_corrupted.sqlite");
+    	db.MoveIntoNewDatabase("hopefully_not_corrupted.sqlite");
     }
     
     public static void loadEverythingIntoDatabase() throws Exception {

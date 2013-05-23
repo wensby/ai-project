@@ -192,7 +192,7 @@ public class Database {
      * Copies every entry in this database into the database into another specified database.
      * The specified database file does have to have the exact same table structure.
      */
-    public void MoveIntoEmptyDatabase(String pathfile) throws SQLException, ClassNotFoundException {
+    public void MoveIntoNewDatabase(String pathfile) throws SQLException, ClassNotFoundException {
     	// FOR TORMOD TO DO:
     	// Do so that the sqlite file used below is constructed.
     	// So you must create a new database with correct table structures.
