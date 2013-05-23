@@ -1,3 +1,5 @@
+/*
+
 import com.googlecode.javacv.Blobs;
 import com.googlecode.javacv.CanvasFrame;
 
@@ -6,12 +8,24 @@ import static com.googlecode.javacv.cpp.opencv_highgui.*;
 import static com.googlecode.javacv.cpp.opencv_imgproc.*;
 
 ///////////////////////////////////////////////////////////////////
-//*                                                             *//
-//* As the author of this code, I place all of this code into   *//
-//* the public domain. Users can use it for any legal purpose.  *//
-//*                                                             *//
-//*             - Dave Grossman                                 *//
-//*                                                             *//
+/*/
+/*                                                             *//*
+/
+/*/
+/* As the author of this code, I place all of this code into   *//*
+/
+/*/
+/* the public domain. Users can use it for any legal purpose.  *//*
+/
+/*/
+/*                                                             *//*
+/
+/*/
+/*             - Dave Grossman                                 *//*
+/
+/*/
+/*                                                             *//*
+/
 ///////////////////////////////////////////////////////////////////
 public class Test
 {
@@ -271,18 +285,19 @@ public class Test
 
 
 
-
 //   CREATE  TABLE "main"."item" ("ItemID" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "ItemCat" TEXT NOT NULL , "Keywords" TEXT NOT NULL ) {
 
 /////////////////////////////
-///** ORIGINAL EXAMPLE
+//*/
+/** ORIGINAL EXAMPLE
 ///////////////////////////
 // * Created with IntelliJ IDEA.
 // * User: tormodhau
 // * Date: 5/13/13
 // * Time: 11:51 PM
 // * To change this template use File | Settings | File Templates.
-// */
+// *//*
+
 //
 ////package com.rungeek.sqlite;
 //
@@ -293,7 +308,8 @@ public class Test
 //import java.sql.Statement;
 //
 //
-///*********
+//*/
+/*********
 // HOW TO SELECT A SPECIFIC DATABASE FILE AND SET A DIRECTORY:
 // _______________
 //
@@ -302,7 +318,8 @@ public class Test
 //
 //
 //
-// */
+// *//*
+
 //
 //public class Database {
 //    public static String PATH_INSIDE_CURRENT_PROJECT = "Data.sqlite";    // DATABASE NAME AND (optional) PATH
@@ -311,10 +328,12 @@ public class Test
 //    public static final String JDBC_USER = "root";
 //    public static final String JDBC_PASSWORD = "";
 //
-//    /*
+//    */
+/*
 //    Creates a
 //    Returns a set of entries if the connection to the
-//     */
+//     *//*
+
 //    public static void testDatabaseSettings() throws Exception{
 //        Connection conn = null;
 //        ResultSet rs = null;
@@ -411,7 +430,8 @@ public class Test
 //            //stat.executeUpdate("drop table if exists people_test;");
 //            //stat.executeUpdate("create table people_test (name, occupation);");
 //            //PreparedStatement prep = conn.prepareStatement("insert into people_test values (?, ?);");
-//        /*
+//        */
+/*
 //            for ( int i = 0; i<10000000;i++){
 //                prep.setString(1,"lalalalallaallala alalalalall;;;;ALKSDLKJDLKAM;SD;MLAKSND");
 //                prep.setString(2,"ksdjkj ksjdkjsd ");
@@ -428,7 +448,8 @@ public class Test
 //            conn.setAutoCommit(false);
 //            prep.executeBatch();
 //            conn.setAutoCommit(true);
-//        */
+//        *//*
+
 //
 //            String sql = "SELECT * FROM people_test WHERE rowid = ?";
 //            PreparedStatement prep = conn.prepareStatement(sql);
@@ -441,7 +462,8 @@ public class Test
 //                    rs1.getString(2);
 //                }
 //            }
-//        /*
+//        */
+/*
 //            rs = stat.executeQuery("select * from people_test;");
 //            while (rs.next()) {
 //                System.out.println("name = " + rs.getString("name"));
@@ -449,7 +471,8 @@ public class Test
 //            }
 //            rs.close();
 //
-//        */
+//        *//*
+
 //            conn.close();
 //        }
 //        catch (Exception e)
@@ -459,4 +482,4 @@ public class Test
 //
 //    }
 //
-//}
+//}*/

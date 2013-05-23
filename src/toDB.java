@@ -164,24 +164,26 @@ public class toDB {
 	}
 	
 	public static void user_sns2DB(int offset) throws Exception{
-		String file_place = "../data/user_sns.txt";
-		String table_name = "userSNS";
-		Parser.txt file = new Parser.txt(file_place); 
-		Database db = new Database();
-		String values;
-		int autoID = offset+1;
+
+        String file_place = "../data/user_sns.txt";
+        String table_name = "userSNS";
+        Parser.txt file = new Parser.txt(file_place);
+        Database db = new Database();
+        String values;
+        int autoID = offset+1;
         file.SkipToOffset(offset);
 
-		while(file.hasNext()){
-			ArrayList<String> entry_values = new ArrayList<String>();
-			Parser.User_sns u_p = new Parser.User_sns(file.next());	
-			entry_values.add(Integer.toString(autoID));
-			entry_values.add(Integer.toString(u_p.followerUserID));
-			entry_values.add(Integer.toString(u_p.followeeUserID));
-			values = Database.valueFormatter(entry_values);
-			db.insert(table_name, values);
-			autoID++;
-		}
+        while(file.hasNext()){
+
+            ArrayList<String> entry_values = new ArrayList<String>();
+            Parser.User_sns u_p = new Parser.User_sns(file.next());
+            entry_values.add(Integer.toString(autoID));
+            entry_values.add(Integer.toString(u_p.followerUserID));
+            entry_values.add(Integer.toString(u_p.followeeUserID));
+            values = Database.valueFormatter(entry_values);
+            db.insert(table_name, values);
+            autoID++;
+        }
 		
 		db.close_connection();
 	}

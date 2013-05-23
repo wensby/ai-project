@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="JAVA_MODULE" version="4">
+  <component name="EclipseModuleManager">
+    <libelement value="file://sqlite-jdbc-3.7.2.jar" />
+    <src_description expected_position="0">
+      <src_folder value="file://$MODULE_DIR$/src" expected_position="0" />
+    </src_description>
+  </component>
   <component name="NewModuleRootManager" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/bin" />
     <exclude-output />
@@ -7,13 +13,17 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library" exported="">
+      <library name="sqlite-jdbc-3.7.2.jar">
+        <CLASSES>
+          <root url="file://sqlite-jdbc-3.7.2.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
     <orderEntry type="inheritedJdk" />
-<<<<<<< HEAD
     <orderEntry type="library" name="sqlite-jdbc-3.7.2" level="project" />
-    <orderEntry type="library" name="javacv-macosx-x86_64" level="project" />
-    <orderEntry type="library" name="javacv" level="project" />
-=======
->>>>>>> a76a4846321a4b0ddc472ad387a25ac3e58dabd2
   </component>
 </module>
 
