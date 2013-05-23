@@ -7,13 +7,7 @@
 public class Main{
     public static void main(String []args) throws Exception {
     	Database db = new Database();
-//    	toDB.rec_log_train2DB(55786156+1);
-//    	for (int i = 0; i < 1000; i++) {
-//	    	Object[] result = db.getOneRow("rec_log_train", 50000000);
-//	    	Debug.pal(result);
-//    	}
-//    	db.close_connection();
-//    	loadEverythingIntoDatabase();
+    	db.MoveIntoEmptyDatabase("hopefully_not_corrupted.sqlite");
     }
     
     public static void loadEverythingIntoDatabase() throws Exception {
@@ -45,7 +39,25 @@ public class Main{
 
         //Database.get_read_performance_of_rec_log();
 
-    	toDB.item2DB(0);
+    	//toDB.item2DB();
+    	//toDB.rec_log_train2DB(50059843);
+/*
+        System.out.println("Running user_action");
+    	toDB.user_action2DB(6220243);
+
+        System.out.println("Running user_key_word");          //TODO This function runs actions not keywords!
+    	//toDB.user_key_word2DB(0);
+
+        System.out.println("Running user_sns");
+    	toDB.user_sns2DB(0);
+
+        System.out.println("Running user_profile");
+    	toDB.userProfile2DB(0);
+
+        System.out.println("Done!");
+*/
+
+
 //    	toDB.rec_log_train2DB(0);
 //        System.out.println("Running user_action");
 //    	toDB.user_action2DB(185610+1);

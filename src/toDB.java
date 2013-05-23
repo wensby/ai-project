@@ -121,10 +121,12 @@ public class toDB {
 	}
 
 	public static void user_keyword2DB(int offset) throws Exception{
-		String file_place = "../Provided Data/KDD Cup Track 1 Data/track1/user_key_word.txt";
+		String file_place = "../data/user_key_word.txt";
 		String table_name = "user_keywords";
 		Parser.txt file = new Parser.txt(file_place); 
 		Database db = new Database();
+		db.ensureKeywordsTableExist();
+		
 		String values;
 		int autoid=offset+1;
         file.SkipToOffset(offset);
@@ -135,7 +137,7 @@ public class toDB {
 			int userID = user_keyword.UserID;
 			HashMap<Integer, Double> keywords = user_keyword.keywords;
 			Iterator<Entry<Integer, Double>> iterator = keywords.entrySet().iterator();
-			
+
 			while (iterator.hasNext())
 			{
 				ArrayList<String> entry_values = new ArrayList<String>();
@@ -147,8 +149,15 @@ public class toDB {
 				entry_values.add(Double.toString(entry.getValue()));
 				
 				values = Database.valueFormatter(entry_values);
-				db.insert(table_name, values);
+				db.addToBatch(table_name, values);
+				
+				if (autoid % 300000 == 0)
+				{
+					db.executeBatch();
+				}
 			}
+			
+			db.executeBatch();
 		}
 
 		db.close_connection();

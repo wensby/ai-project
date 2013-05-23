@@ -1,11 +1,4 @@
 
-/**
- * Created with IntelliJ IDEA.
- * User: tormodhau
- * Date: 5/13/13
- * Time: 11:51 PM
- * To change this template use File | Settings | File Templates.
- */
 
 //package com.rungeek.sqlite;
 
@@ -19,7 +12,7 @@ import java.util.ArrayList;
 
 public class Database {
 //	public static String PATH_INSIDE_CURRENT_PROJECT = "../Database/ML_projecter_twitter.sqlite";    // DATABASE NAME AND (optional) PATH
-	public static String PATH_INSIDE_CURRENT_PROJECT = "../corrupt/abc.sqlite";    // DATABASE NAME AND (optional) PATH
+	public static String PATH_INSIDE_CURRENT_PROJECT = "../corrupt/corrupted.sqlite";    // DATABASE NAME AND (optional) PATH
     public static final String JDBC_DRIVER = "org.sqlite.JDBC";
     public static final String JDBC_URL = "jdbc:sqlite:" + PATH_INSIDE_CURRENT_PROJECT;
     public static final String JDBC_USER = "root";
@@ -40,6 +33,8 @@ public class Database {
             this.conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
             this.stat = conn.createStatement();
             System.out.println("Database opened from location:  " + PATH_INSIDE_CURRENT_PROJECT);
+            
+            		
         }
         catch (Exception e)
         {
@@ -50,6 +45,19 @@ public class Database {
     public void close_connection() throws SQLException{
 
         // If user exists, then update user
+    }
+    
+    public void ensureKeywordsTableExist()
+    {
+        try {
+			this.stat.executeUpdate("CREATE TABLE IF NOT EXISTS user_keywords ("
+					+ "\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT, "
+					+ "\"UserID\" INTEGER NOT NULL, "
+					+ "\"Keyword\" INTEGER NOT NULL, "
+					+ "\"Weight\" DOUBLE NOT NULL)");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
     }
 
     public static void updateUser() throws Exception {
@@ -73,9 +81,11 @@ public class Database {
     }
 
 
-
-    
-    //Useful tools
+    /**
+     * Takes a list of string values, and formats this into a VALUES statement used for SQL
+     * @param values
+     * @return
+     */
     public static String valueFormatter(ArrayList<String> values){
     	String returnvalue = "("; 
     	for(String v: values){
@@ -106,12 +116,12 @@ public class Database {
     /**
      * TODO not finished
      */
-//    public Object[][] getMultipleRows(String tableName, int offset, int numRow) throws SQLException {
-//    	ResultSet result = stat.executeQuery("SELECT * FROM " + tableName + " LIMIT " + numRow + " OFFSET " + offset);
+    public Object[][] getMultipleRows(String tableName, int offset, int numRow) throws SQLException {
+    	ResultSet result = stat.executeQuery("SELECT * FROM " + tableName + " LIMIT " + numRow + " OFFSET " + offset);
 //    	int numColumns
-//    	
-//		return null;
-//    }
+    	
+		return null;
+    }
     
     //Queries 
     public void insert(String table, String values) throws SQLException{
@@ -130,24 +140,16 @@ public class Database {
         }
     }
 
-    //Queries
+    /**
+     * Use this for batch insert to query several SQL statements iteratively.
+     * To execute the batch, call the function executeBatch()
+     */
     public void addToBatch(String table, String values) throws SQLException{
         this.stat.addBatch("INSERT INTO "+ table + " VALUES " +values+ ";");
     }
 
     public void executeBatch()throws Exception{
         this.stat.executeBatch();
-    }
-
-    public static void count_file_lines(String file_place) throws Exception{
-        //EX: file_place = "../data/rec_log_train.txt";
-        Parser.txt file = new Parser.txt(file_place);
-        int counter = 0;
-        while(file.hasNext()){
-            file.next();
-            counter++;
-        }
-        System.out.println("Final line count of file "+ file_place + " :   " + counter);
     }
 
     public static void get_read_performance_of_rec_log() throws Exception{
@@ -185,6 +187,40 @@ public class Database {
         long elapsedTime = stopTime - startTime;
         System.out.println("Time elapsed to extract " + table_length + " elements from table " + table_name + " in Ms: " + elapsedTime);
     }
+
+    /**
+     * Copies every entry in this database into the database into another specified database.
+     * The specified database file does have to have the exact same table structure.
+     */
+    public void MoveIntoEmptyDatabase(String pathfile) throws SQLException, ClassNotFoundException {
+    	// FOR TORMOD TO DO:
+    	// Do so that the sqlite file used below is constructed.
+    	// So you must create a new database with correct table structures.
+    	
+    	String NEW_PATH_INSIDE_CURRENT_PROJECT = "../corrupt/" + pathfile + ".sqlite";    // DATABASE NAME AND (optional) PATH
+        String NEW_JDBC_URL = "jdbc:sqlite:" + NEW_PATH_INSIDE_CURRENT_PROJECT;
+        
+        // Open connection
+        Class.forName(JDBC_DRIVER);
+        Connection 	newConn = DriverManager.getConnection(NEW_JDBC_URL, JDBC_USER, JDBC_PASSWORD);
+        Statement 	newStat = newConn.createStatement();
+        System.out.println("Database opened from location:  " + NEW_PATH_INSIDE_CURRENT_PROJECT);
+        Debug.pl("Succesfull connections between two databases.");
+        
+        // Attach the old database to the new one
+        newStat.execute("ATTACH '../corrupt/corrupted.sqlite' AS oldDatabase");
+        newStat.execute("ATTACH '../Database/hopefully_not_corrupted.sqlite' AS newDatabase");
+        
+        // Now start to load it into the new stuff
+        newStat.executeUpdate("INSERT INTO newDatabase.item(itemID, categoriesString, keywordsString) SELECT * FROM oldDatabase.item;");
+        newStat.executeUpdate("INSERT INTO newDatabase.rec_log_train(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM oldDatabase.rec_log_train;");
+        newStat.executeUpdate("INSERT INTO newDatabase.userSNS(userSnsID, followerUserID, followeeUserID) SELECT * FROM oldDatabase.userSNS;");
+        newStat.executeUpdate("INSERT INTO newDatabase.user_action(actionID, userID, destinationUserID, atAction, reTweet, comment) SELECT * FROM oldDatabase.user_action;");
+        newStat.executeUpdate("INSERT INTO newDatabase.user_keywords(ID, UserID, Keyword, Weight) SELECT * FROM oldDatabase.user_keywords;");
+        newStat.executeUpdate("INSERT INTO newDatabase.user_profile(UserID, birthYear, gender, tweets, tagIDstring) SELECT * FROM oldDatabase.user_profile;");
+        
+        Debug.pl("Finished!");
+    }
 }
 
 
@@ -196,199 +232,3 @@ public class Database {
 
 
 
-
-
-
-
-    
-
-
-
-//   CREATE  TABLE "main"."item" ("ItemID" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "ItemCat" TEXT NOT NULL , "Keywords" TEXT NOT NULL ) {
-
-/////////////////////////////
-///** ORIGINAL EXAMPLE
-///////////////////////////
-// * Created with IntelliJ IDEA.
-// * User: tormodhau
-// * Date: 5/13/13
-// * Time: 11:51 PM
-// * To change this template use File | Settings | File Templates.
-// */
-//
-////package com.rungeek.sqlite;
-//
-//import java.sql.Connection;
-//import java.sql.DriverManager;
-//import java.sql.PreparedStatement;
-//import java.sql.ResultSet;
-//import java.sql.Statement;
-//
-//
-///*********
-// HOW TO SELECT A SPECIFIC DATABASE FILE AND SET A DIRECTORY:
-// _______________
-//
-// LOCAL_DB_PATH = "/home/leo/work/mydatabase.db" gives the following URL:
-// Connection connection = DriverManager.getConnection("jdbc:sqlite:/home/leo/work/mydatabase.db");
-//
-//
-//
-// */
-//
-//public class Database {
-//    public static String PATH_INSIDE_CURRENT_PROJECT = "Data.sqlite";    // DATABASE NAME AND (optional) PATH
-//    public static final String JDBC_DRIVER = "org.sqlite.JDBC";
-//    public static final String JDBC_URL = "jdbc:sqlite:" + PATH_INSIDE_CURRENT_PROJECT;
-//    public static final String JDBC_USER = "root";
-//    public static final String JDBC_PASSWORD = "";
-//
-//    /*
-//    Creates a
-//    Returns a set of entries if the connection to the
-//     */
-//    public static void testDatabaseSettings() throws Exception{
-//        Connection conn = null;
-//        ResultSet rs = null;
-//        Statement stat = null;
-//
-//        try {
-//            Class.forName(JDBC_DRIVER);
-//            conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
-//            stat = conn.createStatement();
-//            stat.executeUpdate("drop table if exists people_test;");
-//            stat.executeUpdate("create table people_test (name, occupation);");
-//            PreparedStatement prep = conn.prepareStatement(
-//                    "insert into people_test values (?, ?);");
-//
-//            prep.setString(1, "Gandhi");
-//            prep.setString(2, "politics");
-//            prep.addBatch();
-//            prep.setString(1, "Turing");
-//            prep.setString(2, "computers");
-//            prep.addBatch();
-//            prep.setString(1, "Wittgenstein");
-//            prep.setString(2, "smartypants");
-//            prep.addBatch();
-//
-//            conn.setAutoCommit(false);
-//            prep.executeBatch();
-//            conn.setAutoCommit(true);
-//
-//            rs = stat.executeQuery("select * from people_test;");
-//            while (rs.next()) {
-//                System.out.println("name = " + rs.getString("name"));
-//                System.out.println("job = " + rs.getString("occupation"));
-//            }
-//            rs.close();
-//            conn.close();
-//        }
-//        catch (Exception e)
-//        {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    public static void insertUser() throws Exception {
-//
-//        // If user exists, then update user
-//    }
-//
-//    public static void updateUser() throws Exception {
-//
-//    }
-//
-//    public static void getUserFromID(int id) throws Exception{
-//
-//    }
-//
-//    public static void insertItem(int id, String cat, String keywords) throws Exception{
-//
-//    }
-//
-//    public static void updateItem(int id, String cat, String keywords) throws Exception{
-//
-//    }
-//
-//    public static void getItemFromID(int id) throws Exception{
-//
-//    }
-//
-//
-//
-//
-//}
-//
-//
-////   CREATE  TABLE "main"."item" ("ItemID" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "ItemCat" TEXT NOT NULL , "Keywords" TEXT NOT NULL ) {
-//
-//
-
-
-//
-//
-//
-//    // INSERTING 10 000 000 elements takes 48 seconds.
-//    // READING 10 000 000 elements with individual searches takes 150 seconds. This was done by rowID of people_test
-//    // After INDEXING it takes
-//    public static void testDB(){
-//        Connection conn = null;
-//        ResultSet rs = null;
-//        Statement stat = null;
-//
-//        try {
-//            Class.forName(JDBC_DRIVER);
-//            conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
-//            stat = conn.createStatement();
-//            //stat.executeUpdate("drop table if exists people_test;");
-//            //stat.executeUpdate("create table people_test (name, occupation);");
-//            //PreparedStatement prep = conn.prepareStatement("insert into people_test values (?, ?);");
-//        /*
-//            for ( int i = 0; i<10000000;i++){
-//                prep.setString(1,"lalalalallaallala alalalalall;;;;ALKSDLKJDLKAM;SD;MLAKSND");
-//                prep.setString(2,"ksdjkj ksjdkjsd ");
-//                prep.addBatch();
-//
-//                if (i % 1000 ==0){
-//                    conn.setAutoCommit(false);
-//                    prep.executeBatch();
-//                    conn.setAutoCommit(true);
-//                }
-//
-//            }
-//
-//            conn.setAutoCommit(false);
-//            prep.executeBatch();
-//            conn.setAutoCommit(true);
-//        */
-//
-//            String sql = "SELECT * FROM people_test WHERE rowid = ?";
-//            PreparedStatement prep = conn.prepareStatement(sql);
-//
-//            for (int i = 0; i<10000000; i++){
-//                prep.setInt(1,i);
-//                ResultSet rs1 = prep.executeQuery();
-//                while (rs1.next()){
-//                    rs1.getString(1);
-//                    rs1.getString(2);
-//                }
-//            }
-//        /*
-//            rs = stat.executeQuery("select * from people_test;");
-//            while (rs.next()) {
-//                System.out.println("name = " + rs.getString("name"));
-//                System.out.println("job = " + rs.getString("occupation"));
-//            }
-//            rs.close();
-//
-//        */
-//            conn.close();
-//        }
-//        catch (Exception e)
-//        {
-//            e.printStackTrace();
-//        }
-//
-//    }
-//
-//}

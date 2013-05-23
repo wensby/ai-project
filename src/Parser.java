@@ -37,12 +37,15 @@ public class Parser {
                 this.hasNext();
                 this.next();
 
+
                 if(counter%10000 == 0 && Debug.toggle){
+
                     System.out.println("Skipped  " + counter + "    Current line:   " +  this.next());
                 }
                 counter++;
             }
-            System.out.println("Skipped to line:  " + offset+1);
+            System.out.println("Skipped to line:  " + offset);
+
         }
 	}
 	
@@ -86,7 +89,7 @@ public class Parser {
 		public int gender;
 		public int tweets;
 		public String tagIDsString;
-		public ArrayList<Integer> tagIDs;
+		//public ArrayList<Integer> tagIDs;
 		
 		public User_profile(String input_line){
 			//Given line from user_profile_txt: Parse out (userID) (birthyear) (gender) (#tweets) (Tag-IDs) 
@@ -96,25 +99,25 @@ public class Parser {
 				this.gender =	Integer.parseInt(st.nextToken());
 				this.tweets =	Integer.parseInt(st.nextToken());
 				this.tagIDsString = st.nextToken();
-				this.tagIDs = 	Parser.semiColon_Integer_parser(this.tagIDsString);
+				//this.tagIDs = 	Parser.semiColon_Integer_parser(this.tagIDsString);
 			}
 
 	}
 	public static class Item{
 	    public int id;
 	    public String categoriesString;
-	    public ArrayList<Integer> categories = new ArrayList<Integer>();
+	    //public ArrayList<Integer> categories = new ArrayList<Integer>();
 	    public String keywordsString;
-	    public ArrayList<Integer> keywords = new ArrayList<Integer>();
+	    //public ArrayList<Integer> keywords = new ArrayList<Integer>();
 		
 	    public Item(String line)
 		{
 			StringTokenizer sTok = new StringTokenizer(line);
 			this.id = Integer.parseInt(sTok.nextToken());
 			this.categoriesString = sTok.nextToken();
-			this.categories = Parser.dot_Integer_parser(this.categoriesString);
+			//this.categories = Parser.dot_Integer_parser(this.categoriesString);
 			this.keywordsString = sTok.nextToken();
-			this.keywords = Parser.semiColon_Integer_parser(this.keywordsString);
+			//this.keywords = Parser.semiColon_Integer_parser(this.keywordsString);
 		}
 	}
 	
