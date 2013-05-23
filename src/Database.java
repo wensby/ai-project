@@ -18,7 +18,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 public class Database {
-    public static String PATH_INSIDE_CURRENT_PROJECT = "../Database/ML_projecter_twitter.sqlite";    // DATABASE NAME AND (optional) PATH
+//	public static String PATH_INSIDE_CURRENT_PROJECT = "../Database/ML_projecter_twitter.sqlite";    // DATABASE NAME AND (optional) PATH
+	public static String PATH_INSIDE_CURRENT_PROJECT = "../corrupt/abc.sqlite";    // DATABASE NAME AND (optional) PATH
     public static final String JDBC_DRIVER = "org.sqlite.JDBC";
     public static final String JDBC_URL = "jdbc:sqlite:" + PATH_INSIDE_CURRENT_PROJECT;
     public static final String JDBC_USER = "root";
@@ -86,11 +87,13 @@ public class Database {
     }    
 
     /**
+     * Returns an array of Object, where each element corresponds to the columns.
+     * This method may be prone to send exceptions.
      * @return an array of Object, corresponding to each column of that row
      */
-    public Object[] getOneRow(int offset, String tableName) throws SQLException {
+    public Object[] getOneRow(String tableName, int offset) throws SQLException {
 		ResultSet result = stat.executeQuery("SELECT * FROM " + tableName + " LIMIT 1 OFFSET " + offset);
-		int numColumns = result.getMetaData().getColumnCount();
+		int numColumns = result.getMetaData().getColumnCount(); 
 		
 		Object[] arrayResult = new Object[numColumns];
 		for (int i = 0; i < numColumns; i++) {
@@ -99,6 +102,16 @@ public class Database {
 		
     	return arrayResult;
     }
+    
+    /**
+     * TODO not finished
+     */
+//    public Object[][] getMultipleRows(String tableName, int offset, int numRow) throws SQLException {
+//    	ResultSet result = stat.executeQuery("SELECT * FROM " + tableName + " LIMIT " + numRow + " OFFSET " + offset);
+//    	int numColumns
+//    	
+//		return null;
+//    }
     
     //Queries 
     public void insert(String table, String values) throws SQLException{

@@ -7,9 +7,12 @@
 public class Main{
     public static void main(String []args) throws Exception {
     	Database db = new Database();
-    	Object[] result = db.getOneRow(0, "item");
-    	Debug.pal(result);
-    	db.close_connection();
+//    	toDB.rec_log_train2DB(55786156+1);
+//    	for (int i = 0; i < 1000; i++) {
+//	    	Object[] result = db.getOneRow("rec_log_train", 50000000);
+//	    	Debug.pal(result);
+//    	}
+//    	db.close_connection();
 //    	loadEverythingIntoDatabase();
     }
     
