@@ -1,7 +1,3 @@
-
-
-//package com.rungeek.sqlite;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -11,29 +7,84 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 public class Database {
-    public static String PATH_INSIDE_CURRENT_PROJECT = "../Database/ML_twitter_database.sqlite";
+    public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "../Database/";
     public static final String JDBC_DRIVER = "org.sqlite.JDBC";
-    public static final String JDBC_URL = "jdbc:sqlite:" + PATH_INSIDE_CURRENT_PROJECT;
+    public static final String JDBC_URL_WITHOUT_FILE = "jdbc:sqlite:" + PROJECT_RELATIVE_PATH_WITHOUT_FILE;
     public static final String JDBC_USER = "root";
     public static final String JDBC_PASSWORD = "";
+    public static final String FILENAME_EXTENSION = ".sqlite";
+    
+    public String name;
+    public String nameWithExtension;
+    private boolean openConnection = false; // true if connection is open
 
     private Connection conn = null;
     private Statement stat = null;
     private ResultSet rs = null;
     private PreparedStatement prep = null;
     
-    //Connection stuff
-    public Database() throws Exception{
-    	open_connection();
-    } 
-    public void open_connection() throws SQLException{
+    /**
+     * Constructor. The filename can be specified as "test.sqlite" or as "test", either way works.
+     */
+    public Database(String filename) throws Exception {
+    	// Set the inner variable names for this database
+    	if (filename.endsWith(FILENAME_EXTENSION)) {
+    		name = filename.split(FILENAME_EXTENSION)[0];
+    		nameWithExtension = filename;
+    	}
+    	else {
+    		name = filename;
+    		nameWithExtension = name + FILENAME_EXTENSION;
+    	}
+    	
+    	// Check if it exists, otherwise, create new empty one with specified filename
+    	if (!Util.checkFileExistance(PROJECT_RELATIVE_PATH_WITHOUT_FILE + nameWithExtension)) {
+    		Debug.pl("Error: " + PROJECT_RELATIVE_PATH_WITHOUT_FILE + nameWithExtension + " does not exist.");
+    		Debug.pl("Creates empty database at " + PROJECT_RELATIVE_PATH_WITHOUT_FILE + nameWithExtension);
+    		createEmpty(nameWithExtension);
+    	}
+    }
+    
+    public boolean hasOpenConnection() {
+    	return openConnection;
+    }
+    
+    /**
+     * Creates an empty database file with the correct tables.
+     */
+    public void createEmpty(String filename) throws SQLException, ClassNotFoundException {
+        String jdbcUrl = "jdbc:sqlite:" + PROJECT_RELATIVE_PATH_WITHOUT_FILE + filename;
+        Class.forName(JDBC_DRIVER);
+        Connection conn = DriverManager.getConnection(jdbcUrl, JDBC_USER, JDBC_PASSWORD);
+        Statement stat = conn.createStatement();
+
+        // Create tables:
+        stat.executeUpdate("CREATE TABLE \"item\" (\"itemID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"categoriesString\" TEXT NOT NULL , \"keywordsString\" TEXT NOT NULL );");
+        stat.executeUpdate("CREATE TABLE \"rec_log_train\" (\"autoID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"UserID\" INTEGER NOT NULL , \"ItemId\" INTEGER NOT NULL , \"result\" INTEGER NOT NULL , \"timeStamp\" );");
+        stat.executeUpdate("CREATE TABLE \"userSNS\" (\"userSnsID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"followerUserID\" INTEGER NOT NULL , \"followeeUserID\" INTEGER NOT NULL );");
+        stat.executeUpdate("CREATE TABLE \"user_action\" (\"actionID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , \"userID\" INTEGER NOT NULL , \"destinationUserID\" INTEGER NOT NULL , \"atAction\" INTEGER NOT NULL , \"reTweet\" INTEGER NOT NULL , \"comment\" INTEGER NOT NULL );");
+        stat.executeUpdate("CREATE TABLE user_keywords (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT, \"UserID\" INTEGER NOT NULL, \"Keyword\" INTEGER NOT NULL, \"Weight\" DOUBLE NOT NULL);");
+        stat.executeUpdate("CREATE TABLE \"user_profile\" (\"userID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"birthYear\" INTEGER NOT NULL , \"gender\" INTEGER NOT NULL , \"tweets\" INTEGER NOT NULL , \"tagIDstring\" TEXT NOT NULL );");
+        stat.executeUpdate("CREATE TABLE \"tags\" (\"autoID\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE , \"userID\" INTEGER NOT NULL , \"tag\" INTEGER NOT NULL );");
+        stat.executeUpdate("CREATE TABLE \"itemKey\" (\"autoID\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE , \"itemID\" INTEGER NOT NULL , \"key\" INTEGER NOT NULL );");
+        
+        conn.close();
+        
+        Debug.pl("New database created at location:  " + PROJECT_RELATIVE_PATH_WITHOUT_FILE + filename);
+    }
+    
+    /**
+     * This method requires that the inner variable names for this database has been created, which they do in
+     * the constructor for Database. 
+     */
+    public void openConnection() throws SQLException{
+    	if (openConnection) return; // why open it when it is open?
         try {
             Class.forName(JDBC_DRIVER);
-            this.conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
+            this.conn = DriverManager.getConnection(JDBC_URL_WITHOUT_FILE + nameWithExtension, JDBC_USER, JDBC_PASSWORD);
             this.stat = conn.createStatement();
-            System.out.println("Database opened from location:  " + PATH_INSIDE_CURRENT_PROJECT);
-            
-            		
+            Debug.pl("Database opened from location: " + PROJECT_RELATIVE_PATH_WITHOUT_FILE + nameWithExtension);	
+            openConnection = true;
         }
         catch (Exception e)
         {
@@ -41,8 +92,11 @@ public class Database {
         }
     }
 
-    public void close_connection() throws SQLException{
-
+    public void closeConnection() throws SQLException{
+    	if (!openConnection) return; // whye close it when it is not open?
+    	conn.close();
+    	stat.close();
+    	openConnection = false;
         // If user exists, then update user
     }
     
@@ -87,16 +141,16 @@ public class Database {
      */
     public static String valueFormatter(ArrayList<String> values){
     	String returnvalue = "("; 
-    	for(String v: values){
-    		returnvalue += v+",";
+    	for(String v : values){
+    		returnvalue += v + ",";
     	}
-    	returnvalue= returnvalue.substring(0, returnvalue.length()-1);
+    	returnvalue = returnvalue.substring(0, returnvalue.length()-1);
     	returnvalue += ")";
     	return returnvalue;
     }    
 
     /**
-     * Returns an array of Object, where each element corresponds to the columns.
+     * Returns an array of Object, where each element corresponds to the different columns in that table.
      * This method may be prone to send exceptions.
      * @return an array of Object, corresponding to each column of that row
      */
@@ -112,25 +166,13 @@ public class Database {
     	return arrayResult;
     }
     
-    /**
-     * TODO not finished
-     */
-    public Object[][] getMultipleRows(String tableName, int offset, int numRow) throws SQLException {
-    	ResultSet result = stat.executeQuery("SELECT * FROM " + tableName + " LIMIT " + numRow + " OFFSET " + offset);
-//    	int numColumns
-    	
-		return null;
-    }
-    
     //Queries 
     public void insert(String table, String values) throws SQLException{
-    	//System.out.println("INSERT INTO "+ table + " VALUES" +values+ "");
     	stat.executeUpdate("INSERT INTO "+ table + " VALUES " +values+ ";");
     }
 
     public int length(String table) throws SQLException{
-    	//System.out.println("INSERT INTO "+ table + " VALUES" +values+ "");
-    	rs = stat.executeQuery("SELECT COUNT(*) FROM "+ table + ";");
+    	rs = stat.executeQuery("SELECT COUNT(*) FROM " + table + ";");
 
         if (rs.next()){
             return rs.getInt(1);
@@ -151,9 +193,9 @@ public class Database {
         this.stat.executeBatch();
     }
 
-    public static void get_read_performance_of_rec_log() throws Exception{
+    public static void get_read_performance_of_rec_log(String filename) throws Exception{
         String table_name = "rec_log_train";
-        Database db = new Database();
+        Database db = new Database(filename);
 
         // Start timer
         long startTime = System.currentTimeMillis();
@@ -187,15 +229,18 @@ public class Database {
         System.out.println("Time elapsed to extract " + table_length + " elements from table " + table_name + " in Ms: " + elapsedTime);
     }
 
-    public void backup_DB()throws Exception{
+    /**
+     * Creates a backup .sqlite-file of this database.
+     */
+    public void backup() throws Exception{
         // Set up new connection:
 
-        String new_DB_name = "backup_" + System.currentTimeMillis();
+        String new_DB_name = name + "_backup_" + System.currentTimeMillis();
         String nURL = "jdbc:sqlite:" + "../Database/Backups/" + new_DB_name + ".sqlite";
         Class.forName(JDBC_DRIVER);
         Connection nConn = DriverManager.getConnection(nURL, JDBC_USER, JDBC_PASSWORD);
         Statement nStat = nConn.createStatement();
-        System.out.println("New database created to location:  " + "../Database/Backups" + new_DB_name);
+        Debug.pl("New database created to location:  " + "../Database/Backups" + new_DB_name);
 
         // Create tables:
         nStat.executeUpdate("CREATE TABLE \"item\" (\"itemID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"categoriesString\" TEXT NOT NULL , \"keywordsString\" TEXT NOT NULL );");
@@ -207,31 +252,31 @@ public class Database {
         nStat.executeUpdate("CREATE TABLE \"tags\" (\"autoID\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE , \"userID\" INTEGER NOT NULL , \"tag\" INTEGER NOT NULL );");
         nStat.executeUpdate("CREATE TABLE \"itemKey\" (\"autoID\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE , \"itemID\" INTEGER NOT NULL , \"key\" INTEGER NOT NULL );");
 
-        System.out.println("Tables created in backup");
+        Debug.pl("Tables created in backup database");
 
         // Attach the old database to the new one
-        nStat.execute("ATTACH '"+ PATH_INSIDE_CURRENT_PROJECT +"' AS oldDatabase");
-        nStat.execute("ATTACH '../Database/Backups/"+ new_DB_name +".sqlite' AS newDatabase");
+        nStat.execute("ATTACH '" + PROJECT_RELATIVE_PATH_WITHOUT_FILE + nameWithExtension + "' AS oldDatabase");
+        nStat.execute("ATTACH '" + PROJECT_RELATIVE_PATH_WITHOUT_FILE + "Backups/" + new_DB_name + ".sqlite' AS newDatabase");
 
-        System.out.println("Databases attached");
+        Debug.pl("Databases attached");
 
         // Now start to load it into the new stuff
         nStat.executeUpdate("INSERT INTO newDatabase.item(itemID, categoriesString, keywordsString) SELECT * FROM oldDatabase.item;");
-        System.out.println("Table items transferred");
+        Debug.pl("Table items transferred");
         nStat.executeUpdate("INSERT INTO newDatabase.rec_log_train(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM oldDatabase.rec_log_train;");
-        System.out.println("Table rec_log_train transferred");
+        Debug.pl("Table rec_log_train transferred");
         nStat.executeUpdate("INSERT INTO newDatabase.userSNS(userSnsID, followerUserID, followeeUserID) SELECT * FROM oldDatabase.userSNS;");
-        System.out.println("Table userSNS transferred");
+        Debug.pl("Table userSNS transferred");
         nStat.executeUpdate("INSERT INTO newDatabase.user_action(actionID, userID, destinationUserID, atAction, reTweet, comment) SELECT * FROM oldDatabase.user_action;");
-        System.out.println("Table user_action transferred");
+        Debug.pl("Table user_action transferred");
         nStat.executeUpdate("INSERT INTO newDatabase.user_keywords(ID, UserID, Keyword, Weight) SELECT * FROM oldDatabase.user_keywords;");
-        System.out.println("Table user_keywords transferred");
+        Debug.pl("Table user_keywords transferred");
         nStat.executeUpdate("INSERT INTO newDatabase.user_profile(UserID, birthYear, gender, tweets, tagIDstring) SELECT * FROM oldDatabase.user_profile;");
-        System.out.println("Table user_profile transferred");
+        Debug.pl("Table user_profile transferred");
         nStat.executeUpdate("INSERT INTO newDatabase.tags(autoID, userID, tag) SELECT * FROM oldDatabase.tags;");
-        System.out.println("Table tags transferred");
+        Debug.pl("Table tags transferred");
         nStat.executeUpdate("INSERT INTO newDatabase.itemKey(autoID, itemID, key) SELECT * FROM oldDatabase.itemKey;");
-        System.out.println("Table itemKey transferred");
+        Debug.pl("Table itemKey transferred");
 
         Debug.pl("Backup finished!");
     }

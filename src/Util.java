@@ -1,4 +1,4 @@
-import java.util.ArrayList;
+import java.io.File;
 
 public class Util {
 
@@ -13,6 +13,13 @@ public class Util {
         System.out.println("Final line count of file "+ file_place + " :   " + counter);
     }
 
-
+    /**
+     * Returns true if specified file exists.
+     */
+    public static boolean checkFileExistance(String filepath) {
+    	File f = new File(filepath);
+    	if (f.exists()) return true;
+		return false;
+    }
 
 }
