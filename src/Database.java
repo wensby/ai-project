@@ -113,26 +113,6 @@ public class Database {
 		}
     }
 
-    public static void updateUser() throws Exception {
-
-    }
-
-    public static void getUserFromID(int id) throws Exception{
-
-    }
-
-    public static void insertItem(int id, String cat, String keywords) throws Exception{
-
-    }
-
-    public static void updateItem(int id, String cat, String keywords) throws Exception{
-
-    }
-
-    public static void getItemFromID(int id) throws Exception{
-
-    }
-
 
     /**
      * Takes a list of string values, and formats this into a VALUES statement used for SQL
@@ -168,7 +148,7 @@ public class Database {
     
     //Queries 
     public void insert(String table, String values) throws SQLException{
-    	stat.executeUpdate("INSERT INTO "+ table + " VALUES " +values+ ";");
+    	stat.executeUpdate("INSERT OR IGNORE INTO "+ table + " VALUES " +values+ ";");
     }
 
     public int length(String table) throws SQLException{
@@ -186,7 +166,7 @@ public class Database {
      * To execute the batch, call the function executeBatch()
      */
     public void addToBatch(String table, String values) throws SQLException{
-        this.stat.addBatch("INSERT INTO "+ table + " VALUES " +values+ ";");
+        this.stat.addBatch("INSERT OR IGNORE INTO "+ table + " VALUES " +values+ ";");
     }
 
     public void executeBatch()throws Exception{
