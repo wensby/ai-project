@@ -1,3 +1,4 @@
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -5,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+
 
 public class Database {
     public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "../Database/";
@@ -203,6 +205,8 @@ public class Database {
         // Start timer
         long startTime = System.currentTimeMillis();
 
+        Debug.pl("Performance testing: " + table_name);
+
         int table_length = db.length(table_name);
         String sql = "SELECT * FROM " + table_name + " WHERE autoID = ?";
         db.prep = db.conn.prepareStatement(sql);
@@ -283,6 +287,18 @@ public class Database {
 
         Debug.pl("Backup finished!");
     }
+
+
+    public static class rec_log_train{
+
+    }
+
+
+
+
+
+
+
 }
 
 

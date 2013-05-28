@@ -34,15 +34,16 @@ public class Solver
 		ArrayList<User> results = new ArrayList<User>();
 		Database db;
 		try {
-			db = new Database();
+            Database db2 = new Database("extensionDB1");
+            db2.openConnection();
 			
-			int tableLength = (db.length("users"));
+			int tableLength = (db2.length("users"));
 			int selectedLength = (int) (tableLength * fractionOfData);
 			
 			for (int i=0;i<selectedLength;i++)
 			{
 				int offset = (int) (Math.random()* selectedLength);
-				Object[] obj = db.getOneRow("users", offset);
+				Object[] obj = db2.getOneRow("users", offset);
 				
 				int id = (Integer)obj[0];
 				int yearofBirth = (Integer)obj[1];
@@ -50,13 +51,12 @@ public class Solver
 				int numberOfTweet = (Integer)obj[3];
 				
 				// TODO handle differently actions and follows
-				User currentUser = new User(id,yearofBirth,gender,
-						numberOfTweet,null,null);
+				User currentUser = new User(id,yearofBirth,gender,numberOfTweet,null,null);
 				
 				results.add(currentUser);
 			}
 			
-			db.close_connection();
+			db2.closeConnection();
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

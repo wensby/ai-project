@@ -38,7 +38,7 @@ public class Parser {
                 this.next();
 
 
-                if(counter%1000000 == 0 && Debug.toggle){
+                if(counter%10000000 == 0 && Debug.toggle){
 
                     System.out.println("Skipped  " + counter + "    Current line:   " +  this.next());
                 }

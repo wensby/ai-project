@@ -17,10 +17,8 @@ public class Item {
     private final ArrayList<Integer> categories = new ArrayList<Integer>();
     private final ArrayList<Integer> keywords = new ArrayList<Integer>();
 
-    Item(int id, String categories, String keywords) {
+    Item(int id) {
         this.id = id;
-        parseCategories(categories);
-        parseKeywords(keywords);
     }
 
     private void parseCategories(String catString){

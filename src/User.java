@@ -11,12 +11,32 @@ public class User {
 	private final int[][][][] actions;
 	private final int[] follows;
 	
-    public User(int userID, int year_of_birth, int gender, int numberOfTweets, int[][][][] actions, int[] follows) {
+    public User(int userID) {
         this.userID = userID;
-        this.year_of_birth = year_of_birth;
-        this.gender = gender;
-        this.numberOfTweets = numberOfTweets;
-        this.actions = actions;
-        this.follows = follows;
+        this.year_of_birth = 0;
+        this.gender = 0;
+        this.numberOfTweets = 0;
+        this.actions = null;
+        this.follows = null;
+    }
+
+
+    /**
+     * Searches the
+     * @param userID
+     * @return
+     * @throws Exception
+     */
+    public static User getUser(int userID)throws Exception{
+
+
+
+
+
+        return null;
+    }
+
+    public int getUserID() {
+        return userID;
     }
 }

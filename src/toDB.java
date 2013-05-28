@@ -101,9 +101,6 @@ public class toDB {
 			entry_values.add(Integer.toString(u_p.timeStamp));
 			values = Database.valueFormatter(entry_values);         //This is a string
 
-
-            System.out.println(table_name + "   " + values);
-
             database.addToBatch(table_name,values);
 
             // counter
@@ -227,6 +224,7 @@ public class toDB {
         String values;
         int autoID = offset+1;
         file.SkipToOffset(offset);
+        int counter = 0;
 
         while(file.hasNext()){
 
@@ -238,6 +236,11 @@ public class toDB {
             values = Database.valueFormatter(entry_values);
             database.insert(table_name, values);
             autoID++;
+
+            if(counter%1000000 == 0 && Debug.toggle){
+                Debug.pl("Progression:  "  + counter);
+            }
+            counter ++;
         }
 		
         database.closeConnection();
