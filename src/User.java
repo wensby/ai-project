@@ -96,6 +96,10 @@ public class User {
     	return userID;
     }
     
+    public int getNumFollowing() {
+    	return numFollowing;
+    }
+    
     public HashMap<Integer, Integer> getNumComments() {
     	return numComments;
     }
@@ -106,7 +110,6 @@ public class User {
     
     public HashMap<Integer, Integer> getNumReTweets() {
     	return numReTweets;
-
     }
 
     public HashMap<Integer, Double> getKeywords(){
