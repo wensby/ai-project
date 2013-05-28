@@ -10,14 +10,14 @@ import java.util.regex.Pattern;
 
 public class Parser {
 	
-	public static class txt{
+	public static class txt {
 		private BufferedReader br;
-		private String next_line=null;
+		private String next_line = null;
 		
 		public txt(String file) throws FileNotFoundException{
 			this.br = new BufferedReader(new FileReader(file));
-
 		}
+		
 		public Boolean hasNext() throws IOException{
 			this.next_line = br.readLine();
 			if(this.next_line != null){
@@ -103,7 +103,7 @@ public class Parser {
 			}
 
 	}
-	public static class Item{
+	public static class Item {
 	    public int id;
 	    public String categoriesString;
 	    //public ArrayList<Integer> categories = new ArrayList<Integer>();
