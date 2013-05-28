@@ -12,7 +12,8 @@ public class toDB {
 		Database db = new Database();
 		String values;
         file.SkipToOffset(offset);
-		
+		int tag_id = 1;
+		int autoID = offset+1;
 		while(file.hasNext()){
 			ArrayList<String> entry_values = new ArrayList<String>();
 			Parser.User_profile u_p = new Parser.User_profile(file.next());	
@@ -21,10 +22,26 @@ public class toDB {
 			entry_values.add(Integer.toString(u_p.gender));
 			entry_values.add(Integer.toString(u_p.tweets));
 			entry_values.add("'"+u_p.tagIDsString+"'");
+			
+			Iterator<Integer> it = u_p.tagIDs.iterator();
+			while(it.hasNext()){
+				int tag = it.next();				
+				ArrayList<String> tag_entry_values = new ArrayList<String>();
+				tag_entry_values.add(Integer.toString(tag_id));
+				tag_entry_values.add(Integer.toString(u_p.userID));
+				tag_entry_values.add(Integer.toString(tag));
+				String v_tag= Database.valueFormatter(tag_entry_values);
+				db.addToBatch("tag", v_tag);
+				tag_id++;
+			}
 			values = Database.valueFormatter(entry_values);
-			db.insert(table_name, values);
+			db.addToBatch(table_name, values);
+			autoID++;
+			if(autoID%30000==0){
+				db.executeBatch();
+			}
 		}
-		
+		db.executeBatch();
 		db.close_connection();
 	}
 	public static void item2DB(int offset) throws Exception{
@@ -44,7 +61,6 @@ public class toDB {
 			values = Database.valueFormatter(entry_values);
 			db.insert(table_name, values);
 		}
-		
 		db.close_connection();
 	}
 	public static void rec_log_train2DB(int offset) throws Exception{
@@ -183,6 +199,40 @@ public class toDB {
 			autoID++;
 		}
 		
+		db.close_connection();
+	}
+
+	public static void itemKey2DB() throws Exception{
+		String file_place = "../data/item.txt";
+		String table_name = "itemKey";
+		Parser.txt file = new Parser.txt(file_place); 
+	
+		Database db = new Database();
+		int autoid=1;
+		
+		while(file.hasNext()){
+			Parser.Item item_object = new Parser.Item(file.next());
+			ArrayList<Integer> keywords = item_object.keywords;
+			Iterator<Integer> it = keywords.iterator();
+			while(it.hasNext()){
+				int key = it.next();
+				ArrayList<String> entry_values = new ArrayList<String>();
+				entry_values.add(Integer.toString(autoid++));
+				entry_values.add(Integer.toString(item_object.id));
+				entry_values.add(Integer.toString(key));
+				autoid++;
+				
+				String values = Database.valueFormatter(entry_values);
+				db.addToBatch(table_name, values);
+				
+				if (autoid % 300000 == 0)
+				{
+					db.executeBatch();
+				}
+			}
+			db.executeBatch();
+			
+		}
 		db.close_connection();
 	}
 }

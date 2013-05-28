@@ -7,7 +7,8 @@
 public class Main{
 
     public static void main(String []args) throws Exception{            ///REMOVE THROWS EXCEPTION
-
+    	svm.svm_predict a = new svm.svm_predict();
+    	a.
         /*
         // Start timer
         long startTime = System.currentTimeMillis();
