@@ -1,53 +1,38 @@
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.StringTokenizer;
 
 /**
- * Created with IntelliJ IDEA.
- * User: tormodhau
- * Date: 5/15/13
- * Time: 1:15 PM
- * To change this template use File | Settings | File Templates.
  * 
  * @author Lukas J. Wensby
  * @author Tormod
+ * @author Jimmy Chau
  */
-public class Item {
-    private final int id;
-    private final ArrayList<Integer> categories = new ArrayList<Integer>();
-    private final ArrayList<Integer> keywords = new ArrayList<Integer>();
+public class Item extends User{
+	private ArrayList<Integer> categori;
+	private ArrayList<Integer> keywords;
+	
 
-    Item(int id, String categories, String keywords) {
-        this.id = id;
-        parseCategories(categories);
-        parseKeywords(keywords);
-    }
+	public Item(int itemID, Database db) throws Exception{
+		super(itemID,db);
+		Statement stat = db.getStatement();
+		String query_string = "SELECT TOP 1 FROM item WHERE itemID="+Integer.toString(itemID)+";";
+		ResultSet res = stat.executeQuery(query_string);
+		if(res.next()){
+			this.categori = Parser.dot_Integer_parser(res.getString("categoriesString"));
+			this.keywords = Parser.semiColon_Integer_parser(res.getString("keywordsString"));
+		}else{throw new Exception("could not found any entry with itemID"+Integer.toString(itemID));}
+	}
 
-    private void parseCategories(String catString){
-    	StringTokenizer st = new StringTokenizer(catString,".");
-    	while(st.hasMoreTokens())
-    	{
-    		categories.add(Integer.parseInt(st.nextToken()));
-    	}
-    }
 
-    private void parseKeywords(String keys){
-    	StringTokenizer st = new StringTokenizer(keys,";");
-    	while(st.hasMoreTokens())
-    	{
-    		keywords.add(Integer.parseInt(st.nextToken()));
-    	}
-    }
- 
-    public List<Integer> getKeywords() {
-        return keywords;
-    }
-
-    public List<Integer> getCategories() {
-        return categories;
-    }
-
-    public int getId() {
-        return id;
-    }
+	public ArrayList<Integer> getCategori() {
+		return categori;
+	}
+	public ArrayList<Integer> getKeywords() {
+		return keywords;
+	}
 }
