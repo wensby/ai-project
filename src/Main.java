@@ -6,6 +6,7 @@
 
 public class Main{
     public static void main(String []args) throws Exception {
+    	
     	Database from = new Database("ML_twitter_database");
     	Database dest = new Database("dest");
     	
