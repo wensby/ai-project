@@ -38,7 +38,7 @@ public class Database {
     	}
     	
     	// Check if it exists, otherwise, create new empty one with specified filename
-    	if (!Util.checkFileExistance(PROJECT_RELATIVE_PATH_WITHOUT_FILE + nameWithExtension)) {
+    	if (!Util.checkFileExistence(PROJECT_RELATIVE_PATH_WITHOUT_FILE + nameWithExtension)) {
     		Debug.pl("Error: " + PROJECT_RELATIVE_PATH_WITHOUT_FILE + nameWithExtension + " does not exist.");
     		Debug.pl("Creates empty database at " + PROJECT_RELATIVE_PATH_WITHOUT_FILE + nameWithExtension);
     		createEmpty(nameWithExtension);

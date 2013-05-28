@@ -42,7 +42,7 @@ public class Solver
 			for (int i=0;i<selectedLength;i++)
 			{
 				int offset = (int) (Math.random()* selectedLength);
-				Object[] obj = db.getOneRow(offset, "users");
+				Object[] obj = db.getOneRow("users", offset);
 				
 				int id = (Integer)obj[0];
 				int yearofBirth = (Integer)obj[1];

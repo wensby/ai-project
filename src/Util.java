@@ -16,7 +16,7 @@ public class Util {
     /**
      * Returns true if specified file exists.
      */
-    public static boolean checkFileExistance(String filepath) {
+    public static boolean checkFileExistence(String filepath) {
     	File f = new File(filepath);
     	if (f.exists()) return true;
 		return false;
