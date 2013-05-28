@@ -7,9 +7,15 @@
 public class Main{
 
     public static void main(String []args) throws Exception {
-    	Database test = new Database("test");
-    	test.openConnection();
-    	toDB.user_action2DB(test, 0);
-    	test.closeConnection();
+    	Database from = new Database("ML_twitter_database");
+    	Database dest = new Database("dest");
+    	
+    	from.openConnection();
+    	dest.openConnection();
+    	
+    	Database.transferTable(from, dest, "item");
+    	
+    	from.closeConnection();
+    	dest.closeConnection();
     }
 }

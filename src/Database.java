@@ -280,14 +280,66 @@ public class Database {
 
         Debug.pl("Backup finished!");
     }
+    
+    public void executeUpdate(String query) throws SQLException {
+    	stat.executeUpdate(query);
+    }
+    
+    public Statement getStatement() {
+    	return stat;
+    }
+    
+    /**
+     * Transfer a table from a specified database to another specified database.
+     * Warning: the table specified must both exist in the from and destination database.
+     * @throws SQLException 
+     */
+    public static void transferTable(Database from, Database dest, String table) throws SQLException {
+    	Debug.pl("> Transfering table " + table + " in " + from.name + " to " + dest.name + ".");
+    	
+    	if (!(from.hasOpenConnection() && dest.hasOpenConnection())) {
+    		Debug.pl("! ERROR: One of the databases did not have an open connection.");
+    		return;
+    	}
+
+    	// Attach the from database to the destination database
+        dest.getStatement().execute("ATTACH '" + PROJECT_RELATIVE_PATH_WITHOUT_FILE + from.nameWithExtension + "' AS orig");
+        dest.getStatement().execute("ATTACH '" + PROJECT_RELATIVE_PATH_WITHOUT_FILE + dest.nameWithExtension + "' AS dest");
+        
+        switch (table) {
+	        case ("item") :
+	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO item(itemID, categoriesString, keywordsString) SELECT * FROM orig.item;");
+	        	break;
+	        case ("rec_log_train") :
+	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.rec_log_train(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM orig.rec_log_train;");
+	        	break;
+	        case ("userSNS") :
+	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.userSNS(userSnsID, followerUserID, followeeUserID) SELECT * FROM orig.userSNS;");
+	        	break;
+	        case ("user_action") :
+	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.user_action(actionID, userID, destinationUserID, atAction, reTweet, comment) SELECT * FROM orig.user_action;");
+	        	break;
+	        case ("user_keywords") : 
+	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.user_keywords(ID, UserID, Keyword, Weight) SELECT * FROM orig.user_keywords;");
+	        	break;
+	        case ("user_profile") :
+	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.user_profile(UserID, birthYear, gender, tweets, tagIDstring) SELECT * FROM orig.user_profile;");
+	        	break;
+	        case ("tags") :
+	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.tags(autoID, userID, tag) SELECT * FROM orig.tags;");
+	        	break;
+	        case ("itemKey") :
+	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.itemKey(autoID, itemID, key) SELECT * FROM orig.itemKey;");
+	        	break;
+	        default :
+	        	Debug.pl("! ERROR: Did not recognize table name.");
+	        	break;
+        }
+        
+        // Detach the from database from the destination database
+        dest.getStatement().execute("DETACH orig;");
+        dest.getStatement().execute("DETACH dest;");
+        
+        Debug.pl("> Transferred table " + table + " in " + from.name + " to " + dest.name + "... 100%");
+    }
 }
-
-
-
-
-
-
-
-
-
-
