@@ -19,7 +19,8 @@ public class toDB {
 		Parser.txt file = new Parser.txt(file_place); 
 		String values;
         file.SkipToOffset(offset);
-		
+		int tag_id = 1;
+		int autoID = offset+1;
 		while(file.hasNext()){
 			ArrayList<String> entry_values = new ArrayList<String>();
 			Parser.User_profile u_p = new Parser.User_profile(file.next());	
@@ -28,7 +29,24 @@ public class toDB {
 			entry_values.add(Integer.toString(u_p.gender));
 			entry_values.add(Integer.toString(u_p.tweets));
 			entry_values.add("'"+u_p.tagIDsString+"'");
+			
+			Iterator<Integer> it = u_p.tagIDs.iterator();
+			while(it.hasNext()){
+				int tag = it.next();				
+				ArrayList<String> tag_entry_values = new ArrayList<String>();
+				tag_entry_values.add(Integer.toString(tag_id));
+				tag_entry_values.add(Integer.toString(u_p.userID));
+				tag_entry_values.add(Integer.toString(tag));
+				String v_tag= Database.valueFormatter(tag_entry_values);
+				database.addToBatch("tag", v_tag);
+				tag_id++;
+			}
 			values = Database.valueFormatter(entry_values);
+			database.addToBatch(table_name, values);
+			autoID++;
+			if(autoID%30000==0){
+				database.executeBatch();
+			}
 			database.insert(table_name, values);
 		}
 	}
@@ -40,7 +58,7 @@ public class toDB {
 			Debug.pl("Error: Database don't have an open connection");
 			return;
 		}
-		
+		database.executeBatch();
 		String file_place = "../data/item.txt";
 		String table_name = "item";
 		Parser.txt file = new Parser.txt(file_place); 
@@ -77,7 +95,6 @@ public class toDB {
 			Debug.pl("Error: Database don't have an open connection");
 			return;
 		}
-		
 		String file_place = "../data/rec_log_train.txt";
 		String table_name = "rec_log_train";
 		Parser.txt file = new Parser.txt(file_place); 
@@ -244,6 +261,39 @@ public class toDB {
         }
 		
         database.closeConnection();
+	}
+
+	public static void itemKey2DB(Database database) throws Exception{
+		String file_place = "../data/item.txt";
+		String table_name = "itemKey";
+		Parser.txt file = new Parser.txt(file_place); 
+	
+		int autoid=1;
+		
+		while(file.hasNext()){
+			Parser.Item item_object = new Parser.Item(file.next());
+			ArrayList<Integer> keywords = item_object.keywords;
+			Iterator<Integer> it = keywords.iterator();
+			while(it.hasNext()){
+				int key = it.next();
+				ArrayList<String> entry_values = new ArrayList<String>();
+				entry_values.add(Integer.toString(autoid++));
+				entry_values.add(Integer.toString(item_object.id));
+				entry_values.add(Integer.toString(key));
+				autoid++;
+				
+				String values = Database.valueFormatter(entry_values);
+				database.addToBatch(table_name, values);
+				
+				if (autoid % 300000 == 0)
+				{
+					database.executeBatch();
+				}
+			}
+			database.executeBatch();
+			
+		}
+		database.closeConnection();
 	}
 }
 

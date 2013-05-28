@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class Database {
@@ -85,11 +86,8 @@ public class Database {
             Class.forName(JDBC_DRIVER);
             this.conn = DriverManager.getConnection(JDBC_URL_WITHOUT_FILE + nameWithExtension, JDBC_USER, JDBC_PASSWORD);
             this.stat = conn.createStatement();
-            //System.out.println("Database opened from location:  " + PATH_INSIDE_CURRENT_PROJECT);
-
             Debug.pl("Database opened from location: " + PROJECT_RELATIVE_PATH_WITHOUT_FILE + nameWithExtension);	
             openConnection = true;
-
         }
         catch (Exception e)
         {
@@ -116,26 +114,6 @@ public class Database {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-    }
-
-    public static void updateUser() throws Exception {
-
-    }
-
-    public static void getUserFromID(int id) throws Exception{
-
-    }
-
-    public static void insertItem(int id, String cat, String keywords) throws Exception{
-
-    }
-
-    public static void updateItem(int id, String cat, String keywords) throws Exception{
-
-    }
-
-    public static void getItemFromID(int id) throws Exception{
-
     }
 
 
@@ -173,7 +151,7 @@ public class Database {
     
     //Queries 
     public void insert(String table, String values) throws SQLException{
-    	stat.executeUpdate("INSERT INTO "+ table + " VALUES " +values+ ";");
+    	stat.executeUpdate("INSERT OR IGNORE INTO "+ table + " VALUES " +values+ ";");
     }
 
     public int length(String table) throws SQLException{
@@ -191,7 +169,7 @@ public class Database {
      * To execute the batch, call the function executeBatch()
      */
     public void addToBatch(String table, String values) throws SQLException{
-        this.stat.addBatch("INSERT INTO "+ table + " VALUES " +values+ ";");
+        this.stat.addBatch("INSERT OR IGNORE INTO "+ table + " VALUES " +values+ ";");
     }
 
     public void executeBatch()throws Exception{
@@ -289,6 +267,7 @@ public class Database {
     }
 
 
+
     public static class rec_log_train{
 
     }
@@ -297,16 +276,136 @@ public class Database {
 
 
 
+    
+    public void executeUpdate(String query) throws SQLException {
+    	stat.executeUpdate(query);
+    }
+    
+    public Statement getStatement() {
+    	return stat;
+    }
+    
+    /**
+     * Transfer a table from a specified database to another specified database.
+     * Warning: the table specified must both exist in the from and destination database.
+     * @throws SQLException 
+     */
+    public static void transferTable(Database from, Database dest, String table) throws SQLException {
+    	Debug.pl("> Transfering table " + table + " in " + from.name + " to " + dest.name + ".");
+    	
+    	if (!(from.hasOpenConnection() && dest.hasOpenConnection())) {
+    		Debug.pl("! ERROR: One of the databases did not have an open connection.");
+    		return;
+    	}
 
-
+    	// Attach the from database to the destination database
+        dest.getStatement().execute("ATTACH '" + PROJECT_RELATIVE_PATH_WITHOUT_FILE + from.nameWithExtension + "' AS orig");
+        dest.getStatement().execute("ATTACH '" + PROJECT_RELATIVE_PATH_WITHOUT_FILE + dest.nameWithExtension + "' AS dest");
+        
+        switch (table) {
+            case ("item") :
+	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO item(itemID, categoriesString, keywordsString) SELECT * FROM orig.item;");
+	        	break;
+	        case ("rec_log_train") :
+	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.rec_log_train(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM orig.rec_log_train;");
+	        	break;
+	        case ("userSNS") :
+	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.userSNS(userSnsID, followerUserID, followeeUserID) SELECT * FROM orig.userSNS;");
+	        	break;
+	        case ("user_action") :
+	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.user_action(actionID, userID, destinationUserID, atAction, reTweet, comment) SELECT * FROM orig.user_action;");
+	        	break;
+	        case ("user_keywords") : 
+	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.user_keywords(ID, UserID, Keyword, Weight) SELECT * FROM orig.user_keywords;");
+	        	break;
+	        case ("user_profile") :
+	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.user_profile(UserID, birthYear, gender, tweets, tagIDstring) SELECT * FROM orig.user_profile;");
+	        	break;
+	        case ("tags") :
+	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.tags(autoID, userID, tag) SELECT * FROM orig.tags;");
+	        	break;
+	        case ("itemKey") :
+	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.itemKey(autoID, itemID, key) SELECT * FROM orig.itemKey;");
+	        	break;
+	        default :
+	        	Debug.pl("! ERROR: Did not recognize table name.");
+	        	break;
+        }
+        
+        // Detach the from database from the destination database
+        dest.getStatement().execute("DETACH orig;");
+        dest.getStatement().execute("DETACH dest;");
+        
+        Debug.pl("> Transferred table " + table + " in " + from.name + " to " + dest.name + "... 100%");
+    }
+    
+    /**
+     * Retrieve a user using its id
+     * @param id The user id
+     */
+    public User getUserUsingID(int id)throws Exception{
+    	User u = null;
+    	
+    	try {
+			ResultSet userRes =
+					stat.executeQuery("SELECT * FROM user_profiles WHERE UserID=" + id);
+			
+			userRes.first();
+			
+			u = new User(id,this);
+			
+		} catch (SQLException e) {
+			System.out.println("An error occured while trying to retrieve user from ID");
+			e.printStackTrace();
+		}
+    	
+    	return u;
+    }
+    
+    /**
+     * Retrieve a item using its id
+     * @param id The item id
+     */
+    public Item getItemUsingID(int id)throws Exception{
+    	Item item = null;
+    	
+    	try {
+			ResultSet res =
+					stat.executeQuery("SELECT * FROM item WHERE itemID=" + id);
+			
+			res.first();
+			
+			item = new Item(id,this);
+			
+		} catch (SQLException e) {
+			System.out.println("An error occured while trying to retrieve user from ID");
+			e.printStackTrace();
+		}
+    	
+    	return item;
+    }
+    
+	/**
+     * Retrieve keywords matching with the given user
+     * @param userID
+     * @return
+     */
+	public HashMap<Integer, Double> getKeywords(int userID)
+	{
+		HashMap<Integer, Double> results = new HashMap<Integer, Double>();
+		
+		try {
+			ResultSet rs = 
+					this.stat.executeQuery("SELECT * FROM user_keywords WHERE UserID=" + userID);
+						
+			while (rs.next()) {
+				results.put(rs.getInt("Keyword"), rs.getDouble("Weight"));
+			}
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
 }
-
-
-
-
-
-
-
-
-
-

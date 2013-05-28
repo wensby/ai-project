@@ -1,67 +1,149 @@
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-
-
-public class Solver 
-{
-	Solver()
-	{
-	}
-	
-	/**
-	 * Predict wether or not a user will follow or not a list of
-	 * items ID
-	 * 
-	 * @param userID The userID 
-	 * @param itemsID The item presented to a user
-	 * @return
-	 */
-	public ArrayList<Boolean> predict(int userID, ArrayList<Integer> itemsID)
-	{
-		ArrayList<Boolean> result = new ArrayList<Boolean>();
-		// Do something
-		
-		return result;
-	}
-	
-	/**
-	 * Retrieve a fraction of data.
-	 * @param fractionOfData
-	 */
-	public ArrayList<User> retrieveUserFraction(float fractionOfData)
-	{
-		ArrayList<User> results = new ArrayList<User>();
-		Database db;
-		try {
-            Database db2 = new Database("extensionDB1");
-            db2.openConnection();
-			
-			int tableLength = (db2.length("users"));
-			int selectedLength = (int) (tableLength * fractionOfData);
-			
-			for (int i=0;i<selectedLength;i++)
-			{
-				int offset = (int) (Math.random()* selectedLength);
-				Object[] obj = db2.getOneRow("users", offset);
-				
-				int id = (Integer)obj[0];
-				int yearofBirth = (Integer)obj[1];
-				int gender = (Integer)obj[2];
-				int numberOfTweet = (Integer)obj[3];
-				
-				// TODO handle differently actions and follows
-				User currentUser = new User(id,yearofBirth,gender,numberOfTweet,null,null);
-				
-				results.add(currentUser);
-			}
-			
-			db2.closeConnection();
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
-		return results;
-	}
-}
+//import java.sql.ResultSet;
+//import java.sql.SQLException;
+//import java.util.ArrayList;
+//import java.util.HashMap;
+//import java.util.Set;
+//
+//
+//public class Solver
+//{
+//	Solver()
+//	{
+//	}
+//
+//	/**
+//	 * Predict wether or not a user will follow or not a list of
+//	 * items ID
+//	 *
+//	 * @param userID The userID
+//	 * @param itemsID The item presented to a user
+//	 * @return
+//	 */
+//	public ArrayList<Boolean> predict(int userID, ArrayList<Integer> itemsID)
+//	{
+//		ArrayList<Boolean> results = new ArrayList<Boolean>();
+//
+//		// Do something
+//		// Say we used some kind of svm
+//		Database db;
+//		try {
+//			db = new Database("test");
+//
+//			User targetedUser = db.getUserUsingID(userID);
+//			HashMap<Integer, Double> keywords = db.getKeywords(userID);
+//
+//
+//			for (int i=0; i < itemsID.size(); i++)
+//			{
+//				Item item = db.getItemUsingID(itemsID.get(i));
+//
+//				// Here we should represent our vector
+//				// Basicly it's about how to add more information to this user
+//
+//				double keywordFactor = keywordsLikelyhood(targetedUser, item);
+//
+//				// Do calculation to predict
+//				boolean prediction = false;
+//
+//				results.add(prediction);
+//			}
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//
+//
+//
+//
+//		return results;
+//	}
+//
+//
+//
+//
+//	/**
+//	 * Retrieve a fraction of data.
+//	 * @param fractionOfData
+//	 */
+//	public ArrayList<User> retrieveUserFraction(float fractionOfData)
+//	{
+//		ArrayList<User> results = new ArrayList<User>();
+//		Database db;
+//		try {
+//
+//			db = new Database("test");
+//
+//			int tableLength = (db.length("user_profiles"));
+//
+//			int selectedLength = (int) (tableLength * fractionOfData);
+//
+//			for (int i=0;i<selectedLength;i++)
+//			{
+//				int offset = (int) (Math.random()* selectedLength);
+//
+//				Object[] obj = db.getOneRow("user_profiles", offset);
+//
+//
+//				int id = (Integer)obj[0];
+//				int yearofBirth = (Integer)obj[1];
+//				int gender = (Integer)obj[2];
+//				int numberOfTweet = (Integer)obj[3];
+//
+//				// TODO handle differently actions and follows
+//
+//				User currentUser = new User(id,db);
+//
+//
+//				results.add(currentUser);
+//			}
+//
+//
+//			db.closeConnection();
+//
+//		} catch (Exception e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
+//
+//		return results;
+//	}
+//
+//
+//
+//	// Features______________________________________________________
+//
+//
+//	private double keywordsLikelyhood(User user, Item item) {
+//
+//		double sum = 0.0f;
+//		float matchingKeywords = 0;
+//
+//		HashMap<Integer, Double> userKeywords = user.getKeywords();
+//		Set<Integer> keySet = userKeywords.keySet();
+//
+//		for ( int keyword : keySet )
+//		{
+//			if ( item.getKeywords().contains(keyword))
+//			{
+//				matchingKeywords++;
+//				sum += userKeywords.get(keyword);
+//			}
+//		}
+//
+//		// In order to take account of the number of keywords;
+//		// raw factor from 0 to 1 so we make the factor from
+//		double raw_factor = matchingKeywords / userKeywords.size();
+//		sum = ( 1 + Math.cos(Math.PI*(1+raw_factor)/2)) *sum;
+//
+//		return sum;
+//	}
+//
+//
+//	private ArrayList<Float> getActionsFactors(Action a, Item i)
+//	{
+//		ArrayList<Float> result = new ArrayList<Float>();
+//
+//
+//		return result;
+//	}
+//}
