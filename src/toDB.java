@@ -38,7 +38,7 @@ public class toDB {
 				tag_entry_values.add(Integer.toString(u_p.userID));
 				tag_entry_values.add(Integer.toString(tag));
 				String v_tag= Database.valueFormatter(tag_entry_values);
-				database.addToBatch("tag", v_tag);
+				database.addToBatch("tags", v_tag);
 				tag_id++;
 			}
 			values = Database.valueFormatter(entry_values);

@@ -38,6 +38,7 @@ public class DataPreparer {
         StringBuilder builder = new StringBuilder();
 
         try{
+            Debug.pl("Preparing training set...");
             for (int i = 0; i < this.tbl_rec_log_train_size && i < this.data_size_to_use; i++){
                 obj_list   = db.getOneRow("rec_log_train", i);
                 tmp_itemId = (Integer)obj_list[2];
@@ -45,18 +46,24 @@ public class DataPreparer {
                 tmp_class  = (Integer)obj_list[4];
 
                 if (!this.Items.containsKey(tmp_itemId)){
+                    Debug.pl("Creating Item");
                     tmp_item = new Item(tmp_itemId, this.db);
-                    this.Items.put(tmp_item.getUserID(), tmp_item);
+                    this.Items.put(tmp_item.getItemID(), tmp_item);
+                    Debug.pl("Item created");
                 }
                 if (this.cached_user.getUserID() != tmp_userId){
+                    Debug.pl("Creating user");
                     tmp_user = new User(tmp_userId, this.db);
                     this.cached_user = tmp_user;
+                    Debug.pl("User created");
                 }
 
                 tmp_features = Feature.getFeatureVector(tmp_user, tmp_item);
                 if(tmp_features != null){
+                    Debug.pl("Appended to string builder:  " +tmp_class + format_featureVector_for_SVM(tmp_features));
                     builder.append(tmp_class + format_featureVector_for_SVM(tmp_features) + "\n");
                 } else {
+                    Debug.pl("Sample ignored");
                     // ignore sample
                     this.discarded_sample_count ++;
                 }

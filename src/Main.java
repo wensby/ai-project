@@ -25,6 +25,9 @@ public class Main{
         db.openConnection();
 
 
+        //toDB.userProfile2DB(db,0);
+        //DataPreparer dp = new DataPreparer(db, 1000);
+        User user = new User(100136,db);
 
 
 

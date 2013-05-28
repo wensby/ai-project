@@ -34,22 +34,39 @@ public class User {
     	Statement stat = database.getStatement();
     	
     	try {
+
+
+
+
     		// Fetch all the data
-			stat.execute("SELECT * FROM user_profile WHERE UserID = " + userID + " LIMIT 1;");
-			userProfileResult = stat.getResultSet();
+
+            stat.execute("SELECT * FROM user_profile WHERE UserID = " + userID + " LIMIT 1;");
+            Debug.pl("Executed user_profile");
+			this.userProfileResult = stat.getResultSet();
+
 			stat.execute("SELECT * FROM userSNS WHERE followerUserID = " + userID + ";");
-			userSNSResult = stat.getResultSet();
+            Debug.pl("Executed userSNS");
+			this.userSNSResult = stat.getResultSet();
+
 			stat.execute("SELECT * FROM user_action WHERE userID = " + userID + ";");
-			userActionResult = stat.getResultSet();
+            Debug.pl("Executed user_action");
+			this.userActionResult = stat.getResultSet();
 			
 			// Build it, and he will come (the User, that is)
 			setUserID();
+            Debug.pl("UserID set");
 	    	setBirthYear();
+            Debug.pl("Birthyear set");
 	    	setGender();
+            Debug.pl("Gender set");
 	    	setNumTweets();
+            Debug.pl("Tweets set");
 	    	setNumFollowing();
+            Debug.pl("Following# set");
 	    	setActions();
-	    	
+            Debug.pl("Setting done");
+
+
 	    	// Clear the result sets, no need for those.
 	    	userProfileResult.close();
 	    	userSNSResult.close();
@@ -82,22 +99,26 @@ public class User {
      * Will check up the birth year from the database result
      */
     private void setBirthYear() throws SQLException {
-    	this.birthyear = userProfileResult.getInt("birthYear");
+    	this.birthyear = userProfileResult.getInt(2);   //birthYear
     }
     
     private void setGender() throws SQLException {
-    	this.birthyear = userProfileResult.getInt("gender");
+    	this.birthyear = userProfileResult.getInt(3);   //Gender
     }
     
     private void setNumTweets() throws SQLException {
-    	this.numTweets = userProfileResult.getInt("tweets");
+    	this.numTweets = userProfileResult.getInt(4);   //tweets
     }
     
     private void setNumFollowing() throws SQLException {
     	int numFollowing = 0;
     	while (userSNSResult.next()) {
+            Debug.pl("hello");
+            userSNSResult.getInt(1);
     		numFollowing++;
+            Debug.pl(numFollowing);
     	}
+        Debug.pl("bye");
     	userSNSResult.first();
     	this.numFollowing = numFollowing;
     }
