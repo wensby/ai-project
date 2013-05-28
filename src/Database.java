@@ -7,6 +7,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+
 public class Database {
     public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "../Database/";
     public static final String JDBC_DRIVER = "org.sqlite.JDBC";
@@ -181,6 +182,8 @@ public class Database {
         // Start timer
         long startTime = System.currentTimeMillis();
 
+        Debug.pl("Performance testing: " + table_name);
+
         int table_length = db.length(table_name);
         String sql = "SELECT * FROM " + table_name + " WHERE autoID = ?";
         db.prep = db.conn.prepareStatement(sql);
@@ -261,12 +264,35 @@ public class Database {
 
         Debug.pl("Backup finished!");
     }
+
+
+
+    public static class rec_log_train{
+
+    }
+
+
+
+
+
     
     public void executeUpdate(String query) throws SQLException {
     	stat.executeUpdate(query);
     }
     
-    public Statement getStatement() {
+    private Statement getStatement() {
+    	return stat;
+    }
+    
+    public Statement createStatement() {
+    	Statement stat = null;
+    	try {
+			stat = conn.createStatement();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
     	return stat;
     }
     
@@ -288,7 +314,7 @@ public class Database {
         dest.getStatement().execute("ATTACH '" + PROJECT_RELATIVE_PATH_WITHOUT_FILE + dest.nameWithExtension + "' AS dest");
         
         switch (table) {
-	        case ("item") :
+            case ("item") :
 	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO item(itemID, categoriesString, keywordsString) SELECT * FROM orig.item;");
 	        	break;
 	        case ("rec_log_train") :
@@ -328,8 +354,7 @@ public class Database {
      * Retrieve a user using its id
      * @param id The user id
      */
-    public User getUserUsingID(int id)
-    {
+    public User getUserUsingID(int id)throws Exception{
     	User u = null;
     	
     	try {
@@ -338,8 +363,7 @@ public class Database {
 			
 			userRes.first();
 			
-			u = new User(id,userRes.getInt("birthYear"),userRes.getInt("gender"),
-					userRes.getInt("tweets"),getKeywords(id),null,null);
+			u = new User(id,this);
 			
 		} catch (SQLException e) {
 			System.out.println("An error occured while trying to retrieve user from ID");
@@ -353,8 +377,7 @@ public class Database {
      * Retrieve a item using its id
      * @param id The item id
      */
-    public Item getItemUsingID(int id)
-    {
+    public Item getItemUsingID(int id)throws Exception{
     	Item item = null;
     	
     	try {
@@ -363,8 +386,7 @@ public class Database {
 			
 			res.first();
 			
-			item = new Item(id,res.getString("categoriesString"),
-					res.getString("keywordsString"));
+			item = new Item(id,this);
 			
 		} catch (SQLException e) {
 			System.out.println("An error occured while trying to retrieve user from ID");
@@ -372,6 +394,30 @@ public class Database {
 		}
     	
     	return item;
+    }
+    
+    public HashMap<Integer,Item> getItems(){
+    	HashMap<Integer,Item> results = new HashMap<Integer, Item>();
+    	
+    	Statement itemStat = createStatement();
+    	
+    	try {
+    		// TODO optimize
+			ResultSet set = itemStat.executeQuery("SELECT itemID FROM item");
+			while (set.next()) {
+				int id = set.getInt("itemID");
+				results.put(id, new Item(id, this));
+			}
+			itemStat.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	return results;
     }
     
 	/**

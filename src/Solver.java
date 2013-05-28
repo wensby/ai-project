@@ -1,7 +1,13 @@
+
+import java.io.BufferedOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 
 
 public class Solver 
@@ -58,16 +64,48 @@ public class Solver
 	}
 	
 	
-	public void train(Database db)
+	public void train(Database db, HashMap<Integer,Item> items)
 	{
 		ArrayList<User> users = retrieveUserFraction(db,0.10f);
+		
+		ArrayList<Integer> dataClass = new ArrayList<Integer>();
+		ArrayList<Vector<Integer>> features = new ArrayList<Vector<Integer>>();
 		
 		for( User u : users)
 		{
 			ArrayList<IntegerPair> trainData = 
 					db.getTrainDataFor(u.getUserID());
+			
+			for (IntegerPair pair : trainData)
+			{
+				dataClass.add( pair.K);
+				features.add(Feature.getFeatureVector(u, items.get(pair.V)));
+			}
 		}
 		
+		// Output the data for SVM
+		try {
+			FileWriter fWriter = new FileWriter("test.svm");
+			int featureSize = features.get(0).size();
+			
+			for (int i=0; i < dataClass.size(); i++) {
+				fWriter.write(dataClass.get(i));
+				Vector<Integer> feature = features.get(i);
+				
+				for (int j=0; j < featureSize; j++)
+				{
+					fWriter.write(" " + j + ":" + feature.get(j));
+				}
+				fWriter.write("\n");
+			}
+			
+			fWriter.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// Now we should launch the svm
 	}
 	
 	
@@ -120,7 +158,7 @@ public class Solver
 		
 		for ( int keyword : keySet )
 		{
-			if ( item.getKeywords().contains(keyword))
+			if ( item.getKeywords().containsKey(keyword))
 			{
 				matchingKeywords++;
 				sum += userKeywords.get(keyword);
@@ -133,14 +171,5 @@ public class Solver
 		sum = ( 1 + Math.cos(Math.PI*(1+raw_factor)/2)) *sum;
 		
 		return sum;
-	}
-	
-	
-	private ArrayList<Float> getActionsFactors(Action a, Item i)
-	{
-		ArrayList<Float> result = new ArrayList<Float>();
-		
-		
-		return result;
 	}
 }
