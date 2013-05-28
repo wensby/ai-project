@@ -21,6 +21,7 @@ public class toDB {
         file.SkipToOffset(offset);
 		int tag_id = 1;
 		int autoID = offset+1;
+        int counter = 0;
 		while(file.hasNext()){
 			ArrayList<String> entry_values = new ArrayList<String>();
 			Parser.User_profile u_p = new Parser.User_profile(file.next());	
@@ -44,6 +45,12 @@ public class toDB {
 			values = Database.valueFormatter(entry_values);
 			database.addToBatch(table_name, values);
 			autoID++;
+
+
+            if(counter%1000000 == 0){
+                Debug.pl("Progression:  " + counter);
+            }
+            counter++;
 			if(autoID%30000==0){
 				database.executeBatch();
 			}

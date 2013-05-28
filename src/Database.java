@@ -282,8 +282,8 @@ public class Database {
     	stat.executeUpdate(query);
     }
     
-    public Statement getStatement() {
-    	return stat;
+    public Statement getStatement() throws Exception{
+    	return this.conn.createStatement();
     }
     
     /**
@@ -291,7 +291,7 @@ public class Database {
      * Warning: the table specified must both exist in the from and destination database.
      * @throws SQLException 
      */
-    public static void transferTable(Database from, Database dest, String table) throws SQLException {
+    public static void transferTable(Database from, Database dest, String table) throws Exception {
     	Debug.pl("> Transfering table " + table + " in " + from.name + " to " + dest.name + ".");
     	
     	if (!(from.hasOpenConnection() && dest.hasOpenConnection())) {
