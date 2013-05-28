@@ -106,5 +106,11 @@ public class User {
     
     public HashMap<Integer, Integer> getNumReTweets() {
     	return numReTweets;
+
+    }
+
+    public HashMap<Integer, Double> getKeywords(){
+        Debug.pl("FUNCTION get Keywords NOT IMPLEMENTED");
+        return null;
     }
 }

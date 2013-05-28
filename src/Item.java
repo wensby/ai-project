@@ -24,7 +24,7 @@ public class Item extends User{
 		ResultSet res = stat.executeQuery(query_string);
 		if(res.next()){
 			this.categori = Parser.dot_Integer_parser(res.getString("categoriesString"));
-			this.keywords = Parser.semiColon_Integer_parser(res.getString("keywordsString"));
+			//this.keywords = Parser.semiColon_Integer_parser(res.getString("keywordsString"));
 		}else{throw new Exception("could not found any entry with itemID"+Integer.toString(itemID));}
 	}
 
@@ -32,7 +32,5 @@ public class Item extends User{
 	public ArrayList<Integer> getCategori() {
 		return categori;
 	}
-	public ArrayList<Integer> getKeywords() {
-		return keywords;
-	}
+
 }
