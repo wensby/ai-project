@@ -1,7 +1,6 @@
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -59,19 +58,28 @@ public class Solver
 	}
 	
 	
+	public void train(Database db)
+	{
+		ArrayList<User> users = retrieveUserFraction(db,0.10f);
+		
+		for( User u : users)
+		{
+			ArrayList<IntegerPair> trainData = 
+					db.getTrainDataFor(u.getUserID());
+		}
+		
+	}
+	
 	
 
 	/**
 	 * Retrieve a fraction of data.
 	 * @param fractionOfData
 	 */
-	public ArrayList<User> retrieveUserFraction(float fractionOfData)
+	public ArrayList<User> retrieveUserFraction(Database db, float fractionOfData)
 	{
 		ArrayList<User> results = new ArrayList<User>();
-		Database db;
 		try {
-			db = new Database("test");
-			
 			int tableLength = (db.length("user_profiles"));
 			int selectedLength = (int) (tableLength * fractionOfData);
 			
@@ -81,14 +89,9 @@ public class Solver
 				Object[] obj = db.getOneRow("user_profiles", offset);
 				
 				int id = (Integer)obj[0];
-				int yearofBirth = (Integer)obj[1];
-				int gender = (Integer)obj[2];
-				int numberOfTweet = (Integer)obj[3];
 				
 				// TODO handle differently actions and follows
-				User currentUser = new User(id,yearofBirth,gender,
-						numberOfTweet,
-						db.getKeywords(id),null,null);
+				User currentUser = new User(id,db);
 				
 				results.add(currentUser);
 			}

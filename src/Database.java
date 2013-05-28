@@ -397,4 +397,28 @@ public class Database {
 		}
 		return null;
 	}
+
+	public ArrayList<IntegerPair> getTrainDataFor(int userID) {
+		
+		ArrayList<IntegerPair> results = new ArrayList<IntegerPair>();
+		
+		try {
+			Statement trainDataStat = conn.createStatement();
+			ResultSet rSet =  trainDataStat.executeQuery(
+					"SELECT UserID, ItemId, result FROM rec_log_train");
+			
+			while (rSet.next())
+			{
+				results.add(new IntegerPair(rSet.getInt("UserID"),rSet.getInt("ItemId")));
+			}
+			
+			rSet.close();
+			trainDataStat.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return results;
+	}
 }
