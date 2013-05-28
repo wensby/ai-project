@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Database {
     public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "../Database/";
@@ -322,4 +323,78 @@ public class Database {
         
         Debug.pl("> Transferred table " + table + " in " + from.name + " to " + dest.name + "... 100%");
     }
+    
+    /**
+     * Retrieve a user using its id
+     * @param id The user id
+     */
+    public User getUserUsingID(int id)
+    {
+    	User u = null;
+    	
+    	try {
+			ResultSet userRes =
+					stat.executeQuery("SELECT * FROM user_profiles WHERE UserID=" + id);
+			
+			userRes.first();
+			
+			u = new User(id,userRes.getInt("birthYear"),userRes.getInt("gender"),
+					userRes.getInt("tweets"),getKeywords(id),null,null);
+			
+		} catch (SQLException e) {
+			System.out.println("An error occured while trying to retrieve user from ID");
+			e.printStackTrace();
+		}
+    	
+    	return u;
+    }
+    
+    /**
+     * Retrieve a item using its id
+     * @param id The item id
+     */
+    public Item getItemUsingID(int id)
+    {
+    	Item item = null;
+    	
+    	try {
+			ResultSet res =
+					stat.executeQuery("SELECT * FROM item WHERE itemID=" + id);
+			
+			res.first();
+			
+			item = new Item(id,res.getString("categoriesString"),
+					res.getString("keywordsString"));
+			
+		} catch (SQLException e) {
+			System.out.println("An error occured while trying to retrieve user from ID");
+			e.printStackTrace();
+		}
+    	
+    	return item;
+    }
+    
+	/**
+     * Retrieve keywords matching with the given user
+     * @param userID
+     * @return
+     */
+	public HashMap<Integer, Double> getKeywords(int userID)
+	{
+		HashMap<Integer, Double> results = new HashMap<Integer, Double>();
+		
+		try {
+			ResultSet rs = 
+					this.stat.executeQuery("SELECT * FROM user_keywords WHERE UserID=" + userID);
+						
+			while (rs.next()) {
+				results.put(rs.getInt("Keyword"), rs.getDouble("Weight"));
+			}
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
 }
