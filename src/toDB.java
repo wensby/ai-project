@@ -71,11 +71,14 @@ public class toDB {
 			entry_values.add(Integer.toString(u_p.result));
 			entry_values.add(Integer.toString(u_p.timeStamp));
 			values = Database.valueFormatter(entry_values);         //This is a string
+
+            System.out.println(table_name + "   " + values);
+
             db.addToBatch(table_name,values);
 
             // counter
-            if(counter%100000 == 0){
-                System.out.println("Progression:   " + counter);
+            if(counter%1000000 == 0 || true){
+                //System.out.println("Progression:   " + counter);
                 db.executeBatch();
             }
             counter++;

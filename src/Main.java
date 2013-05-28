@@ -11,11 +11,11 @@ public class Main{
         //System.out.println("Running user_key_word");
    	    //toDB.user_keyword2DB(0);
 
-        //System.out.println("Running rec_log_train");
-        //toDB.rec_log_train2DB(53729440+1);
+        System.out.println("Running rec_log_train");
+        toDB.rec_log_train2DB(55786612);
 
-        //System.out.println("Running user_sns");
-    	//toDB.user_sns2DB(975678+1);
+        System.out.println("Running user_sns");
+    	toDB.user_sns2DB(3353921+1);
 
         //Database.get_read_performance_of_rec_log();
 
