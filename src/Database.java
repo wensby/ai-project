@@ -161,6 +161,7 @@ public class Database {
         } else{
             return 0;
         }
+    		
     }
 
     /**
@@ -449,13 +450,13 @@ public class Database {
 		ArrayList<IntegerPair> results = new ArrayList<IntegerPair>();
 		
 		try {
-			Statement trainDataStat = conn.createStatement();
+			Statement trainDataStat = createStatement();
 			ResultSet rSet =  trainDataStat.executeQuery(
-					"SELECT UserID, ItemId, result FROM rec_log_train");
+					"SELECT UserID, ItemId, result FROM rec_log_train WHERE UserID=" + userID + ";");
 			
 			while (rSet.next())
 			{
-				results.add(new IntegerPair(rSet.getInt("UserID"),rSet.getInt("ItemId")));
+				results.add(new IntegerPair(rSet.getInt("ItemId"),rSet.getInt("result")));
 			}
 			
 			rSet.close();

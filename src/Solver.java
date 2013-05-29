@@ -71,6 +71,8 @@ public class Solver
 		ArrayList<Integer> dataClass = new ArrayList<Integer>();
 		ArrayList<Vector<Integer>> features = new ArrayList<Vector<Integer>>();
 		
+
+		Debug.pl("Searching features...");
 		for( User u : users)
 		{
 			ArrayList<IntegerPair> trainData = 
@@ -78,10 +80,11 @@ public class Solver
 			
 			for (IntegerPair pair : trainData)
 			{
-				dataClass.add( pair.K);
-				features.add(Feature.getFeatureVector(u, items.get(pair.V)));
+				dataClass.add( pair.V);
+				features.add(Feature.getFeatureVector(u, items.get(pair.K)));
 			}
 		}
+		Debug.pl("Feature found");
 		
 		// Output the data for SVM
 		try {
@@ -89,7 +92,7 @@ public class Solver
 			int featureSize = features.get(0).size();
 			
 			for (int i=0; i < dataClass.size(); i++) {
-				fWriter.write(dataClass.get(i));
+				fWriter.write("" + dataClass.get(i));
 				Vector<Integer> feature = features.get(i);
 				
 				for (int j=0; j < featureSize; j++)
@@ -118,13 +121,13 @@ public class Solver
 	{
 		ArrayList<User> results = new ArrayList<User>();
 		try {
-			int tableLength = (db.length("user_profiles"));
+			int tableLength = (db.length("user_profile"));
 			int selectedLength = (int) (tableLength * fractionOfData);
 			
 			for (int i=0;i<selectedLength;i++)
 			{
 				int offset = (int) (Math.random()* selectedLength);
-				Object[] obj = db.getOneRow("user_profiles", offset);
+				Object[] obj = db.getOneRow("user_profile", offset);
 				
 				int id = (Integer)obj[0];
 				
@@ -134,7 +137,6 @@ public class Solver
 				results.add(currentUser);
 			}
 			
-			db.closeConnection();
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
