@@ -71,7 +71,7 @@ public class User {
     }
     
     private void initActions(ResultSet userActionResult) throws SQLException {
-    	do {
+    	while (userActionResult.next()) {
     		int destUserID = userActionResult.getInt("destinationUserID");
     		int numComments = userActionResult.getInt("comment");
     		int numAtActions = userActionResult.getInt("atAction");
@@ -79,7 +79,7 @@ public class User {
     		this.numComments.put(destUserID, numComments);
     		this.numAtActions.put(destUserID, numAtActions);
     		this.numReTweets.put(destUserID, numReTweets);
-    	} while (userActionResult.next());
+    	}
 	}
 
     
