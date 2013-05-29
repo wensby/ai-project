@@ -1,4 +1,3 @@
-import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -162,6 +161,7 @@ public class Database {
         } else{
             return 0;
         }
+    		
     }
 
     /**
@@ -281,7 +281,19 @@ public class Database {
     	stat.executeUpdate(query);
     }
     
-    public Statement getStatement() {
+    private Statement getStatement() {
+    	return stat;
+    }
+    
+    public Statement createStatement() {
+    	Statement stat = null;
+    	try {
+			stat = conn.createStatement();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
     	return stat;
     }
     
@@ -385,6 +397,30 @@ public class Database {
     	return item;
     }
     
+    public HashMap<Integer,Item> getItems(){
+    	HashMap<Integer,Item> results = new HashMap<Integer, Item>();
+    	
+    	Statement itemStat = createStatement();
+    	
+    	try {
+    		// TODO optimize
+			ResultSet set = itemStat.executeQuery("SELECT itemID FROM item");
+			while (set.next()) {
+				int id = set.getInt("itemID");
+				results.put(id, new Item(id, this));
+			}
+			itemStat.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	return results;
+    }
+    
 	/**
      * Retrieve keywords matching with the given user
      * @param userID
@@ -407,5 +443,29 @@ public class Database {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public ArrayList<IntegerPair> getTrainDataFor(int userID) {
+		
+		ArrayList<IntegerPair> results = new ArrayList<IntegerPair>();
+		
+		try {
+			Statement trainDataStat = createStatement();
+			ResultSet rSet =  trainDataStat.executeQuery(
+					"SELECT UserID, ItemId, result FROM rec_log_train WHERE UserID=" + userID + ";");
+			
+			while (rSet.next())
+			{
+				results.add(new IntegerPair(rSet.getInt("ItemId"),rSet.getInt("result")));
+			}
+			
+			rSet.close();
+			trainDataStat.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return results;
 	}
 }
