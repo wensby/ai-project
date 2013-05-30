@@ -13,7 +13,7 @@ public class Main{
     	Database db = new Database("DB_MAY30");
     	db.openConnection();
 
-        Database.get_read_performance_of_rec_log(db);
+        //Database.get_read_performance_of_rec_log(db);
 
     	db.closeConnection();
         System.out.println("Done!");

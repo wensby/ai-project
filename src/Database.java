@@ -64,6 +64,7 @@ public class Database {
         // Create tables:
         stat.executeUpdate("CREATE TABLE \"item\" (\"itemID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"categoriesString\" TEXT NOT NULL , \"keywordsString\" TEXT NOT NULL );");
         stat.executeUpdate("CREATE TABLE \"rec_log_train\" (\"autoID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"UserID\" INTEGER NOT NULL , \"ItemId\" INTEGER NOT NULL , \"result\" INTEGER NOT NULL , \"timeStamp\" );");
+        stat.executeUpdate("CREATE TABLE \"rec_log_test\" (\"autoID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"UserID\" INTEGER NOT NULL , \"ItemId\" INTEGER NOT NULL , \"result\" INTEGER NOT NULL , \"timeStamp\" );");
         stat.executeUpdate("CREATE TABLE \"userSNS\" (\"userSnsID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"followerUserID\" INTEGER NOT NULL , \"followeeUserID\" INTEGER NOT NULL );");
         stat.executeUpdate("CREATE TABLE \"user_action\" (\"actionID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , \"userID\" INTEGER NOT NULL , \"destinationUserID\" INTEGER NOT NULL , \"atAction\" INTEGER NOT NULL , \"reTweet\" INTEGER NOT NULL , \"comment\" INTEGER NOT NULL );");
         stat.executeUpdate("CREATE TABLE user_keywords (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT, \"UserID\" INTEGER NOT NULL, \"Keyword\" INTEGER NOT NULL, \"Weight\" DOUBLE NOT NULL);");
@@ -97,8 +98,8 @@ public class Database {
 
     public void closeConnection() throws SQLException{
     	if (!openConnection) return; // why close it when it is not open?
+        stat.close();
     	conn.close();
-    	stat.close();
     	openConnection = false;
     	Debug.pl("> Closed the connection to database " + name);
         // If user exists, then update user
@@ -242,6 +243,7 @@ public class Database {
         // Create tables:
         nStat.executeUpdate("CREATE TABLE \"item\" (\"itemID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"categoriesString\" TEXT NOT NULL , \"keywordsString\" TEXT NOT NULL );");
         nStat.executeUpdate("CREATE TABLE \"rec_log_train\" (\"autoID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"UserID\" INTEGER NOT NULL , \"ItemId\" INTEGER NOT NULL , \"result\" INTEGER NOT NULL , \"timeStamp\" );");
+        nStat.executeUpdate("CREATE TABLE \"rec_log_test\" (\"autoID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"UserID\" INTEGER NOT NULL , \"ItemId\" INTEGER NOT NULL , \"result\" INTEGER NOT NULL , \"timeStamp\" );");
         nStat.executeUpdate("CREATE TABLE \"userSNS\" (\"userSnsID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"followerUserID\" INTEGER NOT NULL , \"followeeUserID\" INTEGER NOT NULL );");
         nStat.executeUpdate("CREATE TABLE \"user_action\" (\"actionID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , \"userID\" INTEGER NOT NULL , \"destinationUserID\" INTEGER NOT NULL , \"atAction\" INTEGER NOT NULL , \"reTweet\" INTEGER NOT NULL , \"comment\" INTEGER NOT NULL );");
         nStat.executeUpdate("CREATE TABLE user_keywords (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT, \"UserID\" INTEGER NOT NULL, \"Keyword\" INTEGER NOT NULL, \"Weight\" DOUBLE NOT NULL);");
@@ -260,6 +262,8 @@ public class Database {
         // Now start to load it into the new stuff
         nStat.executeUpdate("INSERT INTO newDatabase.item(itemID, categoriesString, keywordsString) SELECT * FROM oldDatabase.item;");
         Debug.pl("Table items transferred");
+        nStat.executeUpdate("INSERT INTO newDatabase.rec_log_test(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM oldDatabase.rec_log_test;");
+        Debug.pl("Table rec_log_test transferred");
         nStat.executeUpdate("INSERT INTO newDatabase.rec_log_train(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM oldDatabase.rec_log_train;");
         Debug.pl("Table rec_log_train transferred");
         nStat.executeUpdate("INSERT INTO newDatabase.userSNS(userSnsID, followerUserID, followeeUserID) SELECT * FROM oldDatabase.userSNS;");
@@ -332,7 +336,10 @@ public class Database {
 	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO item(itemID, categoriesString, keywordsString) SELECT * FROM orig.item;");
 	        	break;
 	        case ("rec_log_train") :
-	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.rec_log_train(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM orig.rec_log_train;");
+                dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.rec_log_train(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM orig.rec_log_train;");
+                break;
+            case ("rec_log_test") :
+	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.rec_log_test(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM orig.rec_log_test;");
 	        	break;
 	        case ("userSNS") :
 	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.userSNS(userSnsID, followerUserID, followeeUserID) SELECT * FROM orig.userSNS;");
