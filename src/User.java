@@ -20,21 +20,25 @@ public class User {
 	/**
 	 * Constructs a User object of user with specified ID from the data in the specified database.
 	 */
-    public User(int userID, Database database) {
+    public User(int userID, Database database) throws Exception{
     	if (!database.hasOpenConnection()) {
     		Debug.pl("! ERROR: Can't create User object when the database connection is closed.");
     		throw new IllegalArgumentException("Database object must have an open connection.");
     	}
     	
     	// We want the statement object so we can execute queries
-    	
-    	
+    	Statement stat1 = database.getStatement();
+    	Statement stat2 = database.getStatement();
+    	Statement stat3 = database.getStatement();
+
     	try {
+
     		ResultSet userProfileResult; // will contain the result set from the user_profile query
     		ResultSet userSNSResult; // will contain the result set from the userSNS query
     		ResultSet userActionResult; // will contain the result set from the userAction query
-    		
+
     		// Fetch all the data
+
     		Statement statProfile = database.createStatement();
     		statProfile.execute("SELECT * FROM user_profile WHERE UserID = " + userID + " LIMIT 1;");
 			userProfileResult = statProfile.getResultSet();
@@ -47,22 +51,23 @@ public class User {
 			statAction.execute("SELECT * FROM user_action WHERE userID = " + userID + ";");
 			userActionResult = statAction.getResultSet();
 			
-			if ( userProfileResult.next() )
-			{
 				// Build it, and he will come (the User, that is)
+            if (userProfileResult.next()){
 				this.userID = userProfileResult.getInt("UserID");
 				this.birthyear = userProfileResult.getInt("birthYear");
 				this.gender = userProfileResult.getInt("gender");
 				this.numTweets = userProfileResult.getInt("tweets");
 		    	initNumFollowing(userSNSResult);
 		    	initActions(userActionResult);
+            }else{
+                throw new Exception("User not found, with id: " + this.userID);
 			}
 	    	
 	    	// Clear the result sets, no need for those.
 	    	userProfileResult.close();
 	    	userSNSResult.close();
 	    	userActionResult.close();
-	    	
+
 	    	statAction.close();
 	    	statSNS.close();
 	    	statProfile.close();
@@ -82,10 +87,10 @@ public class User {
     	}
 	}
 
-    
     private void initNumFollowing(ResultSet userSNSResult) throws SQLException {
     	int numFollowing = 0;
     	while (userSNSResult.next()) {
+            userSNSResult.getInt(1);
     		numFollowing++;
     	}
     	

@@ -37,4 +37,8 @@ public class Item extends User{
 		return categori;
 	}
 
+    public int getItemID(){
+        return this.getUserID();
+    }
+
 }
