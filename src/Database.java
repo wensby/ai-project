@@ -135,15 +135,16 @@ public class Database {
     /**
      * Returns an array of Object, where each element corresponds to the different columns in that table.
      * This method may be prone to send exceptions.
-     * @return an array of Object, corresponding to each column of that row
+     * Remember that the returned array is zero-oriented.
+     * @return an array of Object, corresponding to each column of that row, zero oriented
      */
     public Object[] getOneRow(String tableName, int offset) throws SQLException {
 		ResultSet result = stat.executeQuery("SELECT * FROM " + tableName + " LIMIT 1 OFFSET " + offset);
 		int numColumns = result.getMetaData().getColumnCount(); 
 		
 		Object[] arrayResult = new Object[numColumns];
-		for (int i = 0; i < numColumns; i++) {
-			arrayResult[i] 	= result.getObject(i + 1);
+		for (int column = 0; column < numColumns; column++) {
+			arrayResult[column] = result.getObject(column + 1);
 		}
 		
     	return arrayResult;
@@ -155,14 +156,17 @@ public class Database {
     }
 
     public int length(String table) throws SQLException{
-    	rs = stat.executeQuery("SELECT COUNT(*) FROM " + table + ";");
-
-        if (rs.next()){
-            return rs.getInt(1);
-        } else{
-            return 0;
-        }
-    		
+    	switch (table) {
+	        case ("item") : return Util.TOTAL_DATABASE_ITEM_LENGTH; 
+	        case ("rec_log_train") : return Util.TOTAL_DATABASE_REC_LOG_TRAIN_LENGTH; 
+	        case ("userSNS") : return Util.TOTAL_DATABASE_USERSNS_LENGTH; 
+	        case ("user_action") : return Util.TOTAL_DATABASE_USER_ACTION_LENGTH; 
+	        case ("user_keywords") : return Util.TOTAL_DATABASE_USER_KEYWORDS_LENGTH; 
+	        case ("user_profile") : return Util.TOTAL_DATABASE_USER_PROFILE_LENGTH; 
+	        case ("tags") : return 0; // ????? 
+	        case ("itemKey") : return Util.TOTAL_DATABASE_ITEMKEY_LENGTH; 
+	        default : Debug.pl("! ERROR: Did not recognize table name."); return 0;
+    	}
     }
 
     /**
@@ -177,23 +181,22 @@ public class Database {
         this.stat.executeBatch();
     }
 
-    public static void get_read_performance_of_rec_log(String filename) throws Exception{
+    public static void get_read_performance_of_rec_log(Database database) throws Exception{
         String table_name = "rec_log_train";
-        Database db = new Database(filename);
 
         // Start timer
         long startTime = System.currentTimeMillis();
 
         Debug.pl("Performance testing: " + table_name);
 
-        int table_length = db.length(table_name);
+        int table_length = database.length(table_name);
         String sql = "SELECT * FROM " + table_name + " WHERE autoID = ?";
-        db.prep = db.conn.prepareStatement(sql);
+        database.prep = database.conn.prepareStatement(sql);
 
         int i = 0;
         while(table_length > i){
-            db.prep.setInt(1,i);
-            ResultSet rs1 = db.prep.executeQuery();
+        	database.prep.setInt(1,i);
+            ResultSet rs1 = database.prep.executeQuery();
             while (rs1.next()){
                 // System.out.println(rs1.getString(1) + "   " + rs1.getString(2) +"   "  + rs1.getString(3) + "   " +
                 //        rs1.getString(4)+ "  "+ rs1.getString(5));
