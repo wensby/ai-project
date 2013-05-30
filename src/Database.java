@@ -1,4 +1,3 @@
-import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -97,10 +96,11 @@ public class Database {
     }
 
     public void closeConnection() throws SQLException{
-    	if (!openConnection) return; // whye close it when it is not open?
+    	if (!openConnection) return; // why close it when it is not open?
     	conn.close();
     	stat.close();
     	openConnection = false;
+    	Debug.pl("> Closed the connection to database " + name);
         // If user exists, then update user
     }
     
@@ -175,6 +175,7 @@ public class Database {
         } else{
             return 0;
         }
+    		
     }
 
     /**
@@ -296,13 +297,26 @@ public class Database {
     	return this.conn.createStatement();
     }
     
+    public Statement createStatement() {
+    	Statement stat = null;
+    	try {
+			stat = conn.createStatement();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	return stat;
+    }
+    
     /**
      * Transfer a table from a specified database to another specified database.
      * Warning: the table specified must both exist in the from and destination database.
      * @throws SQLException 
      */
+
     public static void transferTable(Database from, Database dest, String table) throws Exception {
-    	Debug.pl("> Transfering table " + table + " in " + from.name + " to " + dest.name + ".");
+    	Debug.pl("> Transfering table " + table + " in " + from.name + " to " + dest.name + "... 0%");
     	
     	if (!(from.hasOpenConnection() && dest.hasOpenConnection())) {
     		Debug.pl("! ERROR: One of the databases did not have an open connection.");
@@ -347,7 +361,7 @@ public class Database {
         dest.getStatement().execute("DETACH orig;");
         dest.getStatement().execute("DETACH dest;");
         
-        Debug.pl("> Transferred table " + table + " in " + from.name + " to " + dest.name + "... 100%");
+        Debug.pl("> Transfering table " + table + " in " + from.name + " to " + dest.name + "... 100%");
     }
     
     /**
@@ -396,6 +410,30 @@ public class Database {
     	return item;
     }
     
+    public HashMap<Integer,Item> getItems(){
+    	HashMap<Integer,Item> results = new HashMap<Integer, Item>();
+    	
+    	Statement itemStat = createStatement();
+    	
+    	try {
+    		// TODO optimize
+			ResultSet set = itemStat.executeQuery("SELECT itemID FROM item");
+			while (set.next()) {
+				int id = set.getInt("itemID");
+				results.put(id, new Item(id, this));
+			}
+			itemStat.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	return results;
+    }
+    
 	/**
      * Retrieve keywords matching with the given user
      * @param userID
@@ -418,5 +456,29 @@ public class Database {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public ArrayList<IntegerPair> getTrainDataFor(int userID) {
+		
+		ArrayList<IntegerPair> results = new ArrayList<IntegerPair>();
+		
+		try {
+			Statement trainDataStat = createStatement();
+			ResultSet rSet =  trainDataStat.executeQuery(
+					"SELECT UserID, ItemId, result FROM rec_log_train WHERE UserID=" + userID + ";");
+			
+			while (rSet.next())
+			{
+				results.add(new IntegerPair(rSet.getInt("ItemId"),rSet.getInt("result")));
+			}
+			
+			rSet.close();
+			trainDataStat.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return results;
 	}
 }

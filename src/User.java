@@ -39,36 +39,44 @@ public class User {
 
     		// Fetch all the data
 
-            stat1.execute("SELECT * FROM user_profile WHERE UserID = " + userID + " LIMIT 1;");
-			userProfileResult = stat1.getResultSet();
-
-			stat2.execute("SELECT * FROM userSNS WHERE followerUserID = " + userID + ";");
-			userSNSResult = stat2.getResultSet();
-
-			stat3.execute("SELECT * FROM user_action WHERE userID = " + userID + ";");
-			userActionResult = stat3.getResultSet();
-
-			// Build it, and he will come (the User, that is)
+    		Statement statProfile = database.createStatement();
+    		statProfile.execute("SELECT * FROM user_profile WHERE UserID = " + userID + " LIMIT 1;");
+			userProfileResult = statProfile.getResultSet();
+			
+			Statement statSNS = database.createStatement();
+			statSNS.execute("SELECT * FROM userSNS WHERE followerUserID = " + userID + ";");
+			userSNSResult = statSNS.getResultSet();
+			
+			Statement statAction = database.createStatement();
+			statAction.execute("SELECT * FROM user_action WHERE userID = " + userID + ";");
+			userActionResult = statAction.getResultSet();
+			
+				// Build it, and he will come (the User, that is)
             if (userProfileResult.next()){
-                this.userID = userProfileResult.getInt("UserID");
-                this.birthyear = userProfileResult.getInt("birthYear");
-                this.gender = userProfileResult.getInt("gender");
-                this.numTweets = userProfileResult.getInt("tweets");
-                initNumFollowing(userSNSResult);
-                initActions(userActionResult);
+				this.userID = userProfileResult.getInt("UserID");
+				this.birthyear = userProfileResult.getInt("birthYear");
+				this.gender = userProfileResult.getInt("gender");
+				this.numTweets = userProfileResult.getInt("tweets");
+		    	initNumFollowing(userSNSResult);
+		    	initActions(userActionResult);
             }else{
                 throw new Exception("User not found, with id: " + this.userID);
-            }
-
+			}
+	    	
 	    	// Clear the result sets, no need for those.
 	    	userProfileResult.close();
 	    	userSNSResult.close();
 	    	userActionResult.close();
-		} catch (Exception e) { e.printStackTrace(); }
+
+	    	statAction.close();
+	    	statSNS.close();
+	    	statProfile.close();
+	    	
+		} catch (SQLException e) { e.printStackTrace(); }
     }
     
     private void initActions(ResultSet userActionResult) throws SQLException {
-    	do {
+    	while (userActionResult.next()) {
     		int destUserID = userActionResult.getInt("destinationUserID");
     		int numComments = userActionResult.getInt("comment");
     		int numAtActions = userActionResult.getInt("atAction");
@@ -76,7 +84,7 @@ public class User {
     		this.numComments.put(destUserID, numComments);
     		this.numAtActions.put(destUserID, numAtActions);
     		this.numReTweets.put(destUserID, numReTweets);
-    	} while (userActionResult.next());
+    	}
 	}
 
     private void initNumFollowing(ResultSet userSNSResult) throws SQLException {
@@ -105,6 +113,10 @@ public class User {
     	return userID;
     }
     
+    public int getNumFollowing() {
+    	return numFollowing;
+    }
+    
     public HashMap<Integer, Integer> getNumComments() {
     	return numComments;
     }
@@ -115,7 +127,6 @@ public class User {
     
     public HashMap<Integer, Integer> getNumReTweets() {
     	return numReTweets;
-
     }
 
     public HashMap<Integer, Double> getKeywords(){
