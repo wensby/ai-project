@@ -95,10 +95,11 @@ public class Database {
     }
 
     public void closeConnection() throws SQLException{
-    	if (!openConnection) return; // whye close it when it is not open?
+    	if (!openConnection) return; // why close it when it is not open?
     	conn.close();
     	stat.close();
     	openConnection = false;
+    	Debug.pl("> Closed the connection to database " + name);
         // If user exists, then update user
     }
     
@@ -303,7 +304,7 @@ public class Database {
      * @throws SQLException 
      */
     public static void transferTable(Database from, Database dest, String table) throws SQLException {
-    	Debug.pl("> Transfering table " + table + " in " + from.name + " to " + dest.name + ".");
+    	Debug.pl("> Transfering table " + table + " in " + from.name + " to " + dest.name + "... 0%");
     	
     	if (!(from.hasOpenConnection() && dest.hasOpenConnection())) {
     		Debug.pl("! ERROR: One of the databases did not have an open connection.");
@@ -348,7 +349,7 @@ public class Database {
         dest.getStatement().execute("DETACH orig;");
         dest.getStatement().execute("DETACH dest;");
         
-        Debug.pl("> Transferred table " + table + " in " + from.name + " to " + dest.name + "... 100%");
+        Debug.pl("> Transfering table " + table + " in " + from.name + " to " + dest.name + "... 100%");
     }
     
     /**

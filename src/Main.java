@@ -1,4 +1,3 @@
-import java.util.HashMap;
 
 /**
  * The Main-class.
@@ -10,22 +9,19 @@ public class Main{
 
 
     public static void main(String []args) throws Exception{            ///REMOVE THROWS EXCEPTION
+    	
+    	// Transferring tables
+    	Database from = new Database("extensionDB1_done2");
+        Database dest = new Database("hopefully_not_corrupted");
+        from.openConnection();
+        dest.openConnection();
 
-        // TESTING CONFIGURATION
-        Database db = new Database("test");
-        db.openConnection();
-
-        System.out.println("Loading items");
-        HashMap<Integer,Item> items = db.getItems();
-        System.out.println("Item loaded");
+        Database.transferTable(from, dest, "itemKey");
+        Database.transferTable(from, dest, "user_profile");
+        Database.transferTable(from, dest, "rec_log_train");
+        Database.transferTable(from, dest, "userSNS");
         
-        Solver slvr = new Solver();
-        slvr.train(db, items);
-
-
-
-        db.closeConnection();
-        System.out.println("Done!");
-
+        from.closeConnection();
+        dest.closeConnection();
     }
 }
