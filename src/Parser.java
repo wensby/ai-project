@@ -36,10 +36,7 @@ public class Parser {
             while(offset > counter){
                 this.hasNext();
                 this.next();
-
-
-                if(counter%10000000 == 0 && Debug.toggle){
-
+                if(counter%1000000 == 0){
                     System.out.println("Skipped  " + counter + "    Current line:   " +  this.next());
                 }
                 counter++;

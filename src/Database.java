@@ -155,6 +155,18 @@ public class Database {
     	stat.executeUpdate("INSERT OR IGNORE INTO "+ table + " VALUES " +values+ ";");
     }
 
+    public void commitTransaction() throws Exception{
+        this.conn.commit();
+    }
+
+    public void turn_autoCommit_off()throws Exception{
+        this.conn.setAutoCommit(false);
+    }
+
+    public void turn_autoCommit_on()throws Exception{
+        this.conn.setAutoCommit(true);
+    }
+
     public int length(String table) throws SQLException{
     	rs = stat.executeQuery("SELECT COUNT(*) FROM " + table + ";");
 
@@ -177,10 +189,8 @@ public class Database {
         this.stat.executeBatch();
     }
 
-    public static void get_read_performance_of_rec_log(String filename) throws Exception{
+    public static void get_read_performance_of_rec_log(Database db) throws Exception{
         String table_name = "rec_log_train";
-        Database db = new Database(filename);
-
         // Start timer
         long startTime = System.currentTimeMillis();
 

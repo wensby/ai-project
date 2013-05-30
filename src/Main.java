@@ -10,20 +10,16 @@ public class Main{
     public static void main(String []args) throws Exception{            ///REMOVE THROWS EXCEPTION
 
         // CURRENTLY RUNNING
-    	Database db = new Database("extensionDB1");
+    	Database db = new Database("DB_MAY30");
     	db.openConnection();
-        //toDB.rec_log_train2DB(db,55908215);
-        //db.backup();
-        toDB.userProfile2DB(db,0);
-        toDB.user_sns2DB(db,3353921);
 
-        db.backup();
+        Database.get_read_performance_of_rec_log(db);
+
     	db.closeConnection();
-
         System.out.println("Done!");
 
 
-        /*
+/*
         // TESTING CONFIGURATION
         Database db = new Database("extensionDB1");
         db.openConnection();
@@ -33,20 +29,22 @@ public class Main{
 
 
         long startTime = System.currentTimeMillis();
-        // do something
+
+        DataPreparer dp = new DataPreparer(db, 1000);
+
         long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;
         System.out.println("Time in Ms: " + elapsedTime);
 
 
         //toDB.userProfile2DB(db,0);
-        //DataPreparer dp = new DataPreparer(db, 1000);
+
         //User user = new User(100136,db);
 
 
 
         db.closeConnection();
         System.out.println("Done!");
-        */
+*/
     }
 }

@@ -3,7 +3,7 @@ import java.util.HashMap;
 import java.util.Vector;
 
 /**
- * This function reads the training and test sets,
+ * This function reads the training and test sets, and creates output files and structures directly applicable for classification algorithms.
  */
 public class DataPreparer {
     private final int data_size_to_use;
