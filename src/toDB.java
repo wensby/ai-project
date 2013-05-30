@@ -21,6 +21,7 @@ public class toDB {
         file.SkipToOffset(offset);
 		int tag_id = 1;
 		int autoID = offset+1;
+        int counter = 0;
 		while(file.hasNext()){
 			ArrayList<String> entry_values = new ArrayList<String>();
 			Parser.User_profile u_p = new Parser.User_profile(file.next());	
@@ -38,12 +39,18 @@ public class toDB {
 				tag_entry_values.add(Integer.toString(u_p.userID));
 				tag_entry_values.add(Integer.toString(tag));
 				String v_tag= Database.valueFormatter(tag_entry_values);
-				database.addToBatch("tag", v_tag);
+				database.addToBatch("tags", v_tag);
 				tag_id++;
 			}
 			values = Database.valueFormatter(entry_values);
 			database.addToBatch(table_name, values);
 			autoID++;
+
+
+            if(counter%1000000 == 0){
+                Debug.pl("Progression:  " + counter);
+            }
+            counter++;
 			if(autoID%30000==0){
 				database.executeBatch();
 			}
@@ -117,9 +124,6 @@ public class toDB {
 			entry_values.add(Integer.toString(u_p.result));
 			entry_values.add(Integer.toString(u_p.timeStamp));
 			values = Database.valueFormatter(entry_values);         //This is a string
-
-
-            System.out.println(table_name + "   " + values);
 
             database.addToBatch(table_name,values);
 
@@ -238,12 +242,14 @@ public class toDB {
 			return;
 		}
 
-        String file_place = "../data/user_sns.txt";
+        //String file_place = "../data/user_sns.txt";
+        String file_place = "/Volumes/Ram Disk/user_sns.txt";
         String table_name = "userSNS";
         Parser.txt file = new Parser.txt(file_place);
         String values;
         int autoID = offset+1;
         file.SkipToOffset(offset);
+        database.turn_autoCommit_off();
 
         while(file.hasNext()){
 
@@ -255,18 +261,28 @@ public class toDB {
             values = Database.valueFormatter(entry_values);
             database.insert(table_name, values);
             autoID++;
+
+            if(autoID%100000 == 0){
+                Debug.pl("Remaining:  "  + (50655143-autoID));
+                database.commitTransaction();
+            }
         }
-		
+
+        database.commitTransaction();
+        database.turn_autoCommit_on();
         database.closeConnection();
 	}
 
 	public static void itemKey2DB(Database database) throws Exception{
-		String file_place = "../data/item.txt";
+		//String file_place = "../data/item.txt";
+        String file_place = "/Volumes/Ram Disk/item.txt";
 		String table_name = "itemKey";
 		Parser.txt file = new Parser.txt(file_place); 
 	
 		int autoid=1;
-		
+
+        database.turn_autoCommit_off();
+
 		while(file.hasNext()){
 			Parser.Item item_object = new Parser.Item(file.next());
 			ArrayList<Integer> keywords = item_object.keywords;
@@ -285,11 +301,15 @@ public class toDB {
 				if (autoid % 300000 == 0)
 				{
 					database.executeBatch();
+                    database.commitTransaction();
 				}
 			}
 			database.executeBatch();
+            database.commitTransaction();
 			
 		}
+        database.turn_autoCommit_on();
+
 		database.closeConnection();
 	}
 }

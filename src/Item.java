@@ -19,20 +19,26 @@ public class Item extends User{
 
 	public Item(int itemID, Database db) throws Exception{
 		super(itemID,db);
-		Statement stat = db.getStatement();
-		String query_string = "SELECT TOP 1 FROM item WHERE itemID="+Integer.toString(itemID)+";";
+		Statement stat = db.createStatement();
+		String query_string = "SELECT * FROM item WHERE itemID = "+ Integer.toString(itemID) + " LIMIT 1;";
 		ResultSet res = stat.executeQuery(query_string);
 		if(res.next()){
 			this.categori = Parser.dot_Integer_parser(res.getString("categoriesString"));
-			this.keywords = Parser.semiColon_Integer_parser(res.getString("keywordsString"));
-		}else{throw new Exception("could not found any entry with itemID"+Integer.toString(itemID));}
+			//this.keywords = Parser.semiColon_Integer_parser(res.getString("keywordsString"));
+		}else{
+			throw new Exception("could not found any entry with itemID "+Integer.toString(itemID));
+		}
+		
+		stat.close();
 	}
 
 
 	public ArrayList<Integer> getCategori() {
 		return categori;
 	}
-	public ArrayList<Integer> getKeywords() {
-		return keywords;
-	}
+
+    public int getItemID(){
+        return this.getUserID();
+    }
+
 }

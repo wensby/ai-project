@@ -17,50 +17,66 @@ public class User {
 	private HashMap<Integer, Integer> numAtActions = new HashMap<Integer, Integer>();;
 	private HashMap<Integer, Integer> numReTweets = new HashMap<Integer, Integer>();;
 	
-	ResultSet userProfileResult; // will contain the result set from the user_profile query
-	ResultSet userSNSResult; // will contain the result set from the userSNS query
-	ResultSet userActionResult; // will contain the result set from the userAction query
-	
 	/**
 	 * Constructs a User object of user with specified ID from the data in the specified database.
 	 */
-    public User(int userID, Database database) {
+    public User(int userID, Database database) throws Exception{
     	if (!database.hasOpenConnection()) {
     		Debug.pl("! ERROR: Can't create User object when the database connection is closed.");
     		throw new IllegalArgumentException("Database object must have an open connection.");
     	}
     	
     	// We want the statement object so we can execute queries
-    	Statement stat = database.getStatement();
-    	
+    	Statement stat1 = database.getStatement();
+    	Statement stat2 = database.getStatement();
+    	Statement stat3 = database.getStatement();
+
     	try {
+
+    		ResultSet userProfileResult; // will contain the result set from the user_profile query
+    		ResultSet userSNSResult; // will contain the result set from the userSNS query
+    		ResultSet userActionResult; // will contain the result set from the userAction query
+
     		// Fetch all the data
-			stat.execute("SELECT * FROM user_profile WHERE UserID = " + userID + " LIMIT 1;");
-			userProfileResult = stat.getResultSet();
-			stat.execute("SELECT * FROM userSNS WHERE followerUserID = " + userID + ";");
-			userSNSResult = stat.getResultSet();
-			stat.execute("SELECT * FROM user_action WHERE userID = " + userID + ";");
-			userActionResult = stat.getResultSet();
+
+    		Statement statProfile = database.createStatement();
+    		statProfile.execute("SELECT * FROM user_profile WHERE UserID = " + userID + " LIMIT 1;");
+			userProfileResult = statProfile.getResultSet();
 			
-			// Build it, and he will come (the User, that is)
-			setUserID();
-	    	setBirthYear();
-	    	setGender();
-	    	setNumTweets();
-	    	setNumFollowing();
-	    	setActions();
+			Statement statSNS = database.createStatement();
+			statSNS.execute("SELECT * FROM userSNS WHERE followerUserID = " + userID + ";");
+			userSNSResult = statSNS.getResultSet();
+			
+			Statement statAction = database.createStatement();
+			statAction.execute("SELECT * FROM user_action WHERE userID = " + userID + ";");
+			userActionResult = statAction.getResultSet();
+			
+				// Build it, and he will come (the User, that is)
+            if (userProfileResult.next()){
+				this.userID = userProfileResult.getInt("UserID");
+				this.birthyear = userProfileResult.getInt("birthYear");
+				this.gender = userProfileResult.getInt("gender");
+				this.numTweets = userProfileResult.getInt("tweets");
+		    	initNumFollowing(userSNSResult);
+		    	initActions(userActionResult);
+            }else{
+                throw new Exception("User not found, with id: " + this.userID);
+			}
 	    	
 	    	// Clear the result sets, no need for those.
 	    	userProfileResult.close();
 	    	userSNSResult.close();
 	    	userActionResult.close();
+
+	    	statAction.close();
+	    	statSNS.close();
+	    	statProfile.close();
+	    	
 		} catch (SQLException e) { e.printStackTrace(); }
-    	
-    	
     }
     
-    private void setActions() throws SQLException {
-    	do {
+    private void initActions(ResultSet userActionResult) throws SQLException {
+    	while (userActionResult.next()) {
     		int destUserID = userActionResult.getInt("destinationUserID");
     		int numComments = userActionResult.getInt("comment");
     		int numAtActions = userActionResult.getInt("atAction");
@@ -68,37 +84,16 @@ public class User {
     		this.numComments.put(destUserID, numComments);
     		this.numAtActions.put(destUserID, numAtActions);
     		this.numReTweets.put(destUserID, numReTweets);
-    	} while (userActionResult.next());
+    	}
 	}
 
-	/**
-     * Sets the User ID
-     */
-    private void setUserID() throws SQLException {
-    	this.userID = userProfileResult.getInt("UserID");
-    }
-    
-    /**
-     * Will check up the birth year from the database result
-     */
-    private void setBirthYear() throws SQLException {
-    	this.birthyear = userProfileResult.getInt("birthYear");
-    }
-    
-    private void setGender() throws SQLException {
-    	this.birthyear = userProfileResult.getInt("gender");
-    }
-    
-    private void setNumTweets() throws SQLException {
-    	this.numTweets = userProfileResult.getInt("tweets");
-    }
-    
-    private void setNumFollowing() throws SQLException {
+    private void initNumFollowing(ResultSet userSNSResult) throws SQLException {
     	int numFollowing = 0;
     	while (userSNSResult.next()) {
+            userSNSResult.getInt(1);
     		numFollowing++;
     	}
-    	userSNSResult.first();
+    	
     	this.numFollowing = numFollowing;
     }
     
@@ -118,6 +113,10 @@ public class User {
     	return userID;
     }
     
+    public int getNumFollowing() {
+    	return numFollowing;
+    }
+    
     public HashMap<Integer, Integer> getNumComments() {
     	return numComments;
     }
@@ -128,5 +127,10 @@ public class User {
     
     public HashMap<Integer, Integer> getNumReTweets() {
     	return numReTweets;
+    }
+
+    public HashMap<Integer, Double> getKeywords(){
+        Debug.pl("FUNCTION get Keywords NOT IMPLEMENTED");
+        return null;
     }
 }

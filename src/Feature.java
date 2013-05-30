@@ -35,62 +35,95 @@ public class Feature {
 		featureVector.ensureCapacity(NUM_FEATURES);
 		
 		// Fill it away, Scotty!
-		featureVector.set(USER_BIRTH_YEAR, getBirthYear(user));
-		featureVector.set(USER_GENDER, getGender(user));
-		featureVector.set(USER_NUM_TWEETS, getNumTweets(user));
-		featureVector.set(USER_NUM_FOLLOWING, getNumFollowing(user));
-		featureVector.set(ITEM_BIRTH_YEAR, getBirthYear(item));
-		featureVector.set(ITEM_GENDER, getGender(item));
-		featureVector.set(ITEM_NUM_TWEETS, getNumTweets(item));
-		featureVector.set(ITEM_NUM_FOLLOWING, getNumFollowing(item));
-		featureVector.set(NUM_COMMENTS_BETWEEN, calcNumCommentsBetween(user, item));
-		featureVector.set(NUM_AT_ACTION_BETWEEN, calcNumAtActionBetween(user, item));
-		featureVector.set(NUM_RETWEETS_BETWEEN, calcNumRetweetsBetween(user, item));
+		featureVector.add(USER_BIRTH_YEAR, getBirthYear(user));
+		featureVector.add(USER_GENDER, getGender(user));
+		featureVector.add(USER_NUM_TWEETS, getNumTweets(user));
+		featureVector.add(USER_NUM_FOLLOWING, getNumFollowing(user)); 
+		featureVector.add(ITEM_BIRTH_YEAR, getBirthYear(item));
+		featureVector.add(ITEM_GENDER, getGender(item));
+		featureVector.add(ITEM_NUM_TWEETS, getNumTweets(item));
+		featureVector.add(ITEM_NUM_FOLLOWING, getNumFollowing(item)); 
+		featureVector.add(NUM_COMMENTS_BETWEEN, calcNumCommentsBetween(user, item));
+		featureVector.add(NUM_AT_ACTION_BETWEEN, calcNumAtActionBetween(user, item));
+		featureVector.add(NUM_RETWEETS_BETWEEN, calcNumReTweetsBetween(user, item));
 		
 		return featureVector;
 	}
 	
-	private static Integer calcNumRetweetsBetween(User user, Item item) {
-		return 0;
+	private static Integer calcNumReTweetsBetween(User user, Item item) {
+		int fromUser = 0;
+		int toUser = 0;
+		
+		if (user.getNumReTweets().containsKey(item.getUserID())){
+			fromUser = user.getNumReTweets().get(item.getUserID());
+		}
+		
+		if (item.getNumReTweets().containsKey(user.getUserID())){
+			toUser = user.getNumReTweets().get(user.getUserID());
+		}
+		
+		return fromUser + toUser;
 	}
 
 	private static Integer calcNumAtActionBetween(User user, Item item) {
-		return 0;
+		int fromUser = 0;
+		int toUser = 0;
+		
+		if (user.getNumAtActions().containsKey(item.getUserID())){
+			fromUser = user.getNumAtActions().get(item.getUserID());
+		}
+		
+		if (item.getNumAtActions().containsKey(user.getUserID())){
+			toUser = user.getNumAtActions().get(user.getUserID());
+		}
+		
+		return fromUser + toUser;
 	}
 
 	private static Integer calcNumCommentsBetween(User user, Item item) {
-		return 0;
+		int fromUser = 0;
+		int toUser = 0;
+		
+		if (user.getNumComments().containsKey(item.getUserID())){
+			fromUser = user.getNumComments().get(item.getUserID());
+		}
+		
+		if (item.getNumComments().containsKey(user.getUserID())){
+			toUser = user.getNumComments().get(user.getUserID());
+		}
+		
+		return fromUser + toUser;
 	}
 
 	private static Integer getNumFollowing(Item item) {
-		return 0;
+		return item.getNumFollowing();
 	}
 
 	private static Integer getNumTweets(Item item) {
-		return 0;
+		return item.getNumTweets();
 	}
 
 	private static Integer getGender(Item item) {
-		return 0;
+		return item.getGender();
 	}
 
 	private static Integer getNumFollowing(User user) {
-		return 0;
+		return user.getNumFollowing();
 	}
 
 	private static Integer getNumTweets(User user) {
-		return 0;
+		return user.getNumTweets();
 	}
 
 	private static Integer getGender(User user) {
-		return 0;
+		return user.getGender();
 	}
 
 	private static Integer getBirthYear(User user) {
-		return 0;
+		return user.getBirthYear();
 	}
 	
 	private static Integer getBirthYear(Item item) {
-		return 0;
+		return item.getBirthYear();
 	}
 }
