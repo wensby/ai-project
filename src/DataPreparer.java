@@ -1,4 +1,6 @@
+import java.io.File;
 import java.io.PrintWriter;
+import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -14,6 +16,7 @@ public class DataPreparer {
     private final HashMap<Integer, Item> Items = new HashMap();
     private User cached_user;
 
+    NumberFormat defaultFormat = NumberFormat.getPercentInstance();
 
     public DataPreparer(Database db ,int data_size_to_use) throws Exception{
         this.db = db;
@@ -28,7 +31,8 @@ public class DataPreparer {
     }
 
     private void prepareTrainingSet()throws Exception{
-        Object[] obj_list = null;
+    	Debug.pl("> Preparing training set... 0%");
+    	Object[] obj_list = null;
         Item tmp_item = null;
         User tmp_user = null;
         Vector<Integer> tmp_features = null;
@@ -41,9 +45,12 @@ public class DataPreparer {
             Debug.pl("Preparing training set...");
             for (int i = 0; i < this.tbl_rec_log_train_size && i < this.data_size_to_use; i++){
                 obj_list   = db.getOneRow("rec_log_train", i);
+                
+                tmp_userId = (Integer)obj_list[1];
                 tmp_itemId = (Integer)obj_list[2];
-                tmp_userId = (Integer)obj_list[3];
-                tmp_class  = (Integer)obj_list[4];
+                tmp_class  = (Integer)obj_list[3];
+                
+//                Debug.p(" (itemID: " + tmp_itemId + ", userID: " + tmp_userId + ", Class: " + tmp_class);
 
                 if (!this.Items.containsKey(tmp_itemId)){
                     Debug.pl("Creating Item");
@@ -51,7 +58,8 @@ public class DataPreparer {
                     this.Items.put(tmp_item.getItemID(), tmp_item);
                     Debug.pl("Item created");
                 }
-                if (this.cached_user.getUserID() != tmp_userId){
+                
+                if (this.cached_user == null || this.cached_user.getUserID() != tmp_userId){
                     Debug.pl("Creating user");
                     tmp_user = new User(tmp_userId, this.db);
                     this.cached_user = tmp_user;
@@ -67,7 +75,11 @@ public class DataPreparer {
                     // ignore sample
                     this.discarded_sample_count ++;
                 }
+                
+                Debug.pl("> Preparing training set... " + defaultFormat.format((float)(i+1) / data_size_to_use));
             }
+            File filepath = new File("../Logs/");
+            if (!filepath.exists()) filepath.mkdir();
             String txt_file_path = "../Logs/SVM_training_data__size_" + this.data_size_to_use + ".txt";
             this.writeStringBuilderToFile(txt_file_path , builder);
             Debug.pl("Number of discarded samples: " + this.discarded_sample_count);
@@ -86,7 +98,7 @@ public class DataPreparer {
     private String format_featureVector_for_SVM(Vector<Integer> v){
         String out = "";
         for (int i = 0; i<v.size(); i++){
-            out += " "+i+":"+v.elementAt(i);
+            out += " "+(i+1)+":"+v.elementAt(i);
         }
         return out;
     }

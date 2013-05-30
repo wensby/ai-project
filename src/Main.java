@@ -8,7 +8,6 @@ public class Main{
 
 
     public static void main(String []args) throws Exception{            ///REMOVE THROWS EXCEPTION
-
         // CURRENTLY RUNNING
     	Database db = new Database("DB_MAY30");
     	db.openConnection();
