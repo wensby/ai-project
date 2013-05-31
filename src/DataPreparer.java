@@ -9,8 +9,9 @@ import java.util.Vector;
  */
 public class DataPreparer {
     private final int data_size_to_use;
-    private final int tbl_rec_log_train_size;
+    private final int MAX_RW_BULK_SIZE = 3000000;   // This is the maximum size that can be read at a time as one unit before Java runs out of heap space
     private int discarded_sample_count;
+    private int log_files_created = 0;
 
     private final Database db;
     private final HashMap<Integer, Item> Items = new HashMap();
@@ -21,7 +22,6 @@ public class DataPreparer {
     public DataPreparer(Database db ,int data_size_to_use) throws Exception{
         this.db = db;
         this.data_size_to_use = data_size_to_use;
-        this.tbl_rec_log_train_size = db.length("rec_log_train");
         this.discarded_sample_count = 0;
         prepareTrainingSet();
     }
@@ -31,7 +31,6 @@ public class DataPreparer {
     }
 
     private void prepareTrainingSet()throws Exception{
-    	Debug.pl("> Preparing training set... 0%");
     	Object[] obj_list = null;
         Item tmp_item = null;
         User tmp_user = null;
@@ -40,53 +39,91 @@ public class DataPreparer {
         int tmp_itemId;
         int tmp_class;
         StringBuilder builder = new StringBuilder();
+        long stopTime = System.currentTimeMillis();
+        long elapsedTime = stopTime;
+        long startTime = stopTime;
+        long prev_elapsed = 0;
 
         try{
-            Debug.pl("Preparing training set...");
-            for (int i = 0; i < this.tbl_rec_log_train_size && i < this.data_size_to_use; i++){
-                obj_list   = db.getOneRow("rec_log_train", i);
-                
+            for (int i = 1; i < Util.TOTAL_DATABASE_REC_LOG_TRAIN_LENGTH && i < this.data_size_to_use; i++){
+                obj_list   = db.iter_getOneRow("rec_log_train",i);
                 tmp_userId = (Integer)obj_list[1];
                 tmp_itemId = (Integer)obj_list[2];
                 tmp_class  = (Integer)obj_list[3];
                 
-//                Debug.p(" (itemID: " + tmp_itemId + ", userID: " + tmp_userId + ", Class: " + tmp_class);
+//              Debug.p(" (itemID: " + tmp_itemId + ", userID: " + tmp_userId + ", Class: " + tmp_class);
 
                 if (!this.Items.containsKey(tmp_itemId)){
-                    Debug.pl("Creating Item");
                     tmp_item = new Item(tmp_itemId, this.db);
                     this.Items.put(tmp_item.getItemID(), tmp_item);
-                    Debug.pl("Item created");
                 }
                 
                 if (this.cached_user == null || this.cached_user.getUserID() != tmp_userId){
-                    Debug.pl("Creating user");
                     tmp_user = new User(tmp_userId, this.db);
                     this.cached_user = tmp_user;
-                    Debug.pl("User created");
                 }
 
                 tmp_features = Feature.getFeatureVector(tmp_user, tmp_item);
                 if(tmp_features != null){
-                    Debug.pl("Appended to string builder:  " +tmp_class + format_featureVector_for_SVM(tmp_features));
-                    builder.append(tmp_class + format_featureVector_for_SVM(tmp_features) + "\n");
+                    createLogFiles(builder,tmp_class + format_featureVector_for_SVM(tmp_features) + "\n",i);
                 } else {
                     Debug.pl("Sample ignored");
-                    // ignore sample
                     this.discarded_sample_count ++;
                 }
-                
-                Debug.pl("> Preparing training set... " + defaultFormat.format((float)(i+1) / data_size_to_use));
+
+                // Runtime information and analysis
+                startTime = System.currentTimeMillis();
+                if(i%(this.data_size_to_use/100) == 0){
+                    elapsedTime = startTime - stopTime;
+                    stopTime = startTime;
+                    Debug.pl("> Preparing training set... " + defaultFormat.format((float)(i) / data_size_to_use) + " Time increase since last progress(ms): " + (elapsedTime-prev_elapsed) + " Total running time since last progress: " + elapsedTime);
+                    prev_elapsed = elapsedTime;
+                }
             }
-            File filepath = new File("../Logs/");
-            if (!filepath.exists()) filepath.mkdir();
-            String txt_file_path = "../Logs/SVM_training_data__size_" + this.data_size_to_use + ".txt";
-            this.writeStringBuilderToFile(txt_file_path , builder);
+            commitRemainingLogFiles(builder);
             Debug.pl("Number of discarded samples: " + this.discarded_sample_count);
         }
         catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Creates a set of log files that does not go above the max_heap_size of Java by creating several text files
+     * @param builder   The string builder used to build the strings
+     * @param input     The string to append to the string builder
+     * @param index     The current iteration of the algorithm
+     */
+    private void createLogFiles(StringBuilder builder, String input, int index)throws Exception{
+        if (index%MAX_RW_BULK_SIZE == 0){
+            // Create log file location if not exist
+            File filepath = new File("../Logs/SVM_training_data__size_" + this.data_size_to_use);
+            if (!filepath.exists()) filepath.mkdir();
+
+            // Create log file
+            String file = "F"+ log_files_created +".txt";
+            this.writeStringBuilderToFile(filepath + "/" + file , builder);
+            log_files_created ++;
+
+            //Reset builder
+            builder.delete(0,builder.length());
+        } else {
+            builder.append(input);
+        }
+    }
+
+    public void commitRemainingLogFiles(StringBuilder builder)throws Exception{
+        // Create log file location if not exist
+        File filepath = new File("../Logs/SVM_training_data__size_" + this.data_size_to_use);
+        if (!filepath.exists()) filepath.mkdir();
+
+        // Create log file
+        String file = "F"+ log_files_created +".txt";
+        this.writeStringBuilderToFile(filepath + "/" + file , builder);
+        log_files_created ++;
+
+        //Reset builder
+        builder.delete(0,builder.length());
     }
 
     private void writeStringBuilderToFile(String file, StringBuilder builder)throws Exception{

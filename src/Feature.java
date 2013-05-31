@@ -59,7 +59,7 @@ public class Feature {
 		}
 		
 		if (item.getNumReTweets().containsKey(user.getUserID())){
-			toUser = user.getNumReTweets().get(user.getUserID());
+			toUser = item.getNumReTweets().get(user.getUserID());
 		}
 		
 		return fromUser + toUser;
@@ -74,7 +74,7 @@ public class Feature {
 		}
 		
 		if (item.getNumAtActions().containsKey(user.getUserID())){
-			toUser = user.getNumAtActions().get(user.getUserID());
+			toUser = item.getNumAtActions().get(user.getUserID());
 		}
 		
 		return fromUser + toUser;
@@ -83,15 +83,18 @@ public class Feature {
 	private static Integer calcNumCommentsBetween(User user, Item item) {
 		int fromUser = 0;
 		int toUser = 0;
-		
-		if (user.getNumComments().containsKey(item.getUserID())){
-			fromUser = user.getNumComments().get(item.getUserID());
-		}
-		
-		if (item.getNumComments().containsKey(user.getUserID())){
-			toUser = user.getNumComments().get(user.getUserID());
-		}
-		
+		try {
+            if (user.getNumComments().containsKey(item.getUserID())){
+                fromUser = user.getNumComments().get(item.getUserID());
+            }
+
+            if (item.getNumComments().containsKey(user.getUserID())){
+                toUser = item.getNumComments().get(user.getUserID());
+            }
+        } catch (Exception e){
+            Debug.pl("Failed on UserID: " + user.getUserID() + " and ItemID: " + item.getItemID());
+            e.printStackTrace();
+        }
 		return fromUser + toUser;
 	}
 
