@@ -147,11 +147,8 @@ public class toDB {
             Debug.pl("Error: Database don't have an open connection");
             return;
         }
-
-        Debug.pl("> NB: Table index has been dropped for quicker insertion. ");
-
-        //String file_place = "../data/rec_log_test.txt";
-        String file_place = "/Volumes/Ram Disk/rec_log_test.txt";
+        String file_place = "../data/rec_log_test.txt";
+        //String file_place = "/Volumes/Ram Disk/rec_log_test.txt";
         String table_name = "rec_log_test";
         Parser.txt file = new Parser.txt(file_place);
         String values;
@@ -159,6 +156,7 @@ public class toDB {
         file.SkipToOffset(offset);
 
         database.turn_autoCommit_off();
+        Database.dropTableIndex(database,"rec_log_test");
 
         // counter
         int counter = 0;
@@ -187,10 +185,10 @@ public class toDB {
             counter++;
             autoid++;
         }
-
         database.executeBatch();
         database.commitTransaction();
         database.turn_autoCommit_on();
+        Database.indexTable(database,"rec_log_test");
 
     }
 	

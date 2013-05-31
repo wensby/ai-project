@@ -8,8 +8,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Database {
+
     //public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "../Database/";
-    public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "/Volumes/Ram Disk/";
+    public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "E:/Homeworks/MachineLearning_Project/workspace/";
+
     public static final String JDBC_DRIVER = "org.sqlite.JDBC";
     public static final String JDBC_URL_WITHOUT_FILE = "jdbc:sqlite:" + PROJECT_RELATIVE_PATH_WITHOUT_FILE;
     public static final String JDBC_USER = "root";
@@ -148,6 +150,8 @@ public class Database {
 		}
     	return arrayResult;
     }
+
+    //SELECT * FROM sqlite_master WHERE type = 'index';
 
     /**
    * Returns an array of Object, where each element corresponds to the different columns in that table.
@@ -319,31 +323,34 @@ public class Database {
 
         switch (table) {
             case ("item") :
-                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS indItemID ON item (itemID);");
+                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS itemIndex ON item (itemID);");
                 break;
             case ("userSNS") :
-                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indFollId ON userSNS (followerUserID, followeeUserID);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS userSNSIndex1 ON userSNS (followerUserID);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS userSNSIndex2 ON userSNS (followeeUserID);");
                 break;
             case ("user_action") :
-                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indID ON user_action (userID, destinationUserID);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS userActionIndex1 ON user_action (userID);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS userActionIndex2 ON user_action (destinationUserID);");
                 break;
             case ("user_keywords") :
-                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indUserID ON user_keywords (UserID);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS userKeywordsIndex1 ON user_keywords (UserID);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS userKeywordsIndex2 ON user_keywords (Keyword);");
                 break;
             case ("user_profile") :
-                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS indUserID ON user_profile (UserId);");
+                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS userProfileIndex ON user_profile (UserId);");
                 break;
             case ("tags") :
-                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indUserID ON tags (userID);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS tagsIndex ON tags (userID);");
                 break;
             case ("itemKey") :
-                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indItemID ON itemKey (itemID);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS itemKeyIndex ON itemKey (itemID);");
                 break;
             case ("rec_log_train") :
-                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS indAutoID ON rec_log_train (autoID);");
+                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS recLogTrainIndex ON rec_log_train (autoID);");
                 break;
             case ("rec_log_test") :
-                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS indAutoID ON rec_log_test (autoID);");
+                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS recLogTestIndex ON rec_log_test (autoID);");
                 break;
             default :
                 Debug.pl("! ERROR: Did not recognize table name.");
@@ -353,46 +360,100 @@ public class Database {
     }
 
     public static void dropTableIndex(Database database, String table) throws Exception {
-        Debug.pl("> Indexing table " + table + " in database " + database.name);
+        Debug.pl("> Dropping index for table " + table + " in database " + database.name);
 
         if (!(database.hasOpenConnection())) {
             Debug.pl("! The databases does not have an open connection.");
             return;
         }
-
         switch (table) {
             case ("item") :
-                database.getStatement().executeUpdate("DROP INDEX IF EXISTS "+ database.nameWithExtension +".indItemID;");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS itemIndex;");
                 break;
             case ("userSNS") :
-                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indFollId ON userSNS (followerUserID, followeeUserID);");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS userSNSIndex1;");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS userSNSIndex2;");
                 break;
             case ("user_action") :
-                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indID ON user_action (userID, destinationUserID);");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS userActionIndex1;");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS userActionIndex2;");
                 break;
             case ("user_keywords") :
-                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indUserID ON user_keywords (UserID);");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS userKeywordsIndex1;");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS userKeywordsIndex2;");
                 break;
             case ("user_profile") :
-                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS indUserID ON user_profile (UserId);");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS userProfileIndex;");
                 break;
             case ("tags") :
-                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indUserID ON tags (userID);");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS tagsIndex;");
                 break;
             case ("itemKey") :
-                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indItemID ON itemKey (itemID);");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS itemKeyIndex;");
                 break;
             case ("rec_log_train") :
-                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS indAutoID ON rec_log_train (autoID);");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS recLogTrainIndex;");
                 break;
             case ("rec_log_test") :
-                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS indAutoID ON rec_log_test (autoID);");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS recLogTestIndex;");
                 break;
             default :
                 Debug.pl("! ERROR: Did not recognize table name.");
                 break;
         }
-        Debug.pl("> Table " + table + " from database " + database.name + " has been indexed.");
+        Debug.pl("> Table " + table + " from database " + database.name + " is no longer indexed.");
+    }
+
+    public static void vacuumTable(Database database, String table) throws Exception {
+        Debug.pl("> Vacuuming table " + table + " in database " + database.name);
+
+        if (!(database.hasOpenConnection())) {
+            Debug.pl("! The databases does not have an open connection.");
+            return;
+        }
+        switch (table) {
+            case ("item") :
+                database.getStatement().executeUpdate("VACUUM item;");
+                break;
+            case ("userSNS") :
+                database.getStatement().executeUpdate("VACUUM userSNS;");
+                break;
+            case ("user_action") :
+                database.getStatement().executeUpdate("VACUUM user_action;");
+                break;
+            case ("user_keywords") :
+                database.getStatement().executeUpdate("VACUUM user_keywords;");
+                break;
+            case ("user_profile") :
+                database.getStatement().executeUpdate("VACUUM user_profile;");
+                break;
+            case ("tags") :
+                database.getStatement().executeUpdate("VACUUM tags;");
+                break;
+            case ("itemKey") :
+                database.getStatement().executeUpdate("VACUUM itemKey;");
+                break;
+            case ("rec_log_train") :
+                database.getStatement().executeUpdate("VACUUM rec_log_train;");
+                break;
+            case ("rec_log_test") :
+                database.getStatement().executeUpdate("VACUUM rec_log_test;");
+                break;
+            default :
+                Debug.pl("! ERROR: Did not recognize table name.");
+                break;
+        }
+        Debug.pl("> Table " + table + " from database " + database.name + " vacuumed.");
+    }
+
+
+    public static void vacuumDatabase(Database database){
+        try{
+            Debug.pl("Vacuuming database " + database.name);
+            database.getStatement().executeUpdate("VACUUM;");
+            Debug.pl("Vacuuming completed.");
+        }
+        catch (Exception e){ e.printStackTrace();}
     }
 
     public static void indexAllTables(Database database){
@@ -408,6 +469,43 @@ public class Database {
             Database.indexTable(database,"rec_log_test");
         }
         catch (Exception e){ e.printStackTrace();}
+    }
+    public static void dropAllTableIndexes(Database database){
+        try {
+            Database.dropAllOldTableIndexes(database);
+            Database.dropTableIndex(database,"item");
+            Database.dropTableIndex(database,"userSNS");
+            Database.dropTableIndex(database,"user_action");
+            Database.dropTableIndex(database,"user_keywords");
+            Database.dropTableIndex(database,"user_profile");
+            Database.dropTableIndex(database,"tags");
+            Database.dropTableIndex(database,"itemKey");
+            Database.dropTableIndex(database,"rec_log_train");
+            Database.dropTableIndex(database,"rec_log_test");
+        }
+        catch (Exception e){ e.printStackTrace();}
+    }
+
+    public static void dropAllOldTableIndexes(Database database){
+        try{
+            database.getStatement().executeUpdate("DROP INDEX IF EXISTS indUserID;");
+            database.getStatement().executeUpdate("DROP INDEX IF EXISTS indItemID;");
+            database.getStatement().executeUpdate("DROP INDEX IF EXISTS indID;");
+            database.getStatement().executeUpdate("DROP INDEX IF EXISTS indFollID;");
+            database.getStatement().executeUpdate("DROP INDEX IF EXISTS indAutoID;");
+            database.getStatement().executeUpdate("DROP INDEX IF EXISTS userKeywordsIndex;");
+        }
+        catch (Exception e){e.printStackTrace();}
+    }
+
+    public static void refactorDatbase(Database database){
+        try{
+            Debug.pl("Refactoring database " + database.name +". This might take some time...");
+            Database.dropAllTableIndexes(database);
+            Database.vacuumDatabase(database);
+            Database.indexAllTables(database);
+        }
+        catch (Exception e){e.printStackTrace();}
     }
 
     public void executeUpdate(String query) throws SQLException {

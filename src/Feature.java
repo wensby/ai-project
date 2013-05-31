@@ -25,8 +25,8 @@ public class Feature {
 	/**
 	 * Empty constructor since only the static method getFeatureVector will be used.
 	 */
-	public Feature(int userID, int itemID, Database db) {	
-		
+	public Feature(int userID, int itemID,Database db) {	
+		//Gather 
 	}
 	
 	/**
@@ -111,6 +111,4 @@ public class Feature {
 	private static Integer calcNumFolloweesInCommon(User user, Item item) {
 		return Util.calcCommonElements(user.getFollowing(), item.getFollowing());
 	}
-	
-	//Gather necessary data:
 }
