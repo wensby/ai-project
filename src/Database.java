@@ -7,7 +7,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-
 public class Database {
     //public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "../Database/";
     public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "/Volumes/Ram Disk/";
@@ -137,16 +136,15 @@ public class Database {
     /**
      * Returns an array of Object, where each element corresponds to the different columns in that table.
      * This method may be prone to send exceptions.
-     * Remember that the returned array is zero-oriented.
-     * @return an array of Object, corresponding to each column of that row, zero oriented
+     * @return an array of Object, corresponding to each column of that row
      */
     public Object[] getOneRow(String tableName, int offset) throws SQLException {
 		ResultSet result = stat.executeQuery("SELECT * FROM " + tableName + " LIMIT 1 OFFSET " + offset);
 		int numColumns = result.getMetaData().getColumnCount(); 
 		
 		Object[] arrayResult = new Object[numColumns];
-		for (int column = 0; column < numColumns; column++) {
-			arrayResult[column] = result.getObject(column + 1);
+		for (int i = 0; i < numColumns; i++) {
+			arrayResult[i] 	= result.getObject(i + 1);
 		}
     	return arrayResult;
     }
@@ -195,14 +193,14 @@ public class Database {
 
     public int length(String table) throws SQLException{
     	switch (table) {
-	        case ("item") : return Util.TOTAL_DATABASE_ITEM_LENGTH; 
-	        case ("rec_log_train") : return Util.TOTAL_DATABASE_REC_LOG_TRAIN_LENGTH; 
-	        case ("userSNS") : return Util.TOTAL_DATABASE_USERSNS_LENGTH; 
-	        case ("user_action") : return Util.TOTAL_DATABASE_USER_ACTION_LENGTH; 
-	        case ("user_keywords") : return Util.TOTAL_DATABASE_USER_KEYWORDS_LENGTH; 
-	        case ("user_profile") : return Util.TOTAL_DATABASE_USER_PROFILE_LENGTH; 
-	        case ("tags") : return 0; // ????? 
-	        case ("itemKey") : return Util.TOTAL_DATABASE_ITEMKEY_LENGTH; 
+	        case ("item") : return Util.TOTAL_DATABASE_ITEM_LENGTH;
+	        case ("rec_log_train") : return Util.TOTAL_DATABASE_REC_LOG_TRAIN_LENGTH;
+	        case ("userSNS") : return Util.TOTAL_DATABASE_USERSNS_LENGTH;
+	        case ("user_action") : return Util.TOTAL_DATABASE_USER_ACTION_LENGTH;
+	        case ("user_keywords") : return Util.TOTAL_DATABASE_USER_KEYWORDS_LENGTH;
+	        case ("user_profile") : return Util.TOTAL_DATABASE_USER_PROFILE_LENGTH;
+	        case ("tags") : return 0; // ?????
+	        case ("itemKey") : return Util.TOTAL_DATABASE_ITEMKEY_LENGTH;
 	        default : Debug.pl("! ERROR: Did not recognize table name."); return 0;
     	}
     }
@@ -411,7 +409,7 @@ public class Database {
         }
         catch (Exception e){ e.printStackTrace();}
     }
-    
+
     public void executeUpdate(String query) throws SQLException {
     	stat.executeUpdate(query);
     }
@@ -419,7 +417,7 @@ public class Database {
     public Statement getStatement() throws Exception{
     	return this.conn.createStatement();
     }
-    
+
     public Statement createStatement() {
     	Statement stat = null;
     	try {
@@ -428,7 +426,7 @@ public class Database {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    	
+
     	return stat;
     }
     
@@ -440,7 +438,7 @@ public class Database {
 
     public static void transferTable(Database from, Database dest, String table) throws Exception {
     	Debug.pl("> Transfering table " + table + " in " + from.name + " to " + dest.name + "... 0%");
-    	
+
     	if (!(from.hasOpenConnection() && dest.hasOpenConnection())) {
     		Debug.pl("! ERROR: One of the databases did not have an open connection.");
     		return;
@@ -451,7 +449,7 @@ public class Database {
         dest.getStatement().execute("ATTACH '" + PROJECT_RELATIVE_PATH_WITHOUT_FILE + dest.nameWithExtension + "' AS dest");
         
         switch (table) {
-            case ("item") :
+	        case ("item") :
 	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO item(itemID, categoriesString, keywordsString) SELECT * FROM orig.item;");
 	        	break;
 	        case ("rec_log_train") :
@@ -538,9 +536,9 @@ public class Database {
     
     public HashMap<Integer,Item> getItems(){
     	HashMap<Integer,Item> results = new HashMap<Integer, Item>();
-    	
+
     	Statement itemStat = createStatement();
-    	
+
     	try {
     		// TODO optimize
 			ResultSet set = itemStat.executeQuery("SELECT itemID FROM item");
@@ -556,10 +554,10 @@ public class Database {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    	
+
     	return results;
     }
-    
+
 	/**
      * Retrieve keywords matching with the given user
      * @param userID
@@ -585,26 +583,26 @@ public class Database {
 	}
 
 	public ArrayList<IntegerPair> getTrainDataFor(int userID) {
-		
+
 		ArrayList<IntegerPair> results = new ArrayList<IntegerPair>();
-		
+
 		try {
 			Statement trainDataStat = createStatement();
 			ResultSet rSet =  trainDataStat.executeQuery(
 					"SELECT UserID, ItemId, result FROM rec_log_train WHERE UserID=" + userID + ";");
-			
+
 			while (rSet.next())
 			{
 				results.add(new IntegerPair(rSet.getInt("ItemId"),rSet.getInt("result")));
 			}
-			
+
 			rSet.close();
 			trainDataStat.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		return results;
 	}
 }
