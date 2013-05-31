@@ -1,11 +1,13 @@
 /**
- * @author Lukas J. Wensby (The most awesome of them all)
+ * @author Lukas J. Wensby
+ * @version 2013-05-31
  */
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.util.Vector;
 
 public class User {
 	private int userID;
@@ -14,8 +16,9 @@ public class User {
 	private int numTweets;
 	private int numFollowing;
 	private HashMap<Integer, Integer> numComments = new HashMap<Integer, Integer>();
-	private HashMap<Integer, Integer> numAtActions = new HashMap<Integer, Integer>();;
-	private HashMap<Integer, Integer> numReTweets = new HashMap<Integer, Integer>();;
+	private HashMap<Integer, Integer> numAtActions = new HashMap<Integer, Integer>();
+	private HashMap<Integer, Integer> numReTweets = new HashMap<Integer, Integer>();
+	private Vector<Integer> following = new Vector<Integer>();
 	
 	/**
 	 * Constructs a User object of user with specified ID from the data in the specified database.
@@ -25,11 +28,6 @@ public class User {
     		Debug.pl("! ERROR: Can't create User object when the database connection is closed.");
     		throw new IllegalArgumentException("Database object must have an open connection.");
     	}
-    	
-    	// We want the statement object so we can execute queries
-    	Statement stat1 = database.getStatement();
-    	Statement stat2 = database.getStatement();
-    	Statement stat3 = database.getStatement();
 
     	try {
 
@@ -86,14 +84,19 @@ public class User {
     	}
 	}
 
+    /**
+     * This method initializes two attributes of this user:<br>
+     * 1. The integer vector of all the user IDs that this user follows.<br>
+     * 2. The amount of users that this user follows.
+     */
     private void initNumFollowing(ResultSet userSNSResult) throws SQLException {
     	int numFollowing = 0;
     	while (userSNSResult.next()) {
-            userSNSResult.getInt(1);
+    		following.add(userSNSResult.getInt(3));
     		numFollowing++;
     	}
-    	
     	this.numFollowing = numFollowing;
+    	userSNSResult.absolute(1); // move back the ResultSet cursor
     }
     
     public int getBirthYear() {
@@ -131,5 +134,12 @@ public class User {
     public HashMap<Integer, Double> getKeywords(){
         Debug.pl("FUNCTION get Keywords NOT IMPLEMENTED");
         return null;
+    }
+    
+    /**
+     * Returns the vector of user IDs that this user is following.
+     */
+    public Vector<Integer> getFollowing() {
+    	return following;
     }
 }

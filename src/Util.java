@@ -1,8 +1,10 @@
 import java.io.File;
+import java.util.HashSet;
+import java.util.Vector;
 
 public class Util {
-	// These constants are based upon the total database, if you are using another database
-	// any function that uses these total will not work, probably.
+	// These constants are based upon the total database, if you are using another database...
+	// any function that uses these will most definitely not work.
 	public static final int TOTAL_DATABASE_ITEM_LENGTH 			= 6095;
 	public static final int TOTAL_DATABASE_ITEMKEY_LENGTH 			= 202802;
 	public static final int TOTAL_DATABASE_REC_LOG_TRAIN_LENGTH 	= 73209272;
@@ -11,7 +13,19 @@ public class Util {
 	public static final int TOTAL_DATABASE_USER_KEYWORDS_LENGTH 	= 16150704;
 	public static final int TOTAL_DATABASE_USER_PROFILE_LENGTH 	= 2320895;
 	
-
+	/**
+	 * Calculates the amount of elements that two integer vectors have in common.
+	 */
+	public static int calcCommonElements(Vector<Integer> a, Vector<Integer> b) {
+		int commonElements = 0;
+		
+		HashSet<Integer> hash = new HashSet<Integer>();
+		for (Integer i : a) hash.add(i);
+		for (Integer j : b) if (hash.contains(j)) commonElements++;
+		
+		return commonElements;
+	}
+	
     public static void count_file_lines(String file_place) throws Exception{
         //EX: file_place = "../data/rec_log_train.txt";
         Parser.txt file = new Parser.txt(file_place);

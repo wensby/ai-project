@@ -6,26 +6,27 @@ import java.util.Vector;
  */
 
 public class Feature {
-	public static final int NUM_FEATURES = 11;
+	public static final int NUM_FEATURES = 12;
 	
 	// Feature array indices
-	private static final int USER_BIRTH_YEAR		= 0;
-	private static final int USER_GENDER 			= 1;
-	private static final int USER_NUM_TWEETS		= 2;
-	private static final int USER_NUM_FOLLOWING		= 3;
-	private static final int ITEM_BIRTH_YEAR		= 4;
-	private static final int ITEM_GENDER			= 5;
-	private static final int ITEM_NUM_TWEETS		= 6;
-	private static final int ITEM_NUM_FOLLOWING 	= 7;
-	private static final int NUM_COMMENTS_BETWEEN 	= 8;
-	private static final int NUM_AT_ACTION_BETWEEN	= 9;
-	private static final int NUM_RETWEETS_BETWEEN	= 10;
+	private static final int USER_BIRTH_YEAR		 = 0;
+	private static final int USER_GENDER 			 = 1;
+	private static final int USER_NUM_TWEETS		 = 2;
+	private static final int USER_NUM_FOLLOWING		 = 3;
+	private static final int ITEM_BIRTH_YEAR		 = 4;
+	private static final int ITEM_GENDER			 = 5;
+	private static final int ITEM_NUM_TWEETS		 = 6;
+	private static final int ITEM_NUM_FOLLOWING 	 = 7;
+	private static final int NUM_COMMENTS_BETWEEN 	 = 8;
+	private static final int NUM_AT_ACTION_BETWEEN	 = 9;
+	private static final int NUM_RETWEETS_BETWEEN	 = 10;
+	private static final int NUM_FOLLOWERS_IN_COMMON = 11;
 	
 	/**
 	 * Empty constructor since only the static method getFeatureVector will be used.
 	 */
 	public Feature(int userID, int itemID,Database db) {	
-		
+		//Gather 
 	}
 	
 	/**
@@ -48,6 +49,7 @@ public class Feature {
 		featureVector.add(NUM_COMMENTS_BETWEEN, calcNumCommentsBetween(user, item));
 		featureVector.add(NUM_AT_ACTION_BETWEEN, calcNumAtActionBetween(user, item));
 		featureVector.add(NUM_RETWEETS_BETWEEN, calcNumReTweetsBetween(user, item));
+		featureVector.add(NUM_FOLLOWERS_IN_COMMON, calcNumFolloweesInCommon(user, item));
 		
 		return featureVector;
 	}
@@ -100,6 +102,13 @@ public class Feature {
 		return fromUser + toUser;
 	}
 	
-	//Gather necessary data:
-	
+	/**
+	 * Checks the number of followees that the user and the item have in common.
+	 * @param user is the user that will be used in this feature construction.
+	 * @param item is the item that will be used in this feature construction.
+	 * @return an integer number that represents how many followees they have in common.
+	 */
+	private static Integer calcNumFolloweesInCommon(User user, Item item) {
+		return Util.calcCommonElements(user.getFollowing(), item.getFollowing());
+	}
 }
