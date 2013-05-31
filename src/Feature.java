@@ -100,7 +100,5 @@ public class Feature {
         }
 		return fromUser + toUser;
 	}
-	
-	//Gather necessary data:
-	public static Map<Integer, item> getitems =  
+
 }
