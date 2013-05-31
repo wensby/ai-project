@@ -9,7 +9,7 @@ import java.util.HashMap;
 
 public class Database {
     //public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "../Database/";
-    public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "/Volumes/Ram Disk/";
+    public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "E:/Homeworks/MachineLearning_Project/workspace/";
     public static final String JDBC_DRIVER = "org.sqlite.JDBC";
     public static final String JDBC_URL_WITHOUT_FILE = "jdbc:sqlite:" + PROJECT_RELATIVE_PATH_WITHOUT_FILE;
     public static final String JDBC_USER = "root";
@@ -328,7 +328,7 @@ public class Database {
                 database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indID ON user_action (userID, destinationUserID);");
                 break;
             case ("user_keywords") :
-                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indUserID ON user_keywords (UserID);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indUserID ON user_keywords (UserID,Keyword);");
                 break;
             case ("user_profile") :
                 database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS indUserID ON user_profile (UserId);");

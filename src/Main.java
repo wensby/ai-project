@@ -24,7 +24,9 @@ public class Main{
         System.out.println("Done!");
         */
 
-        Tormod_classifier.test_Svm();
+       	Database db = new Database("DB_MAY30") ;
+       	db.openConnection();
+       	Database.indexTable(db, "user_keywords");
 
     }
 }
