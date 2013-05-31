@@ -24,7 +24,9 @@ public class Feature {
 	/**
 	 * Empty constructor since only the static method getFeatureVector will be used.
 	 */
-	private Feature() {	}
+	public Feature(int userID, int itemID,Database db) {	
+		
+	}
 	
 	/**
 	 * Will construct the feature vector of Integers and return it.
@@ -35,14 +37,14 @@ public class Feature {
 		featureVector.ensureCapacity(NUM_FEATURES);
 		
 		// Fill it away, Scotty!
-		featureVector.add(USER_BIRTH_YEAR, getBirthYear(user));
-		featureVector.add(USER_GENDER, getGender(user));
-		featureVector.add(USER_NUM_TWEETS, getNumTweets(user));
-		featureVector.add(USER_NUM_FOLLOWING, getNumFollowing(user)); 
-		featureVector.add(ITEM_BIRTH_YEAR, getBirthYear(item));
-		featureVector.add(ITEM_GENDER, getGender(item));
-		featureVector.add(ITEM_NUM_TWEETS, getNumTweets(item));
-		featureVector.add(ITEM_NUM_FOLLOWING, getNumFollowing(item)); 
+		featureVector.add(USER_BIRTH_YEAR, user.getBirthYear());
+		featureVector.add(USER_GENDER, user.getGender());
+		featureVector.add(USER_NUM_TWEETS, user.getNumTweets());
+		featureVector.add(USER_NUM_FOLLOWING, user.getNumFollowing()); 
+		featureVector.add(ITEM_BIRTH_YEAR, item.getBirthYear());
+		featureVector.add(ITEM_GENDER, item.getGender());
+		featureVector.add(ITEM_NUM_TWEETS, item.getNumTweets());
+		featureVector.add(ITEM_NUM_FOLLOWING, item.getNumFollowing()); 
 		featureVector.add(NUM_COMMENTS_BETWEEN, calcNumCommentsBetween(user, item));
 		featureVector.add(NUM_AT_ACTION_BETWEEN, calcNumAtActionBetween(user, item));
 		featureVector.add(NUM_RETWEETS_BETWEEN, calcNumReTweetsBetween(user, item));
@@ -83,7 +85,6 @@ public class Feature {
 	private static Integer calcNumCommentsBetween(User user, Item item) {
 		int fromUser = 0;
 		int toUser = 0;
-		
 		if (user.getNumComments().containsKey(item.getUserID())){
 			fromUser = user.getNumComments().get(item.getUserID());
 		}
@@ -94,36 +95,7 @@ public class Feature {
 		
 		return fromUser + toUser;
 	}
-
-	private static Integer getNumFollowing(Item item) {
-		return item.getNumFollowing();
-	}
-
-	private static Integer getNumTweets(Item item) {
-		return item.getNumTweets();
-	}
-
-	private static Integer getGender(Item item) {
-		return item.getGender();
-	}
-
-	private static Integer getNumFollowing(User user) {
-		return user.getNumFollowing();
-	}
-
-	private static Integer getNumTweets(User user) {
-		return user.getNumTweets();
-	}
-
-	private static Integer getGender(User user) {
-		return user.getGender();
-	}
-
-	private static Integer getBirthYear(User user) {
-		return user.getBirthYear();
-	}
 	
-	private static Integer getBirthYear(Item item) {
-		return item.getBirthYear();
-	}
+	//Gather necessary data:
+	
 }
