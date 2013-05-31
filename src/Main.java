@@ -10,10 +10,11 @@ public class Main{
     public static void main(String []args) throws Exception{
 
 
-        /*
+
     	Database db = new Database("DB_MAY31");
     	db.openConnection();
         long startTime = System.currentTimeMillis();
+
 
 
 
@@ -22,9 +23,9 @@ public class Main{
         System.out.println("Time in Ms: " + elapsedTime);
     	db.closeConnection();
         System.out.println("Done!");
-        */
 
-        Tormod_classifier.test_Svm();
+
+        //Tormod_classifier.test_Svm();
 
     }
 }
