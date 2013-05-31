@@ -8,7 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Database {
-    public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "../Database/";
+    //public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "../Database/";
+    public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "/Volumes/Ram Disk/";
     public static final String JDBC_DRIVER = "org.sqlite.JDBC";
     public static final String JDBC_URL_WITHOUT_FILE = "jdbc:sqlite:" + PROJECT_RELATIVE_PATH_WITHOUT_FILE;
     public static final String JDBC_USER = "root";
@@ -62,6 +63,7 @@ public class Database {
         // Create tables:
         stat.executeUpdate("CREATE TABLE \"item\" (\"itemID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"categoriesString\" TEXT NOT NULL , \"keywordsString\" TEXT NOT NULL );");
         stat.executeUpdate("CREATE TABLE \"rec_log_train\" (\"autoID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"UserID\" INTEGER NOT NULL , \"ItemId\" INTEGER NOT NULL , \"result\" INTEGER NOT NULL , \"timeStamp\" );");
+        stat.executeUpdate("CREATE TABLE \"rec_log_test\" (\"autoID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"UserID\" INTEGER NOT NULL , \"ItemId\" INTEGER NOT NULL , \"result\" INTEGER NOT NULL , \"timeStamp\" );");
         stat.executeUpdate("CREATE TABLE \"userSNS\" (\"userSnsID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"followerUserID\" INTEGER NOT NULL , \"followeeUserID\" INTEGER NOT NULL );");
         stat.executeUpdate("CREATE TABLE \"user_action\" (\"actionID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , \"userID\" INTEGER NOT NULL , \"destinationUserID\" INTEGER NOT NULL , \"atAction\" INTEGER NOT NULL , \"reTweet\" INTEGER NOT NULL , \"comment\" INTEGER NOT NULL );");
         stat.executeUpdate("CREATE TABLE user_keywords (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT, \"UserID\" INTEGER NOT NULL, \"Keyword\" INTEGER NOT NULL, \"Weight\" DOUBLE NOT NULL);");
@@ -94,10 +96,11 @@ public class Database {
     }
 
     public void closeConnection() throws SQLException{
-    	if (!openConnection) return; // whye close it when it is not open?
+    	if (!openConnection) return; // why close it when it is not open?
+        stat.close();
     	conn.close();
-    	stat.close();
     	openConnection = false;
+    	Debug.pl("> Closed the connection to database " + name);
         // If user exists, then update user
     }
     
@@ -143,23 +146,63 @@ public class Database {
 		for (int i = 0; i < numColumns; i++) {
 			arrayResult[i] 	= result.getObject(i + 1);
 		}
-		
     	return arrayResult;
     }
+
+    /**
+   * Returns an array of Object, where each element corresponds to the different columns in that table.
+
+     * @param tableName
+     * @param index
+     * @return
+     * @throws Exception
+     */
+    public Object[] iter_getOneRow(String tableName, int index) throws Exception {
+        if (tableName.equals("rec_log_train") && tableName.equals("rec_log_test")){
+            throw new Exception("Table "+ tableName + " cannot be iteratively looped through using autoID.");
+        } else if (index == 0){
+            throw new Exception("The autoID numeration does not start from 0, but 1. Set the input index accordingly.");
+        }
+
+        ResultSet result = stat.executeQuery("SELECT * FROM " + tableName + " WHERE autoID = " + index);
+        int numColumns = result.getMetaData().getColumnCount();
+        Object[] arrayResult = new Object[numColumns];
+        for (int column = 0; column < numColumns; column++) {
+            arrayResult[column] = result.getObject(column + 1);
+        }
+        return arrayResult;
+    }
+
     
     //Queries 
     public void insert(String table, String values) throws SQLException{
     	stat.executeUpdate("INSERT OR IGNORE INTO "+ table + " VALUES " +values+ ";");
     }
 
-    public int length(String table) throws SQLException{
-    	rs = stat.executeQuery("SELECT COUNT(*) FROM " + table + ";");
+    public void commitTransaction() throws Exception{
+        this.conn.commit();
+    }
 
-        if (rs.next()){
-            return rs.getInt(1);
-        } else{
-            return 0;
-        }
+    public void turn_autoCommit_off()throws Exception{
+        this.conn.setAutoCommit(false);
+    }
+
+    public void turn_autoCommit_on()throws Exception{
+        this.conn.setAutoCommit(true);
+    }
+
+    public int length(String table) throws SQLException{
+    	switch (table) {
+	        case ("item") : return Util.TOTAL_DATABASE_ITEM_LENGTH;
+	        case ("rec_log_train") : return Util.TOTAL_DATABASE_REC_LOG_TRAIN_LENGTH;
+	        case ("userSNS") : return Util.TOTAL_DATABASE_USERSNS_LENGTH;
+	        case ("user_action") : return Util.TOTAL_DATABASE_USER_ACTION_LENGTH;
+	        case ("user_keywords") : return Util.TOTAL_DATABASE_USER_KEYWORDS_LENGTH;
+	        case ("user_profile") : return Util.TOTAL_DATABASE_USER_PROFILE_LENGTH;
+	        case ("tags") : return 0; // ?????
+	        case ("itemKey") : return Util.TOTAL_DATABASE_ITEMKEY_LENGTH;
+	        default : Debug.pl("! ERROR: Did not recognize table name."); return 0;
+    	}
     }
 
     /**
@@ -174,21 +217,22 @@ public class Database {
         this.stat.executeBatch();
     }
 
-    public static void get_read_performance_of_rec_log(String filename) throws Exception{
+    public static void get_read_performance_of_rec_log(Database database) throws Exception{
         String table_name = "rec_log_train";
-        Database db = new Database(filename);
 
         // Start timer
         long startTime = System.currentTimeMillis();
 
-        int table_length = db.length(table_name);
+        Debug.pl("Performance testing: " + table_name);
+
+        int table_length = database.length(table_name);
         String sql = "SELECT * FROM " + table_name + " WHERE autoID = ?";
-        db.prep = db.conn.prepareStatement(sql);
+        database.prep = database.conn.prepareStatement(sql);
 
         int i = 0;
         while(table_length > i){
-            db.prep.setInt(1,i);
-            ResultSet rs1 = db.prep.executeQuery();
+        	database.prep.setInt(1,i);
+            ResultSet rs1 = database.prep.executeQuery();
             while (rs1.next()){
                 // System.out.println(rs1.getString(1) + "   " + rs1.getString(2) +"   "  + rs1.getString(3) + "   " +
                 //        rs1.getString(4)+ "  "+ rs1.getString(5));
@@ -226,6 +270,7 @@ public class Database {
         // Create tables:
         nStat.executeUpdate("CREATE TABLE \"item\" (\"itemID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"categoriesString\" TEXT NOT NULL , \"keywordsString\" TEXT NOT NULL );");
         nStat.executeUpdate("CREATE TABLE \"rec_log_train\" (\"autoID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"UserID\" INTEGER NOT NULL , \"ItemId\" INTEGER NOT NULL , \"result\" INTEGER NOT NULL , \"timeStamp\" );");
+        nStat.executeUpdate("CREATE TABLE \"rec_log_test\" (\"autoID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"UserID\" INTEGER NOT NULL , \"ItemId\" INTEGER NOT NULL , \"result\" INTEGER NOT NULL , \"timeStamp\" );");
         nStat.executeUpdate("CREATE TABLE \"userSNS\" (\"userSnsID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"followerUserID\" INTEGER NOT NULL , \"followeeUserID\" INTEGER NOT NULL );");
         nStat.executeUpdate("CREATE TABLE \"user_action\" (\"actionID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , \"userID\" INTEGER NOT NULL , \"destinationUserID\" INTEGER NOT NULL , \"atAction\" INTEGER NOT NULL , \"reTweet\" INTEGER NOT NULL , \"comment\" INTEGER NOT NULL );");
         nStat.executeUpdate("CREATE TABLE user_keywords (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT, \"UserID\" INTEGER NOT NULL, \"Keyword\" INTEGER NOT NULL, \"Weight\" DOUBLE NOT NULL);");
@@ -244,6 +289,8 @@ public class Database {
         // Now start to load it into the new stuff
         nStat.executeUpdate("INSERT INTO newDatabase.item(itemID, categoriesString, keywordsString) SELECT * FROM oldDatabase.item;");
         Debug.pl("Table items transferred");
+        nStat.executeUpdate("INSERT INTO newDatabase.rec_log_test(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM oldDatabase.rec_log_test;");
+        Debug.pl("Table rec_log_test transferred");
         nStat.executeUpdate("INSERT INTO newDatabase.rec_log_train(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM oldDatabase.rec_log_train;");
         Debug.pl("Table rec_log_train transferred");
         nStat.executeUpdate("INSERT INTO newDatabase.userSNS(userSnsID, followerUserID, followeeUserID) SELECT * FROM oldDatabase.userSNS;");
@@ -261,12 +308,125 @@ public class Database {
 
         Debug.pl("Backup finished!");
     }
-    
+
+    public static void indexTable(Database database, String table) throws Exception {
+        Debug.pl("> Indexing table " + table + " in database " + database.name);
+
+        if (!(database.hasOpenConnection())) {
+            Debug.pl("! The databases does not have an open connection.");
+            return;
+        }
+
+        switch (table) {
+            case ("item") :
+                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS indItemID ON item (itemID);");
+                break;
+            case ("userSNS") :
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indFollId ON userSNS (followerUserID, followeeUserID);");
+                break;
+            case ("user_action") :
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indID ON user_action (userID, destinationUserID);");
+                break;
+            case ("user_keywords") :
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indUserID ON user_keywords (UserID);");
+                break;
+            case ("user_profile") :
+                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS indUserID ON user_profile (UserId);");
+                break;
+            case ("tags") :
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indUserID ON tags (userID);");
+                break;
+            case ("itemKey") :
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indItemID ON itemKey (itemID);");
+                break;
+            case ("rec_log_train") :
+                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS indAutoID ON rec_log_train (autoID);");
+                break;
+            case ("rec_log_test") :
+                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS indAutoID ON rec_log_test (autoID);");
+                break;
+            default :
+                Debug.pl("! ERROR: Did not recognize table name.");
+                break;
+        }
+        Debug.pl("> Table " + table + " from database " + database.name + " has been indexed.");
+    }
+
+    public static void dropTableIndex(Database database, String table) throws Exception {
+        Debug.pl("> Indexing table " + table + " in database " + database.name);
+
+        if (!(database.hasOpenConnection())) {
+            Debug.pl("! The databases does not have an open connection.");
+            return;
+        }
+
+        switch (table) {
+            case ("item") :
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS "+ database.nameWithExtension +".indItemID;");
+                break;
+            case ("userSNS") :
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indFollId ON userSNS (followerUserID, followeeUserID);");
+                break;
+            case ("user_action") :
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indID ON user_action (userID, destinationUserID);");
+                break;
+            case ("user_keywords") :
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indUserID ON user_keywords (UserID);");
+                break;
+            case ("user_profile") :
+                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS indUserID ON user_profile (UserId);");
+                break;
+            case ("tags") :
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indUserID ON tags (userID);");
+                break;
+            case ("itemKey") :
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS indItemID ON itemKey (itemID);");
+                break;
+            case ("rec_log_train") :
+                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS indAutoID ON rec_log_train (autoID);");
+                break;
+            case ("rec_log_test") :
+                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS indAutoID ON rec_log_test (autoID);");
+                break;
+            default :
+                Debug.pl("! ERROR: Did not recognize table name.");
+                break;
+        }
+        Debug.pl("> Table " + table + " from database " + database.name + " has been indexed.");
+    }
+
+    public static void indexAllTables(Database database){
+        try {
+            Database.indexTable(database,"item");
+            Database.indexTable(database,"userSNS");
+            Database.indexTable(database,"user_action");
+            Database.indexTable(database,"user_keywords");
+            Database.indexTable(database,"user_profile");
+            Database.indexTable(database,"tags");
+            Database.indexTable(database,"itemKey");
+            Database.indexTable(database,"rec_log_train");
+            Database.indexTable(database,"rec_log_test");
+        }
+        catch (Exception e){ e.printStackTrace();}
+    }
+
     public void executeUpdate(String query) throws SQLException {
     	stat.executeUpdate(query);
     }
     
-    public Statement getStatement() {
+    public Statement getStatement() throws Exception{
+    	return this.conn.createStatement();
+    }
+
+    public Statement createStatement() {
+    	Statement stat = null;
+    	try {
+			stat = conn.createStatement();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
     	return stat;
     }
     
@@ -275,9 +435,10 @@ public class Database {
      * Warning: the table specified must both exist in the from and destination database.
      * @throws SQLException 
      */
-    public static void transferTable(Database from, Database dest, String table) throws SQLException {
-    	Debug.pl("> Transfering table " + table + " in " + from.name + " to " + dest.name + ".");
-    	
+
+    public static void transferTable(Database from, Database dest, String table) throws Exception {
+    	Debug.pl("> Transfering table " + table + " in " + from.name + " to " + dest.name + "... 0%");
+
     	if (!(from.hasOpenConnection() && dest.hasOpenConnection())) {
     		Debug.pl("! ERROR: One of the databases did not have an open connection.");
     		return;
@@ -292,7 +453,10 @@ public class Database {
 	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO item(itemID, categoriesString, keywordsString) SELECT * FROM orig.item;");
 	        	break;
 	        case ("rec_log_train") :
-	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.rec_log_train(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM orig.rec_log_train;");
+                dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.rec_log_train(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM orig.rec_log_train;");
+                break;
+            case ("rec_log_test") :
+	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.rec_log_test(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM orig.rec_log_test;");
 	        	break;
 	        case ("userSNS") :
 	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.userSNS(userSnsID, followerUserID, followeeUserID) SELECT * FROM orig.userSNS;");
@@ -321,15 +485,14 @@ public class Database {
         dest.getStatement().execute("DETACH orig;");
         dest.getStatement().execute("DETACH dest;");
         
-        Debug.pl("> Transferred table " + table + " in " + from.name + " to " + dest.name + "... 100%");
+        Debug.pl("> Transfering table " + table + " in " + from.name + " to " + dest.name + "... 100%");
     }
     
     /**
      * Retrieve a user using its id
      * @param id The user id
      */
-    public User getUserUsingID(int id)
-    {
+    public User getUserUsingID(int id)throws Exception{
     	User u = null;
     	
     	try {
@@ -338,8 +501,7 @@ public class Database {
 			
 			userRes.first();
 			
-			u = new User(id,userRes.getInt("birthYear"),userRes.getInt("gender"),
-					userRes.getInt("tweets"),getKeywords(id),null,null);
+			u = new User(id,this);
 			
 		} catch (SQLException e) {
 			System.out.println("An error occured while trying to retrieve user from ID");
@@ -353,8 +515,7 @@ public class Database {
      * Retrieve a item using its id
      * @param id The item id
      */
-    public Item getItemUsingID(int id)
-    {
+    public Item getItemUsingID(int id)throws Exception{
     	Item item = null;
     	
     	try {
@@ -363,8 +524,7 @@ public class Database {
 			
 			res.first();
 			
-			item = new Item(id,res.getString("categoriesString"),
-					res.getString("keywordsString"));
+			item = new Item(id,this);
 			
 		} catch (SQLException e) {
 			System.out.println("An error occured while trying to retrieve user from ID");
@@ -374,6 +534,30 @@ public class Database {
     	return item;
     }
     
+    public HashMap<Integer,Item> getItems(){
+    	HashMap<Integer,Item> results = new HashMap<Integer, Item>();
+
+    	Statement itemStat = createStatement();
+
+    	try {
+    		// TODO optimize
+			ResultSet set = itemStat.executeQuery("SELECT itemID FROM item");
+			while (set.next()) {
+				int id = set.getInt("itemID");
+				results.put(id, new Item(id, this));
+			}
+			itemStat.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+    	return results;
+    }
+
 	/**
      * Retrieve keywords matching with the given user
      * @param userID
@@ -396,5 +580,29 @@ public class Database {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public ArrayList<IntegerPair> getTrainDataFor(int userID) {
+
+		ArrayList<IntegerPair> results = new ArrayList<IntegerPair>();
+
+		try {
+			Statement trainDataStat = createStatement();
+			ResultSet rSet =  trainDataStat.executeQuery(
+					"SELECT UserID, ItemId, result FROM rec_log_train WHERE UserID=" + userID + ";");
+
+			while (rSet.next())
+			{
+				results.add(new IntegerPair(rSet.getInt("ItemId"),rSet.getInt("result")));
+			}
+
+			rSet.close();
+			trainDataStat.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return results;
 	}
 }

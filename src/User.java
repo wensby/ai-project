@@ -38,7 +38,6 @@ public class User {
     		ResultSet userActionResult; // will contain the result set from the userAction query
 
     		// Fetch all the data
-
     		Statement statProfile = database.createStatement();
     		statProfile.execute("SELECT * FROM user_profile WHERE UserID = " + userID + " LIMIT 1;");
 			userProfileResult = statProfile.getResultSet();
@@ -51,7 +50,7 @@ public class User {
 			statAction.execute("SELECT * FROM user_action WHERE userID = " + userID + ";");
 			userActionResult = statAction.getResultSet();
 			
-				// Build it, and he will come (the User, that is)
+			// Build it, and he will come (the User, that is)
             if (userProfileResult.next()){
 				this.userID = userProfileResult.getInt("UserID");
 				this.birthyear = userProfileResult.getInt("birthYear");

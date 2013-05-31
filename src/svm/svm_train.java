@@ -120,6 +120,10 @@ class svm_train {
 		t.run(argv);
 	}
 
+    /**
+     * Exits the program if the input is undefined or infinite
+     * @param s
+     */
 	private static double atof(String s)
 	{
 		double d = Double.valueOf(s).doubleValue();

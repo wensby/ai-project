@@ -7,43 +7,24 @@
 public class Main{
 
 
-    public static void main(String []args) throws Exception{            ///REMOVE THROWS EXCEPTION
-        // CURRENTLY RUNNING
-    	Database db = new Database("DB_MAY30");
+    public static void main(String []args) throws Exception{
+
+        /*
+    	Database db = new Database("DB_MAY31");
     	db.openConnection();
-
-        Database.get_read_performance_of_rec_log(db);
-
-    	db.closeConnection();
-        System.out.println("Done!");
-
-
-/*
-        // TESTING CONFIGURATION
-        Database db = new Database("extensionDB1");
-        db.openConnection();
-
-
-
-
-
         long startTime = System.currentTimeMillis();
 
-        DataPreparer dp = new DataPreparer(db, 1000);
+        //Database.indexAllTables(db);
+        DataPreparer dp = new DataPreparer(db,10000000);
 
         long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;
         System.out.println("Time in Ms: " + elapsedTime);
-
-
-        //toDB.userProfile2DB(db,0);
-
-        //User user = new User(100136,db);
-
-
-
-        db.closeConnection();
+    	db.closeConnection();
         System.out.println("Done!");
-*/
+        */
+
+        Tormod_classifier.test_Svm();
+
     }
 }
