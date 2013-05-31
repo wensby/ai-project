@@ -85,16 +85,6 @@ public class Feature {
 	private static Integer calcNumCommentsBetween(User user, Item item) {
 		int fromUser = 0;
 		int toUser = 0;
-<<<<<<< HEAD
-		if (user.getNumComments().containsKey(item.getUserID())){
-			fromUser = user.getNumComments().get(item.getUserID());
-		}
-		
-		if (item.getNumComments().containsKey(user.getUserID())){
-			toUser = user.getNumComments().get(user.getUserID());
-		}
-		
-=======
 		try {
             if (user.getNumComments().containsKey(item.getUserID())){
                 fromUser = user.getNumComments().get(item.getUserID());
@@ -107,7 +97,6 @@ public class Feature {
             Debug.pl("Failed on UserID: " + user.getUserID() + " and ItemID: " + item.getItemID());
             e.printStackTrace();
         }
->>>>>>> branch 'master' of https://github.com/wensby/ai-project.git
 		return fromUser + toUser;
 	}
 	

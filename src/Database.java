@@ -364,6 +364,7 @@ public class Database {
             Debug.pl("! The databases does not have an open connection.");
             return;
         }
+
         switch (table) {
             case ("item") :
                 database.getStatement().executeUpdate("DROP INDEX IF EXISTS itemIndex;");
@@ -399,6 +400,7 @@ public class Database {
                 Debug.pl("! ERROR: Did not recognize table name.");
                 break;
         }
+        Database.dropAllOldTableIndexes(database);
         Debug.pl("> Table " + table + " from database " + database.name + " is no longer indexed.");
     }
 
