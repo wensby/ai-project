@@ -175,7 +175,6 @@ public class toDB {
             entry_values.add(Integer.toString(u_p.result));
             entry_values.add(Integer.toString(u_p.timeStamp));
             values = Database.valueFormatter(entry_values);         //This is a string
-
             database.addToBatch(table_name,values);
 
             // counter
@@ -183,7 +182,6 @@ public class toDB {
                 System.out.println("Progression:   " + counter);
                 database.executeBatch();
                 database.commitTransaction();
-
             }
             counter++;
             autoid++;
@@ -192,7 +190,6 @@ public class toDB {
         database.commitTransaction();
         database.turn_autoCommit_on();
         Database.indexTable(database,"rec_log_test");
-
     }
 	
 	public static void user_action2DB(Database database, int offset) throws Exception{
