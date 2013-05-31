@@ -9,24 +9,25 @@ public class Main{
 
     public static void main(String []args) throws Exception{
 
-        /*
-    	Database db = new Database("DB_MAY31");
+
+    	Database db = new Database("DB_MAY30");
     	db.openConnection();
         long startTime = System.currentTimeMillis();
 
-        //Database.indexAllTables(db);
-        DataPreparer dp = new DataPreparer(db,10000000);
+        //Database.vacuumDatabase(db);
+        Database.refactorDatbase(db);
+        //Database.dropAllTableIndexes(db);
+
+        //DataPreparer dp = new DataPreparer(db,10000000);
 
         long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;
         System.out.println("Time in Ms: " + elapsedTime);
     	db.closeConnection();
         System.out.println("Done!");
-        */
 
-       	Database db = new Database("DB_MAY30") ;
-       	db.openConnection();
-       	Database.indexTable(db, "user_keywords");
+
+        //Tormod_classifier.test_Svm();
 
     }
 }
