@@ -387,5 +387,21 @@ public class toDB {
 			}
 		}
 	}
+	
+	public static void cats2DB(Database db) throws SQLException{
+		Statement stmt= db.createStatement();
+		String query = "SELECT itemID, categoriesString FROM item;";
+		ResultSet result = stmt.executeQuery(query);
+		while(result.next()){
+			Statement insertstmt= db.createStatement();
+			int itemID = result.getInt("itemID");
+			String catString = result.getString("categorieString");
+			ArrayList<Integer>cat = Parser.dot_Integer_parser(catString);
+			String insertquery = "INSERT INTO itemCat (itemID, cat1,cat2,cat3,cat4) VALUES ("+itemID+","+cat.get(0)+","+cat.get(1)+","+cat.get(2)+","+cat.get(3)+")";
+			insertstmt.addBatch(insertquery);
+			
+			
+		}
+	}
 }
 
