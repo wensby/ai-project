@@ -101,7 +101,7 @@ public class Feature {
         }
 		return fromUser + toUser;
 	}
-	
+
 	/**
 	 * Checks the number of followees that the user and the item have in common.
 	 * @param user is the user that will be used in this feature construction.

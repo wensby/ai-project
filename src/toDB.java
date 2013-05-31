@@ -1,3 +1,6 @@
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -360,6 +363,29 @@ public class toDB {
         database.turn_autoCommit_on();
 
 		database.closeConnection();
+	}
+	
+	public static void tags2DB(Database db) throws SQLException{
+		Statement stmt= db.createStatement();
+		String query = "SELECT userID, tagIDstring";
+		ResultSet result = stmt.executeQuery(query);
+		
+		while(result.next()){
+			int userID = result.getInt("userID");
+			String tagIDString = result.getString("tagIDstring");
+			ArrayList<Integer> tagInts = Parser.semiColon_Integer_parser(tagIDString);
+			Iterator<Integer>  it = tagInts.iterator();
+			
+			Statement insertstmt= db.createStatement();
+			
+			while(it.hasNext()){
+				Integer tag = it.next();
+				if(tag != 0){
+					String insertquery = "INSERT INTO tags (userID,tag) VALUES("+userID+","+tag+")";
+					insertstmt.addBatch(insertquery);
+					}
+			}
+		}
 	}
 }
 
