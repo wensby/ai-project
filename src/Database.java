@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 
 public class Database {
     public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "../Database/";
@@ -175,6 +176,45 @@ public class Database {
         return arrayResult;
     }
 
+    /**
+     * Gets one random row from tableName. Only works with rec_log_train and rec_log_test.
+     * @param tableName
+     * @return
+     * @throws Exception
+     */
+    public Object[] rand_getOneRow(String tableName) throws Exception{
+        Random rand = new Random();
+        int index = 1;
+        switch (tableName){
+            case ("rec_log_train"):
+                index = rand.nextInt(Util.TOTAL_DATABASE_REC_LOG_TRAIN_LENGTH) + 1;
+                break;
+            case ("rec_log_test"):
+                index = rand.nextInt(Util.TOTAL_DATABASE_REC_LOG_TEST_LENGTH) + 1;
+                break;
+            default:
+                throw new Exception("Table "+ tableName + " is not liable for random picking.");
+        }
+
+        ResultSet result = stat.executeQuery("SELECT * FROM " + tableName + " WHERE autoID = " + index);
+        int numColumns = result.getMetaData().getColumnCount();
+        Object[] arrayResult = new Object[numColumns];
+        for (int column = 0; column < numColumns; column++) {
+            arrayResult[column] = result.getObject(column + 1);
+        }
+        return arrayResult;
+    }
+
+    /**
+     * Gets one random positive row from tableName. Only works with rec_log_train table....
+     */
+    public Object[] rand_getPositiveRecord() throws Exception{
+            // SOMEONE FIGURE THIS ONE OUT!
+         return null;
+    }
+
+
+
     
     //Queries 
     public void insert(String table, String values) throws SQLException{
@@ -212,7 +252,7 @@ public class Database {
      * To execute the batch, call the function executeBatch()
      */
     public void addToBatch(String table, String values) throws SQLException{
-        this.stat.addBatch("INSERT OR IGNORE INTO "+ table + " VALUES " +values+ ";");
+        this.stat.addBatch("INSERT OR IGNORE INTO " + table + " VALUES " + values + ";");
     }
 
     public void executeBatch()throws Exception{
@@ -339,7 +379,8 @@ public class Database {
                 database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS userProfileIndex ON user_profile (UserId);");
                 break;
             case ("tags") :
-                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS tagsIndex ON tags (userID);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS tagsIndex1 ON tags (userID);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS tagsIndex2 ON tags (tag);");
                 break;
             case ("itemKey") :
                 database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS itemKeyIndex ON itemKey (itemID);");
@@ -385,7 +426,8 @@ public class Database {
                 database.getStatement().executeUpdate("DROP INDEX IF EXISTS userProfileIndex;");
                 break;
             case ("tags") :
-                database.getStatement().executeUpdate("DROP INDEX IF EXISTS tagsIndex;");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS tagsIndex1;");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS tagsIndex2;");
                 break;
             case ("itemKey") :
                 database.getStatement().executeUpdate("DROP INDEX IF EXISTS itemKeyIndex;");
@@ -404,52 +446,9 @@ public class Database {
         Debug.pl("> Table " + table + " from database " + database.name + " is no longer indexed.");
     }
 
-    public static void vacuumTable(Database database, String table) throws Exception {
-        Debug.pl("> Vacuuming table " + table + " in database " + database.name);
-
-        if (!(database.hasOpenConnection())) {
-            Debug.pl("! The databases does not have an open connection.");
-            return;
-        }
-        switch (table) {
-            case ("item") :
-                database.getStatement().executeUpdate("VACUUM item;");
-                break;
-            case ("userSNS") :
-                database.getStatement().executeUpdate("VACUUM userSNS;");
-                break;
-            case ("user_action") :
-                database.getStatement().executeUpdate("VACUUM user_action;");
-                break;
-            case ("user_keywords") :
-                database.getStatement().executeUpdate("VACUUM user_keywords;");
-                break;
-            case ("user_profile") :
-                database.getStatement().executeUpdate("VACUUM user_profile;");
-                break;
-            case ("tags") :
-                database.getStatement().executeUpdate("VACUUM tags;");
-                break;
-            case ("itemKey") :
-                database.getStatement().executeUpdate("VACUUM itemKey;");
-                break;
-            case ("rec_log_train") :
-                database.getStatement().executeUpdate("VACUUM rec_log_train;");
-                break;
-            case ("rec_log_test") :
-                database.getStatement().executeUpdate("VACUUM rec_log_test;");
-                break;
-            default :
-                Debug.pl("! ERROR: Did not recognize table name.");
-                break;
-        }
-        Debug.pl("> Table " + table + " from database " + database.name + " vacuumed.");
-    }
-
-
     public static void vacuumDatabase(Database database){
         try{
-            Debug.pl("Vacuuming database " + database.name);
+            Debug.pl("Vacuuming database " + database.name + ". This will take some time...");
             database.getStatement().executeUpdate("VACUUM;");
             Debug.pl("Vacuuming completed.");
         }
@@ -494,6 +493,7 @@ public class Database {
             database.getStatement().executeUpdate("DROP INDEX IF EXISTS indFollID;");
             database.getStatement().executeUpdate("DROP INDEX IF EXISTS indAutoID;");
             database.getStatement().executeUpdate("DROP INDEX IF EXISTS userKeywordsIndex;");
+            database.getStatement().executeUpdate("DROP INDEX IF EXISTS tagsIndex;");
         }
         catch (Exception e){e.printStackTrace();}
     }

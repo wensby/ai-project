@@ -16,7 +16,7 @@ public class Main{
         long startTime = System.currentTimeMillis();
 
 
-
+        DataPreparer dp = new DataPreparer(db,1000);
 
         long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;

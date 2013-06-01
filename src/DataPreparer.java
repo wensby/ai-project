@@ -1,3 +1,5 @@
+import libsvm.svm_problem;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.text.NumberFormat;
@@ -23,7 +25,9 @@ public class DataPreparer {
         this.db = db;
         this.data_size_to_use = data_size_to_use;
         this.discarded_sample_count = 0;
-        prepareTrainingSet();
+        //prepareTrainingSet();
+        SvmExample();
+        //gridParameterCheckForSVM();
     }
 
     public int getDiscarded_sample_count() {
@@ -87,6 +91,134 @@ public class DataPreparer {
             e.printStackTrace();
         }
     }
+
+
+    public void SvmExample() throws Exception{
+        // Get one entry from rec_log_train:
+        Object[] obj_list = db.rand_getOneRow("rec_log_train");
+        int tmp_userId = (Integer)obj_list[1];
+        int tmp_itemId = (Integer)obj_list[2];
+        int tmp_class  = (Integer)obj_list[3];
+        int num_positive_samples = 0;
+
+        // Get feature vector for the given item and user
+        Vector<Integer> v = Feature.getFeatureVector(new User(tmp_userId, this.db), new Item(tmp_itemId, this.db));
+
+        // Create problem set (training set) for the svm: specify the number of features on creation
+        SvmInterface.Svm_problem prob = new SvmInterface.Svm_problem(v.size());
+
+
+        for (int i= 0; i < data_size_to_use; i++){
+
+            obj_list = db.rand_getOneRow("rec_log_train");
+            //Debug.pal(obj_list);
+            tmp_userId = (Integer)obj_list[1];
+            tmp_itemId = (Integer)obj_list[2];
+            tmp_class  = (Integer)obj_list[3];
+            v = Feature.getFeatureVector(new User(tmp_userId, this.db), new Item(tmp_itemId, this.db));
+
+            // Append data points (outcome, features) to the problem set. Do this for all data points.
+            prob.AppendTrainingPoint(tmp_class,v);
+
+        }
+
+        // When done appending data points, finalize the problem set. The set cannot be changed after this
+        prob.FinalizeTrainingSet();
+
+        // Create parameter object for the svm. This example uses all default values
+        SvmInterface.Svm_parameter param = new SvmInterface.Svm_parameter(1,10,0.01);
+
+        // See if the model with the given parameters are legal:
+        boolean valid;
+        valid = SvmInterface.CheckParameterValidity(prob,param);
+
+        Debug.pl("Parameter set is valid: " + valid);
+
+        // Now create the model for the SVM (this is in principle a trained SVM)
+        Debug.pl("Training svm...");
+        SvmInterface.Svm_model model = new SvmInterface.Svm_model(prob,param);
+
+        // At this point you might want to save the trained svm (the svm model)
+        model.Save();   // not yet implemented
+
+
+        // You may now test the SVM with 10-fold cross-validation:
+
+        double resulting_class;
+        int num_samples = data_size_to_use/10;
+        int correct_samples = 0;
+        double correctness = 0.0;
+        for (int i= 0; i < data_size_to_use/10; i++){
+
+            obj_list = db.rand_getOneRow("rec_log_train");
+            tmp_userId = (Integer)obj_list[1];
+            tmp_itemId = (Integer)obj_list[2];
+            tmp_class  = (Integer)obj_list[3];
+            if(tmp_class == 1) num_positive_samples++;
+            v = Feature.getFeatureVector(new User(tmp_userId, this.db), new Item(tmp_itemId, this.db));
+
+            // Append data points (outcome, features) to the problem set. Do this for all data points.
+            resulting_class = SvmInterface.PredictSingleDataPoint(model, v);
+
+            if((int)resulting_class == tmp_class) correct_samples ++;
+        }
+
+        correctness = (double)correct_samples/(double)num_samples;
+        Debug.pl("Final correctness: " + correctness*100 + "%");
+        Debug.pl("Percentage of samples of class +1: " + ((double)num_positive_samples/(double)num_samples)*100 + "%");
+    }
+
+    public void gridParameterCheckForSVM() throws Exception{
+        // Get one entry from rec_log_train:
+        Object[] obj_list = db.rand_getOneRow("rec_log_train");
+        int tmp_userId = (Integer)obj_list[1];
+        int tmp_itemId = (Integer)obj_list[2];
+        int tmp_class  = (Integer)obj_list[3];
+        int num_positive_samples = 0;
+
+        // Get feature vector for the given item and user
+        Vector<Integer> v = Feature.getFeatureVector(new User(tmp_userId, this.db), new Item(tmp_itemId, this.db));
+
+        // Create problem set (training set) for the svm: specify the number of features on creation
+        SvmInterface.Svm_problem prob = new SvmInterface.Svm_problem(v.size());
+
+
+        for (int i= 0; i < data_size_to_use; i++){
+
+            obj_list = db.rand_getOneRow("rec_log_train");
+            //Debug.pal(obj_list);
+            tmp_userId = (Integer)obj_list[1];
+            tmp_itemId = (Integer)obj_list[2];
+            tmp_class  = (Integer)obj_list[3];
+            v = Feature.getFeatureVector(new User(tmp_userId, this.db), new Item(tmp_itemId, this.db));
+
+            // Append data points (outcome, features) to the problem set. Do this for all data points.
+            prob.AppendTrainingPoint(tmp_class,v);
+
+        }
+
+        // When done appending data points, finalize the problem set. The set cannot be changed after this
+        prob.FinalizeTrainingSet();
+
+
+        for( int g = 0; g<1000; g++){
+            for(double c=0; c<1000; c+=0.1){
+                // Create parameter object for the svm. This example uses all default values
+                SvmInterface.Svm_parameter param = new SvmInterface.Svm_parameter(g,c,0.01);
+
+                // See if the model with the given parameters are legal:
+                boolean valid;
+                valid = SvmInterface.CheckParameterValidity(prob,param);
+                if(valid) Debug.pl("Parameter set is valid: gamma = " + g +"   C = " + c);
+            }
+        }
+
+
+
+
+    }
+
+
 
     /**
      * Creates a set of log files that does not go above the max_heap_size of Java by creating several text files

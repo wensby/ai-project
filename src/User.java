@@ -96,7 +96,7 @@ public class User {
     		numFollowing++;
     	}
     	this.numFollowing = numFollowing;
-    	userSNSResult.absolute(1); // move back the ResultSet cursor
+    	//userSNSResult.absolute(1); // move back the ResultSet cursor
     }
     
     public int getBirthYear() {
