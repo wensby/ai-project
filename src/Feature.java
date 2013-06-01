@@ -112,4 +112,8 @@ public class Feature {
 	private static Integer calcNumFolloweesInCommon(User user, Item item) {
 		return Util.calcCommonElements(user.getFollowing(), item.getFollowing());
 	}
+	
+	private static Double interactionWithFriends(){
+		
+	}
 }

@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Vector;
 
 public class User {
@@ -15,11 +16,18 @@ public class User {
 	private int gender;
 	private int numTweets;
 	private int numFollowing;
+	private int numFollowers;
 	private HashMap<Integer, Integer> numComments = new HashMap<Integer, Integer>();
 	private HashMap<Integer, Integer> numAtActions = new HashMap<Integer, Integer>();
 	private HashMap<Integer, Integer> numReTweets = new HashMap<Integer, Integer>();
-	private Vector<Integer> following = new Vector<Integer>();
+	private Vector<Integer> following;
+	private HashSet<Integer> followers;
+	private HashSet<Integer> followees;
 	
+	public void setNumFollowers(int numFollowers) {
+		this.numFollowers = numFollowers;
+	}
+
 	/**
 	 * Constructs a User object of user with specified ID from the data in the specified database.
 	 */
@@ -28,9 +36,9 @@ public class User {
     		Debug.pl("! ERROR: Can't create User object when the database connection is closed.");
     		throw new IllegalArgumentException("Database object must have an open connection.");
     	}
-
+    	this.followers = this.getFollowersFromDB(userID, database);
+    	this.followees = this.getFolloweesFromDB(userID, database);
     	try {
-
     		ResultSet userProfileResult; // will contain the result set from the user_profile query
     		ResultSet userSNSResult; // will contain the result set from the userSNS query
     		ResultSet userActionResult; // will contain the result set from the userAction query
@@ -54,7 +62,8 @@ public class User {
 				this.birthyear = userProfileResult.getInt("birthYear");
 				this.gender = userProfileResult.getInt("gender");
 				this.numTweets = userProfileResult.getInt("tweets");
-		    	initNumFollowing(userSNSResult);
+		    	this.numFollowing = this.followers.size();
+		    	this.numFollowers = this.followees.size();
 		    	initActions(userActionResult);
             }else{
                 throw new Exception("User not found, with id: " + this.userID);
@@ -68,8 +77,46 @@ public class User {
 	    	statAction.close();
 	    	statSNS.close();
 	    	statProfile.close();
-	    	
 		} catch (SQLException e) { e.printStackTrace(); }
+    }
+    
+    public HashSet<Integer> getFollowers() {
+		return followers;
+	}
+
+	public void setFollowers(HashSet<Integer> followers) {
+		this.followers = followers;
+	}
+
+	public HashSet<Integer> getFollowees() {
+		return followees;
+	}
+
+	public void setFollowees(HashSet<Integer> followees) {
+		this.followees = followees;
+	}
+
+	private HashSet<Integer>  getFollowersFromDB(int userID, Database db) throws SQLException{
+    	Statement statm = db.createStatement();
+    	ResultSet res = statm.executeQuery("SELECT followerUserID FROM userSNS WHERE followeeUserID = " + userID + ";");
+		HashSet<Integer> followers = new HashSet<Integer>();
+    	while(res.next()){
+			followers.add(res.getInt("followerUserID"));
+		}
+		statm.close();
+		res.close();
+		return followers;
+    }
+    private HashSet<Integer>  getFolloweesFromDB(int userID, Database db) throws SQLException{
+    	Statement statm = db.createStatement();
+    	ResultSet res = statm.executeQuery("SELECT followeeUserID FROM userSNS WHERE followerUserID = " + userID + ";");
+    	HashSet<Integer> followees = new HashSet<Integer>();
+    	while(res.next()){
+			followees.add(res.getInt("followeeUserID"));
+		}
+		statm.close();
+		res.close();
+		return followees;
     }
     
     private void initActions(ResultSet userActionResult) throws SQLException {

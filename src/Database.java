@@ -9,7 +9,7 @@ import java.util.HashMap;
 
 public class Database {
     //public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "../Database/";
-    public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "E:/Homeworks/MachineLearning_Project/workspace/";
+    public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "../";
     public static final String JDBC_DRIVER = "org.sqlite.JDBC";
     public static final String JDBC_URL_WITHOUT_FILE = "jdbc:sqlite:" + PROJECT_RELATIVE_PATH_WITHOUT_FILE;
     public static final String JDBC_USER = "root";
