@@ -14,7 +14,7 @@ public class DataPreparer {
     private int log_files_created = 0;
 
     private final Database db;
-    private final HashMap<Integer, Item> Items = new HashMap();
+    private final HashMap<Integer, Item> Items = new HashMap<Integer, Item>();
     private User cached_user;
 
     NumberFormat defaultFormat = NumberFormat.getPercentInstance();

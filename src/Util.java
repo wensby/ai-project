@@ -16,13 +16,9 @@ public class Util {
 	/**
 	 * Calculates the amount of elements that two integer vectors have in common.
 	 */
-	public static int calcCommonElements(Vector<Integer> a, Vector<Integer> b) {
+	public static int calcCommonElements(HashSet<Integer> a, HashSet<Integer> b) {
 		int commonElements = 0;
-		
-		HashSet<Integer> hash = new HashSet<Integer>();
-		for (Integer i : a) hash.add(i);
-		for (Integer j : b) if (hash.contains(j)) commonElements++;
-		
+		for (Integer j : b) if (a.contains(j)) commonElements++;
 		return commonElements;
 	}
 	
