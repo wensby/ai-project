@@ -9,7 +9,7 @@ import java.util.HashMap;
 
 public class Database {
     //public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "../Database/";
-    public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "E:/Homeworks/MachineLearning_Project/workspace/";
+    public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "../";
     public static final String JDBC_DRIVER = "org.sqlite.JDBC";
     public static final String JDBC_URL_WITHOUT_FILE = "jdbc:sqlite:" + PROJECT_RELATIVE_PATH_WITHOUT_FILE;
     public static final String JDBC_USER = "root";
@@ -22,6 +22,7 @@ public class Database {
 
     private Connection conn = null;
     private Statement stat = null;
+    private ResultSet rs = null;
     private PreparedStatement prep = null;
     
     /**
@@ -136,7 +137,6 @@ public class Database {
      * Returns an array of Object, where each element corresponds to the different columns in that table.
      * This method may be prone to send exceptions.
      * @return an array of Object, corresponding to each column of that row
-     * @deprecated
      */
     public Object[] getOneRow(String tableName, int offset) throws SQLException {
 		ResultSet result = stat.executeQuery("SELECT * FROM " + tableName + " LIMIT 1 OFFSET " + offset);
@@ -152,7 +152,8 @@ public class Database {
     //SELECT * FROM sqlite_master WHERE type = 'index';
 
     /**
-     * Returns an array of Object, where each element corresponds to the different columns in that table.
+   * Returns an array of Object, where each element corresponds to the different columns in that table.
+
      * @param tableName
      * @param index
      * @return
@@ -520,6 +521,7 @@ public class Database {
     	try {
 			stat = conn.createStatement();
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -644,8 +646,10 @@ public class Database {
 			}
 			itemStat.close();
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (Exception e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -670,6 +674,7 @@ public class Database {
 			}
 			
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
@@ -692,6 +697,7 @@ public class Database {
 			rSet.close();
 			trainDataStat.close();
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

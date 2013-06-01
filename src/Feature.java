@@ -51,6 +51,7 @@ public class Feature {
 	 * equal to {@link Feature#NUM_FEATURES}.
 	 * @see Feature#generateFeatureStructureString()
 	 */
+	 
 	public Feature(User user, Item item, String featureStructure) {
 		this(user, item);
 		
@@ -60,6 +61,7 @@ public class Feature {
 			if (parsed.charAt(i) == '1')
 				useFeature(i);
 		}
+
 		
 		finish();
 	}
@@ -203,6 +205,7 @@ public class Feature {
 	private static Integer calcNumFolloweesInCommon(User user, Item item) {
 		return Util.calcCommonElements(user.getFollowing(), item.getFollowing());
 	}
+
 	
 	/**
 	 * Will construct a featureStructure String that specifies the set of features this Feature 

@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.Iterator;
+
 /**
  * The Main-class.
  * @author Lukas J. Wensby
@@ -10,16 +13,16 @@ public class Main{
     public static void main(String []args) throws Exception{
 
 
-    	Database db = new Database("DB_MAY30");
+    	Database db = new Database("DB_MAY31");
     	db.openConnection();
         long startTime = System.currentTimeMillis();
 
         //Database.vacuumDatabase(db);
-        Database.refactorDatbase(db);
+       // Database.refactorDatbase(db);
         //Database.dropAllTableIndexes(db);
-
+        
         //DataPreparer dp = new DataPreparer(db,10000000);
-
+        toDB.cats2DB(db);
         long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;
         System.out.println("Time in Ms: " + elapsedTime);
@@ -27,7 +30,8 @@ public class Main{
         System.out.println("Done!");
 
 
-        //Tormod_classifier.test_Svm();
+        //Tormod_classifier.test_Svm()
+    	
 
     }
 }
