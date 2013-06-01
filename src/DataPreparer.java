@@ -16,7 +16,7 @@ public class DataPreparer {
     private int log_files_created = 0;
 
     private final Database db;
-    private final HashMap<Integer, Item> Items = new HashMap();
+    private final HashMap<Integer, Item> Items = new HashMap<Integer, Item>();
     private User cached_user;
 
     NumberFormat defaultFormat = NumberFormat.getPercentInstance();
@@ -66,8 +66,15 @@ public class DataPreparer {
                     tmp_user = new User(tmp_userId, this.db);
                     this.cached_user = tmp_user;
                 }
-
-                tmp_features = Feature.getFeatureVector(tmp_user, tmp_item);
+                
+                // Constructing the feature
+                Feature featureSet = new Feature(tmp_user, tmp_item);
+                featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
+                featureSet.useFeature(Feature.USER_BIRTH_YEAR);
+                featureSet.finish();
+                
+                tmp_features = featureSet.getFeatureVector();
+                
                 if(tmp_features != null){
                     createLogFiles(builder,tmp_class + format_featureVector_for_SVM(tmp_features) + "\n",i);
                 } else {
@@ -102,7 +109,11 @@ public class DataPreparer {
         int num_positive_samples = 0;
 
         // Get feature vector for the given item and user
-        Vector<Integer> v = Feature.getFeatureVector(new User(tmp_userId, this.db), new Item(tmp_itemId, this.db));
+        Feature featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
+        featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
+        featureSet.useFeature(Feature.USER_BIRTH_YEAR);
+        featureSet.finish();
+        Vector<Integer> v = featureSet.getFeatureVector();
 
         // Create problem set (training set) for the svm: specify the number of features on creation
         SvmInterface.Svm_problem prob = new SvmInterface.Svm_problem(v.size());
@@ -115,7 +126,11 @@ public class DataPreparer {
             tmp_userId = (Integer)obj_list[1];
             tmp_itemId = (Integer)obj_list[2];
             tmp_class  = (Integer)obj_list[3];
-            v = Feature.getFeatureVector(new User(tmp_userId, this.db), new Item(tmp_itemId, this.db));
+            featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
+            featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
+            featureSet.useFeature(Feature.USER_BIRTH_YEAR);
+            featureSet.finish();
+            v = featureSet.getFeatureVector();
 
             // Append data points (outcome, features) to the problem set. Do this for all data points.
             prob.AppendTrainingPoint(tmp_class,v);
@@ -155,7 +170,11 @@ public class DataPreparer {
             tmp_itemId = (Integer)obj_list[2];
             tmp_class  = (Integer)obj_list[3];
             if(tmp_class == 1) num_positive_samples++;
-            v = Feature.getFeatureVector(new User(tmp_userId, this.db), new Item(tmp_itemId, this.db));
+            featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
+            featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
+            featureSet.useFeature(Feature.USER_BIRTH_YEAR);
+            featureSet.finish();
+            v = featureSet.getFeatureVector();
 
             // Append data points (outcome, features) to the problem set. Do this for all data points.
             resulting_class = SvmInterface.PredictSingleDataPoint(model, v);
@@ -177,7 +196,11 @@ public class DataPreparer {
         int num_positive_samples = 0;
 
         // Get feature vector for the given item and user
-        Vector<Integer> v = Feature.getFeatureVector(new User(tmp_userId, this.db), new Item(tmp_itemId, this.db));
+        Feature featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
+        featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
+        featureSet.useFeature(Feature.USER_BIRTH_YEAR);
+        featureSet.finish();
+        Vector<Integer> v = featureSet.getFeatureVector();
 
         // Create problem set (training set) for the svm: specify the number of features on creation
         SvmInterface.Svm_problem prob = new SvmInterface.Svm_problem(v.size());
@@ -190,7 +213,11 @@ public class DataPreparer {
             tmp_userId = (Integer)obj_list[1];
             tmp_itemId = (Integer)obj_list[2];
             tmp_class  = (Integer)obj_list[3];
-            v = Feature.getFeatureVector(new User(tmp_userId, this.db), new Item(tmp_itemId, this.db));
+            featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
+            featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
+            featureSet.useFeature(Feature.USER_BIRTH_YEAR);
+            featureSet.finish();
+            v = featureSet.getFeatureVector();
 
             // Append data points (outcome, features) to the problem set. Do this for all data points.
             prob.AppendTrainingPoint(tmp_class,v);
@@ -271,5 +298,4 @@ public class DataPreparer {
         }
         return out;
     }
-
 }
