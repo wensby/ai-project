@@ -1,57 +1,148 @@
 import java.util.Vector;
 
 /**
- * Feature class
+ * Feature class.
  * @author Lukas J. Wensby
+ * @version 2013-06-01
  */
 
 public class Feature {
+	// The amount of different possible features
 	public static final int NUM_FEATURES = 12;
 	
 	// Feature array indices
-	private static final int USER_BIRTH_YEAR		 = 0;
-	private static final int USER_GENDER 			 = 1;
-	private static final int USER_NUM_TWEETS		 = 2;
-	private static final int USER_NUM_FOLLOWING		 = 3;
-	private static final int ITEM_BIRTH_YEAR		 = 4;
-	private static final int ITEM_GENDER			 = 5;
-	private static final int ITEM_NUM_TWEETS		 = 6;
-	private static final int ITEM_NUM_FOLLOWING 	 = 7;
-	private static final int NUM_COMMENTS_BETWEEN 	 = 8;
-	private static final int NUM_AT_ACTION_BETWEEN	 = 9;
-	private static final int NUM_RETWEETS_BETWEEN	 = 10;
-	private static final int NUM_FOLLOWERS_IN_COMMON = 11;
+	// Remember, if you add or remove from this list, use completely new indices.
+	public static final int USER_BIRTH_YEAR		 	= 0;
+	public static final int USER_GENDER 			= 1;
+	public static final int USER_NUM_TWEETS		 	= 2;
+	public static final int USER_NUM_FOLLOWING		= 3;
+	public static final int ITEM_BIRTH_YEAR		 	= 4;
+	public static final int ITEM_GENDER			 	= 5;
+	public static final int ITEM_NUM_TWEETS		 	= 6;
+	public static final int ITEM_NUM_FOLLOWING 	 	= 7;
+	public static final int NUM_COMMENTS_BETWEEN 	= 8;
+	public static final int NUM_AT_ACTION_BETWEEN	= 9;
+	public static final int NUM_RETWEETS_BETWEEN	= 10;
+	public static final int NUM_FOLLOWERS_IN_COMMON = 11;
+	
+	private Vector<Integer> featureVector = new Vector<Integer>(NUM_FEATURES);
+	private User user = null;
+	private Item item = null;
+	private boolean finished = false;
 	
 	/**
-	 * Empty constructor since only the static method getFeatureVector will be used.
+	 * Default constructor where we specify which features should be used in this particular 
+	 * instance. <p>
+	 * Warning: When this feature is later finished, meaning that every feature that you want has
+	 * been loaded into it, it should be set as finished. Doing so will remove the connections
+	 * it had with the User and Item objects, so that the garbage collector is free to work its 
+	 * magic.
 	 */
-	public Feature(int userID, int itemID,Database db) {	
-		//Gather 
+	public Feature(User user, Item item) {	
+		this.user = user;
+		this.item = item;
 	}
 	
 	/**
-	 * Will construct the feature vector of Integers and return it.
+	 * Constructs, fills and finishes a new Feature object based on specified on a feature 
+	 * structure String.
+	 * @param featureStructure is the string that specifies the structure of this Feature. This 
+	 * string MUST look like "FEATURE_STRUCTURE(0011...0101)" where the number of 1 or 0 is
+	 * equal to {@link Feature#NUM_FEATURES}.
+	 * @see Feature#generateFeatureStructureString()
 	 */
-	public static Vector<Integer> getFeatureVector(User user, Item item) {
-		// Construct the holder for the features
-		Vector<Integer> featureVector = new Vector<Integer>();
-		featureVector.ensureCapacity(NUM_FEATURES);
+	public Feature(User user, Item item, String featureStructure) {
+		this(user, item);
 		
-		// Fill it away, Scotty!
-		featureVector.add(USER_BIRTH_YEAR, user.getBirthYear());
-		featureVector.add(USER_GENDER, user.getGender());
-		featureVector.add(USER_NUM_TWEETS, user.getNumTweets());
-		featureVector.add(USER_NUM_FOLLOWING, user.getNumFollowing()); 
-		featureVector.add(ITEM_BIRTH_YEAR, item.getBirthYear());
-		featureVector.add(ITEM_GENDER, item.getGender());
-		featureVector.add(ITEM_NUM_TWEETS, item.getNumTweets());
-		featureVector.add(ITEM_NUM_FOLLOWING, item.getNumFollowing()); 
-		featureVector.add(NUM_COMMENTS_BETWEEN, calcNumCommentsBetween(user, item));
-		featureVector.add(NUM_AT_ACTION_BETWEEN, calcNumAtActionBetween(user, item));
-		featureVector.add(NUM_RETWEETS_BETWEEN, calcNumReTweetsBetween(user, item));
-		featureVector.add(NUM_FOLLOWERS_IN_COMMON, calcNumFolloweesInCommon(user, item));
+		// Interpret feature structure string
+		String parsed = featureStructure.substring(18, featureStructure.length()-1);
+		for (int i = 0; i < parsed.length(); i++) {
+			if (parsed.charAt(i) == '1')
+				useFeature(i);
+		}
 		
-		return featureVector;
+		finish();
+	}
+	
+	/**
+	 * Removes this Feature instance's connection with the User and Item objects. So after this
+	 * method has been called, no further features can be loaded into this Feature instance.
+	 * This method MUST be called once a feature is considered finished. Since we don't want to
+	 * have many that User and Item loaded into runtime.
+	 */
+	public void finish() {
+		user = null;
+		item = null;
+		finished = true;
+	}
+	
+	/**
+	 * Will return the features that are loaded into this Feature instance, as a vector of Integers.
+	 * If, for example, 'user birth year' was not put into this feature, it will not have a place 
+	 * in this returned vector.<br>
+	 * As a side note: This method can only return a featureVector if this Feature instance has
+	 * been "finished" 
+	 * @see Feature#finish()
+	 */
+	public Vector<Integer> getFeatureVector() {
+		if (!finished) {
+			Debug.pl("! ERROR: The Feature object instance has to be set as finished before featureVector can be retrieved.");
+			return null;
+		}
+		
+		Vector<Integer> returner = new Vector<Integer>();
+		for (Integer f : featureVector) {
+			if (f != null) returner.add(f);
+		}
+		return returner;
+	}
+	
+	/**
+	 * Will make this Feature instance use the feature specified, that is, you can select if this
+	 * user for example should use the item's birth year.
+	 * @param featureIndex is any of the static integers from the Feature class. For example: Feature.ITEM_BIRTH_YEAR
+	 */
+	public void useFeature(int featureIndex) {
+		switch(featureIndex) {
+			case(USER_BIRTH_YEAR) : 
+				featureVector.set(USER_BIRTH_YEAR, user.getBirthYear());
+				break;
+			case(USER_GENDER) :
+				featureVector.set(USER_GENDER, user.getGender());
+				break;
+			case(USER_NUM_TWEETS) :
+				featureVector.set(USER_NUM_TWEETS, user.getNumTweets());
+				break;
+			case(USER_NUM_FOLLOWING) :
+				featureVector.set(USER_NUM_FOLLOWING, user.getNumFollowing());
+				break;
+			case(ITEM_BIRTH_YEAR) :	
+				featureVector.set(ITEM_BIRTH_YEAR, item.getBirthYear());
+				break;
+			case(ITEM_GENDER) :
+				featureVector.set(ITEM_GENDER, item.getGender());
+				break;
+			case(ITEM_NUM_TWEETS) :
+				featureVector.set(ITEM_NUM_TWEETS, item.getNumTweets());
+				break;
+			case(ITEM_NUM_FOLLOWING) : 
+				featureVector.set(ITEM_NUM_FOLLOWING, item.getNumFollowing());
+				break;
+			case(NUM_COMMENTS_BETWEEN) :
+				featureVector.set(NUM_COMMENTS_BETWEEN, calcNumCommentsBetween(user, item));
+				break;
+			case(NUM_AT_ACTION_BETWEEN) :
+				featureVector.set(NUM_AT_ACTION_BETWEEN, calcNumAtActionBetween(user, item));
+				break;
+			case(NUM_RETWEETS_BETWEEN) :
+				featureVector.set(NUM_RETWEETS_BETWEEN, calcNumReTweetsBetween(user, item));
+				break;
+			case(NUM_FOLLOWERS_IN_COMMON) :
+				featureVector.set(NUM_FOLLOWERS_IN_COMMON, calcNumFolloweesInCommon(user, item));
+				break;
+			default :
+				Debug.pl("! ERROR: Did not recognize the featureIndex.");
+		}
 	}
 	
 	private static Integer calcNumReTweetsBetween(User user, Item item) {
@@ -110,5 +201,27 @@ public class Feature {
 	 */
 	private static Integer calcNumFolloweesInCommon(User user, Item item) {
 		return Util.calcCommonElements(user.getFollowing(), item.getFollowing());
+	}
+	
+	/**
+	 * Will construct a featureStructure String that specifies the set of features this Feature 
+	 * object has used. This method only works if this object has been set as finished.<br>
+	 * The string will look like: "FEATURE_STRUCTURE(00110101)"
+	 */
+	public String generateFeatureStructureString() {
+		if (!finished) {
+			Debug.pl("! ERROR: The Feature object instance has to be set as finished before the feature structure string can be generated.");
+			return null;
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("FEATURE_STRUCTURE(");
+		for (Integer f : featureVector) {
+			if (f != null) sb.append("1");
+			else sb.append("0");
+		}
+		sb.append(")");
+		
+		return sb.toString();
 	}
 }

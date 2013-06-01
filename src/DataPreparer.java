@@ -62,8 +62,15 @@ public class DataPreparer {
                     tmp_user = new User(tmp_userId, this.db);
                     this.cached_user = tmp_user;
                 }
-
-                tmp_features = Feature.getFeatureVector(tmp_user, tmp_item);
+                
+                // Constructing the feature
+                Feature featureSet = new Feature(tmp_user, tmp_item);
+                featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
+                featureSet.useFeature(Feature.USER_BIRTH_YEAR);
+                featureSet.finish();
+                
+                tmp_features = featureSet.getFeatureVector();
+                
                 if(tmp_features != null){
                     createLogFiles(builder,tmp_class + format_featureVector_for_SVM(tmp_features) + "\n",i);
                 } else {
@@ -139,5 +146,4 @@ public class DataPreparer {
         }
         return out;
     }
-
 }
