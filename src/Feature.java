@@ -1,4 +1,5 @@
 import java.util.Vector;
+import java.util.regex.Pattern;
 
 /**
  * Feature class.
@@ -47,17 +48,28 @@ public class Feature {
 	 * Constructs, fills and finishes a new Feature object based on specified on a feature 
 	 * structure String.
 	 * @param featureStructure is the string that specifies the structure of this Feature. This 
-	 * string MUST look like "FEATURE_STRUCTURE(0011...0101)" where the number of 1 or 0 is
-	 * equal to {@link Feature#NUM_FEATURES}.
+	 * string MUST either look like "FEATURE_STRUCTURE(0011...0101)" or "01010...0101" where the 
+	 * number of 1 or 0 is smaller or equal to {@link Feature#NUM_FEATURES}.
 	 * @see Feature#generateFeatureStructureString()
 	 */
 	public Feature(User user, Item item, String featureStructure) {
 		this(user, item);
 		
 		// Interpret feature structure string
-		String parsed = featureStructure.substring(18, featureStructure.length()-1);
+		String parsed;
+		if (Pattern.matches("[0-9]+", featureStructure)) {
+		    parsed = featureStructure;
+		}
+		else {
+			parsed = featureStructure.substring(18, featureStructure.length() - 1);
+		}
+		if (parsed.length() > NUM_FEATURES) {
+			Debug.pl("! ERROR: The data in the featureStructure argument seems to indicate more" +
+					" features than is currently possible.");
+			throw new IllegalArgumentException();
+		}
 		for (int i = 0; i < parsed.length(); i++) {
-			if (parsed.charAt(i) == '1')
+			if (parsed.charAt(i) != '0')
 				useFeature(i);
 		}
 		
