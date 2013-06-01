@@ -1,3 +1,6 @@
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -172,7 +175,6 @@ public class toDB {
             entry_values.add(Integer.toString(u_p.result));
             entry_values.add(Integer.toString(u_p.timeStamp));
             values = Database.valueFormatter(entry_values);         //This is a string
-
             database.addToBatch(table_name,values);
 
             // counter
@@ -180,7 +182,6 @@ public class toDB {
                 System.out.println("Progression:   " + counter);
                 database.executeBatch();
                 database.commitTransaction();
-
             }
             counter++;
             autoid++;
@@ -189,7 +190,6 @@ public class toDB {
         database.commitTransaction();
         database.turn_autoCommit_on();
         Database.indexTable(database,"rec_log_test");
-
     }
 	
 	public static void user_action2DB(Database database, int offset) throws Exception{
@@ -363,6 +363,29 @@ public class toDB {
         database.turn_autoCommit_on();
 
 		database.closeConnection();
+	}
+	
+	public static void tags2DB(Database db) throws SQLException{
+		Statement stmt= db.createStatement();
+		String query = "SELECT userID, tagIDstring";
+		ResultSet result = stmt.executeQuery(query);
+		
+		while(result.next()){
+			int userID = result.getInt("userID");
+			String tagIDString = result.getString("tagIDstring");
+			ArrayList<Integer> tagInts = Parser.semiColon_Integer_parser(tagIDString);
+			Iterator<Integer>  it = tagInts.iterator();
+			
+			Statement insertstmt= db.createStatement();
+			
+			while(it.hasNext()){
+				Integer tag = it.next();
+				if(tag != 0){
+					String insertquery = "INSERT INTO tags (userID,tag) VALUES("+userID+","+tag+")";
+					insertstmt.addBatch(insertquery);
+					}
+			}
+		}
 	}
 }
 

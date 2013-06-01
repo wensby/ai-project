@@ -192,6 +192,7 @@ public class Feature {
         }
 		return fromUser + toUser;
 	}
+
 	
 	/**
 	 * Checks the number of followees that the user and the item have in common.
