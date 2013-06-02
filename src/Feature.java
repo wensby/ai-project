@@ -12,7 +12,7 @@ public class Feature {
 	public static final int NUM_FEATURES = 12;
 	
 	// Feature array indices
-	// Remember, if you add or remove from this list, use completely new indices.
+	// Remember, ONLY add to this list, and use completely new indices (also increase the NUM_FEATURES)
 	public static final int USER_BIRTH_YEAR		 	= 0;
 	public static final int USER_GENDER 			= 1;
 	public static final int USER_NUM_TWEETS		 	= 2;
@@ -26,7 +26,7 @@ public class Feature {
 	public static final int NUM_RETWEETS_BETWEEN	= 10;
 	public static final int NUM_FOLLOWERS_IN_COMMON = 11;
 	
-	private Vector<Integer> featureVector = new Vector<Integer>(NUM_FEATURES);
+	private Integer[] featureVector;
 	private User user = null;
 	private Item item = null;
 	private boolean finished = false;
@@ -42,6 +42,7 @@ public class Feature {
 	public Feature(User user, Item item) {	
 		this.user = user;
 		this.item = item;
+		featureVector = new Integer[NUM_FEATURES];
 	}
 	
 	/**
@@ -65,12 +66,11 @@ public class Feature {
 		}
 		if (parsed.length() > NUM_FEATURES) {
 			Debug.pl("! ERROR: The data in the featureStructure argument seems to indicate more" +
-					" features than is currently possible.");
+					" features than is currently implemented.");
 			throw new IllegalArgumentException();
 		}
 		for (int i = 0; i < parsed.length(); i++) {
-			if (parsed.charAt(i) != '0')
-				useFeature(i);
+			if (parsed.charAt(i) != '0') useFeature(i);
 		}
 		
 		finish();
@@ -117,40 +117,40 @@ public class Feature {
 	public void useFeature(int featureIndex) {
 		switch(featureIndex) {
 			case(USER_BIRTH_YEAR) : 
-				featureVector.set(USER_BIRTH_YEAR, user.getBirthYear());
+				featureVector[USER_BIRTH_YEAR] = user.getBirthYear();
 				break;
 			case(USER_GENDER) :
-				featureVector.set(USER_GENDER, user.getGender());
+				featureVector[USER_GENDER] = user.getGender();
 				break;
 			case(USER_NUM_TWEETS) :
-				featureVector.set(USER_NUM_TWEETS, user.getNumTweets());
+				featureVector[USER_NUM_TWEETS] = user.getNumTweets();
 				break;
 			case(USER_NUM_FOLLOWING) :
-				featureVector.set(USER_NUM_FOLLOWING, user.getNumFollowing());
+				featureVector[USER_NUM_FOLLOWING] = user.getNumFollowing();
 				break;
 			case(ITEM_BIRTH_YEAR) :	
-				featureVector.set(ITEM_BIRTH_YEAR, item.getBirthYear());
+				featureVector[ITEM_BIRTH_YEAR] = item.getBirthYear();
 				break;
 			case(ITEM_GENDER) :
-				featureVector.set(ITEM_GENDER, item.getGender());
+				featureVector[ITEM_GENDER] = item.getGender();
 				break;
 			case(ITEM_NUM_TWEETS) :
-				featureVector.set(ITEM_NUM_TWEETS, item.getNumTweets());
+				featureVector[ITEM_NUM_TWEETS] = item.getNumTweets();
 				break;
 			case(ITEM_NUM_FOLLOWING) : 
-				featureVector.set(ITEM_NUM_FOLLOWING, item.getNumFollowing());
+				featureVector[ITEM_NUM_FOLLOWING] = item.getNumFollowing();
 				break;
 			case(NUM_COMMENTS_BETWEEN) :
-				featureVector.set(NUM_COMMENTS_BETWEEN, calcNumCommentsBetween(user, item));
+				featureVector[NUM_COMMENTS_BETWEEN] = calcNumCommentsBetween(user, item);
 				break;
 			case(NUM_AT_ACTION_BETWEEN) :
-				featureVector.set(NUM_AT_ACTION_BETWEEN, calcNumAtActionBetween(user, item));
+				featureVector[NUM_AT_ACTION_BETWEEN] = calcNumAtActionBetween(user, item);
 				break;
 			case(NUM_RETWEETS_BETWEEN) :
-				featureVector.set(NUM_RETWEETS_BETWEEN, calcNumReTweetsBetween(user, item));
+				featureVector[NUM_RETWEETS_BETWEEN] = calcNumReTweetsBetween(user, item);
 				break;
 			case(NUM_FOLLOWERS_IN_COMMON) :
-				featureVector.set(NUM_FOLLOWERS_IN_COMMON, calcNumFolloweesInCommon(user, item));
+				featureVector[NUM_FOLLOWERS_IN_COMMON] = calcNumFolloweesInCommon(user, item);
 				break;
 			default :
 				Debug.pl("! ERROR: Did not recognize the featureIndex.");
