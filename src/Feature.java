@@ -53,6 +53,7 @@ public class Feature {
 	 * number of 1 or 0 is smaller or equal to {@link Feature#NUM_FEATURES}.
 	 * @see Feature#generateFeatureStructureString()
 	 */
+	 
 	public Feature(User user, Item item, String featureStructure) {
 		this(user, item);
 		
@@ -72,6 +73,7 @@ public class Feature {
 		for (int i = 0; i < parsed.length(); i++) {
 			if (parsed.charAt(i) != '0') useFeature(i);
 		}
+
 		
 		finish();
 	}
@@ -115,6 +117,7 @@ public class Feature {
 	 * @param featureIndex is any of the static integers from the Feature class. For example: Feature.ITEM_BIRTH_YEAR
 	 */
 	public void useFeature(int featureIndex) {
+
 		switch(featureIndex) {
 			case(USER_BIRTH_YEAR) : 
 				featureVector[USER_BIRTH_YEAR] = user.getBirthYear();
@@ -205,7 +208,6 @@ public class Feature {
 		return fromUser + toUser;
 	}
 
-	
 	/**
 	 * Checks the number of followees that the user and the item have in common.
 	 * @param user is the user that will be used in this feature construction.
@@ -215,6 +217,7 @@ public class Feature {
 	private static Integer calcNumFolloweesInCommon(User user, Item item) {
 		return Util.calcCommonElements(user.getFollowing(), item.getFollowing());
 	}
+
 	
 	/**
 	 * Will construct a featureStructure String that specifies the set of features this Feature 

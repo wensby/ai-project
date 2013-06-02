@@ -7,7 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
-import java.util.Random;
+import java.util.HashSet;
 import java.util.Vector;
 
 public class User {
@@ -16,64 +16,79 @@ public class User {
 	private int gender;
 	private int numTweets;
 	private int numFollowing;
+	private int numFollowers;
+
+
 	private HashMap<Integer, Integer> numComments = new HashMap<Integer, Integer>();
 	private HashMap<Integer, Integer> numAtActions = new HashMap<Integer, Integer>();
 	private HashMap<Integer, Integer> numReTweets = new HashMap<Integer, Integer>();
-	private Vector<Integer> following = new Vector<Integer>();
+	private HashSet<Integer> followers;
+	private HashSet<Integer> following;
 	
+
 	/**
 	 * Constructs a User object of user with specified ID from the data in the specified database.
+	 * @throws Exception 
 	 */
+
+	
     public User(int userID, Database database) throws Exception{
     	if (!database.hasOpenConnection()) {
     		Debug.pl("! ERROR: Can't create User object when the database connection is closed.");
     		throw new IllegalArgumentException("Database object must have an open connection.");
     	}
-
-    	try {
-
-    		ResultSet userProfileResult; // will contain the result set from the user_profile query
-    		ResultSet userSNSResult; // will contain the result set from the userSNS query
-    		ResultSet userActionResult; // will contain the result set from the userAction query
-
-    		// Fetch all the data
-    		Statement statProfile = database.createStatement();
-    		statProfile.execute("SELECT * FROM user_profile WHERE UserID = " + userID + " LIMIT 1;");
-			userProfileResult = statProfile.getResultSet();
-			
-			Statement statSNS = database.createStatement();
-			statSNS.execute("SELECT * FROM userSNS WHERE followerUserID = " + userID + ";");
-			userSNSResult = statSNS.getResultSet();
-			
-			Statement statAction = database.createStatement();
-			statAction.execute("SELECT * FROM user_action WHERE userID = " + userID + ";");
-			userActionResult = statAction.getResultSet();
-			
-			// Build it, and he will come (the User, that is)
-            if (userProfileResult.next()){
-				this.userID = userProfileResult.getInt("UserID");
-				this.birthyear = userProfileResult.getInt("birthYear");
-				this.gender = userProfileResult.getInt("gender");
-				this.numTweets = userProfileResult.getInt("tweets");
-		    	initNumFollowing(userSNSResult);
-		    	initActions(userActionResult);
-            }else{
-                throw new Exception("User not found, with id: " + this.userID);
-			}
-	    	
-	    	// Clear the result sets, no need for those.
-	    	userProfileResult.close();
-	    	userSNSResult.close();
-	    	userActionResult.close();
-
-	    	statAction.close();
-	    	statSNS.close();
-	    	statProfile.close();
-	    	
-		} catch (SQLException e) { e.printStackTrace(); }
+    	this.followers = this.getFollowersFromDB(userID, database);
+    	this.following = this.getFolloweesFromDB(userID, database);
+    	this.numFollowing = this.followers.size();
+    	this.numFollowers = this.following.size();
+    	this.setUserID_birthYear_gender_num_Tweets_FromDB(userID, database);
+    	this.setActionsFromDB(userID, database);
     }
     
-    private void initActions(ResultSet userActionResult) throws SQLException {
+
+	private HashSet<Integer>  getFollowersFromDB(int userID, Database db) throws SQLException{
+    	Statement statm = db.createStatement();
+    	ResultSet res = statm.executeQuery("SELECT followerUserID FROM userSNS WHERE followeeUserID = " + userID + ";");
+		HashSet<Integer> followers = new HashSet<Integer>();
+    	while(res.next()){
+			followers.add(res.getInt("followerUserID"));
+		}
+		statm.close();
+		res.close();
+		return followers;
+    }
+    private HashSet<Integer>  getFolloweesFromDB(int userID, Database db) throws SQLException{
+    	Statement statm = db.createStatement();
+    	ResultSet res = statm.executeQuery("SELECT followeeUserID FROM userSNS WHERE followerUserID = " + userID + ";");
+    	HashSet<Integer> followees = new HashSet<Integer>();
+    	while(res.next()){
+			followees.add(res.getInt("followeeUserID"));
+		}
+		statm.close();
+		res.close();
+		return followees;
+    }
+	private void setUserID_birthYear_gender_num_Tweets_FromDB(int userID, Database database) throws Exception{
+		ResultSet userProfileResult; // will contain the result set from the user_profile query
+		Statement statProfile = database.createStatement();
+		statProfile.execute("SELECT * FROM user_profile WHERE UserID = " + userID + " LIMIT 1;");
+		userProfileResult = statProfile.getResultSet();
+		if (userProfileResult.next()){
+			this.userID = userProfileResult.getInt("UserID");
+			this.birthyear = userProfileResult.getInt("birthYear");
+			this.gender = userProfileResult.getInt("gender");
+			this.numTweets = userProfileResult.getInt("tweets");
+			}else{
+               throw new Exception("User not found, with id: " + this.userID);
+		}
+		statProfile.close();
+		userProfileResult.close();
+	}
+    private void setActionsFromDB(int userID, Database db) throws SQLException {
+    	ResultSet userActionResult; // will contain the result set from the userAction query
+		Statement statAction = db.createStatement();
+		statAction.execute("SELECT * FROM user_action WHERE userID = " + userID + ";");
+		userActionResult = statAction.getResultSet();
     	while (userActionResult.next()) {
     		int destUserID = userActionResult.getInt("destinationUserID");
     		int numComments = userActionResult.getInt("comment");
@@ -97,9 +112,9 @@ public class User {
     		numFollowing++;
     	}
     	this.numFollowing = numFollowing;
-    	userSNSResult.absolute(1); // move back the ResultSet cursor
+    	//userSNSResult.absolute(1); // move back the ResultSet cursor
     }
-    
+
     public int getBirthYear() {
     	return birthyear;
     }
@@ -120,7 +135,11 @@ public class User {
     	return numFollowing;
     }
     
-    public HashMap<Integer, Integer> getNumComments() {
+    public HashSet<Integer> getFollowing() {
+		return following;
+	}
+
+	public HashMap<Integer, Integer> getNumComments() {
     	return numComments;
     }
     
@@ -136,11 +155,18 @@ public class User {
         Debug.pl("FUNCTION get Keywords NOT IMPLEMENTED");
         return null;
     }
-    
+	public int getNumFollowers() {
+		return numFollowers;
+	}
+    public HashSet<Integer> getFollowers() {
+		return followers;
+	}
+
+	public HashSet<Integer> getfollowing() {
+		return following;
+	}
     /**
      * Returns the vector of user IDs that this user is following.
      */
-    public Vector<Integer> getFollowing() {
-    	return following;
-    }
+
 }

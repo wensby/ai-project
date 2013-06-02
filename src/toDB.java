@@ -365,11 +365,15 @@ public class toDB {
 		database.closeConnection();
 	}
 	
-	public static void tags2DB(Database db) throws SQLException{
+	public static void tags2DB(Database db) throws Exception{
 		Statement stmt= db.createStatement();
-		String query = "SELECT userID, tagIDstring";
+        Database.dropTableIndex(db,"tags");
+		String query = "SELECT userID, tagIDstring FROM user_profile WHERE NOT tagIDstring = 0;";
 		ResultSet result = stmt.executeQuery(query);
-		
+
+        db.turn_autoCommit_off();
+        int counter = 0;
+
 		while(result.next()){
 			int userID = result.getInt("userID");
 			String tagIDString = result.getString("tagIDstring");
@@ -379,13 +383,51 @@ public class toDB {
 			Statement insertstmt= db.createStatement();
 			
 			while(it.hasNext()){
+
 				Integer tag = it.next();
-				if(tag != 0){
-					String insertquery = "INSERT INTO tags (userID,tag) VALUES("+userID+","+tag+")";
-					insertstmt.addBatch(insertquery);
-					}
+                String insertquery = "INSERT INTO tags (userID,tag) VALUES("+userID+","+tag+");";
+                insertstmt.addBatch(insertquery);
+                insertstmt.executeBatch();
+
+
+                if (counter%100000 == 0){
+                    db.commitTransaction();
+                    Debug.pl("Progression: " + counter);
+                }
+                counter ++;
+
+
 			}
 		}
+        db.commitTransaction();
+        db.turn_autoCommit_on();
+        Database.indexTable(db,"tags");
+	}
+	
+	public static void cats2DB(Database db) throws SQLException{
+		Statement stmt= db.createStatement();
+		String query = "SELECT itemID, categoriesString FROM item;";
+		ResultSet result = stmt.executeQuery(query);
+		int counter =0;
+		Statement insertstmt= db.createStatement();
+		while(result.next()){	
+			int itemID = result.getInt("itemID");
+			String catString = result.getString("categoriesString");
+			ArrayList<Integer>cats = Parser.dot_Integer_parser(catString);
+			int N = cats.size();
+			int cat[]={0,0,0,0};
+			for(int i=0; i<N;i++){
+				cat[i] = cats.get(i);
+			}
+			String insertquery = "INSERT INTO itemCat (itemID, cat1,cat2,cat3,cat4) VALUES ("+itemID+","+cat[0]+","+cat[1]+","+cat[2]+","+cat[3]+")";
+			insertstmt.addBatch(insertquery);
+			counter++;
+			if(counter%100==0){
+				Debug.p(counter);
+				insertstmt.executeBatch();
+			}
+		}
+		insertstmt.executeBatch();
 	}
 }
 

@@ -6,10 +6,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 
 public class Database {
-    //public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "../Database/";
-    public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "E:/Homeworks/MachineLearning_Project/workspace/";
+    public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "../Database/";
+    //public static final String PROJECT_RELATIVE_PATH_WITHOUT_FILE = "/Volumes/Ram Disk/";
     public static final String JDBC_DRIVER = "org.sqlite.JDBC";
     public static final String JDBC_URL_WITHOUT_FILE = "jdbc:sqlite:" + PROJECT_RELATIVE_PATH_WITHOUT_FILE;
     public static final String JDBC_USER = "root";
@@ -22,6 +23,7 @@ public class Database {
 
     private Connection conn = null;
     private Statement stat = null;
+    private ResultSet rs = null;
     private PreparedStatement prep = null;
     
     /**
@@ -69,7 +71,8 @@ public class Database {
         stat.executeUpdate("CREATE TABLE \"user_profile\" (\"userID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"birthYear\" INTEGER NOT NULL , \"gender\" INTEGER NOT NULL , \"tweets\" INTEGER NOT NULL , \"tagIDstring\" TEXT NOT NULL );");
         stat.executeUpdate("CREATE TABLE \"tags\" (\"autoID\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE , \"userID\" INTEGER NOT NULL , \"tag\" INTEGER NOT NULL );");
         stat.executeUpdate("CREATE TABLE \"itemKey\" (\"autoID\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE , \"itemID\" INTEGER NOT NULL , \"key\" INTEGER NOT NULL );");
-        
+        stat.executeUpdate("CREATE TABLE \"itemCat\" (\"autoid\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL , \"itemID\" INTEGER NOT NULL , \"cat1\" INTEGER NOT NULL , \"cat2\" INTEGER NOT NULL , \"cat3\" INTEGER NOT NULL , \"cat4\" INTEGER NOT NULL )");
+
         conn.close();
         
         Debug.pl("New database created at location:  " + PROJECT_RELATIVE_PATH_WITHOUT_FILE + filename);
@@ -136,7 +139,6 @@ public class Database {
      * Returns an array of Object, where each element corresponds to the different columns in that table.
      * This method may be prone to send exceptions.
      * @return an array of Object, corresponding to each column of that row
-     * @deprecated
      */
     public Object[] getOneRow(String tableName, int offset) throws SQLException {
 		ResultSet result = stat.executeQuery("SELECT * FROM " + tableName + " LIMIT 1 OFFSET " + offset);
@@ -152,7 +154,8 @@ public class Database {
     //SELECT * FROM sqlite_master WHERE type = 'index';
 
     /**
-     * Returns an array of Object, where each element corresponds to the different columns in that table.
+   * Returns an array of Object, where each element corresponds to the different columns in that table.
+
      * @param tableName
      * @param index
      * @return
@@ -173,6 +176,45 @@ public class Database {
         }
         return arrayResult;
     }
+
+    /**
+     * Gets one random row from tableName. Only works with rec_log_train and rec_log_test.
+     * @param tableName
+     * @return
+     * @throws Exception
+     */
+    public Object[] rand_getOneRow(String tableName) throws Exception{
+        Random rand = new Random();
+        int index = 1;
+        switch (tableName){
+            case ("rec_log_train"):
+                index = rand.nextInt(Util.TOTAL_DATABASE_REC_LOG_TRAIN_LENGTH) + 1;
+                break;
+            case ("rec_log_test"):
+                index = rand.nextInt(Util.TOTAL_DATABASE_REC_LOG_TEST_LENGTH) + 1;
+                break;
+            default:
+                throw new Exception("Table "+ tableName + " is not liable for random picking.");
+        }
+
+        ResultSet result = stat.executeQuery("SELECT * FROM " + tableName + " WHERE autoID = " + index);
+        int numColumns = result.getMetaData().getColumnCount();
+        Object[] arrayResult = new Object[numColumns];
+        for (int column = 0; column < numColumns; column++) {
+            arrayResult[column] = result.getObject(column + 1);
+        }
+        return arrayResult;
+    }
+
+    /**
+     * Gets one random positive row from tableName. Only works with rec_log_train table....
+     */
+    public Object[] rand_getPositiveRecord() throws Exception{
+            // SOMEONE FIGURE THIS ONE OUT!
+         return null;
+    }
+
+
 
     
     //Queries 
@@ -211,7 +253,7 @@ public class Database {
      * To execute the batch, call the function executeBatch()
      */
     public void addToBatch(String table, String values) throws SQLException{
-        this.stat.addBatch("INSERT OR IGNORE INTO "+ table + " VALUES " +values+ ";");
+        this.stat.addBatch("INSERT OR IGNORE INTO " + table + " VALUES " + values + ";");
     }
 
     public void executeBatch()throws Exception{
@@ -278,6 +320,7 @@ public class Database {
         nStat.executeUpdate("CREATE TABLE \"user_profile\" (\"userID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"birthYear\" INTEGER NOT NULL , \"gender\" INTEGER NOT NULL , \"tweets\" INTEGER NOT NULL , \"tagIDstring\" TEXT NOT NULL );");
         nStat.executeUpdate("CREATE TABLE \"tags\" (\"autoID\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE , \"userID\" INTEGER NOT NULL , \"tag\" INTEGER NOT NULL );");
         nStat.executeUpdate("CREATE TABLE \"itemKey\" (\"autoID\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE , \"itemID\" INTEGER NOT NULL , \"key\" INTEGER NOT NULL );");
+        nStat.executeUpdate("CREATE TABLE \"itemCat\" (\"autoid\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL , \"itemID\" INTEGER NOT NULL , \"cat1\" INTEGER NOT NULL , \"cat2\" INTEGER NOT NULL , \"cat3\" INTEGER NOT NULL , \"cat4\" INTEGER NOT NULL );");
 
         Debug.pl("Tables created in backup database");
 
@@ -306,6 +349,8 @@ public class Database {
         Debug.pl("Table tags transferred");
         nStat.executeUpdate("INSERT INTO newDatabase.itemKey(autoID, itemID, key) SELECT * FROM oldDatabase.itemKey;");
         Debug.pl("Table itemKey transferred");
+        nStat.executeUpdate("INSERT INTO newDatabase.itemCat(autoID, itemID, cat1, cat2, cat3, cat4) SELECT * FROM oldDatabase.itemCat;");
+
 
         Debug.pl("Backup finished!");
     }
@@ -338,7 +383,8 @@ public class Database {
                 database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS userProfileIndex ON user_profile (UserId);");
                 break;
             case ("tags") :
-                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS tagsIndex ON tags (userID);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS tagsIndex1 ON tags (userID);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS tagsIndex2 ON tags (tag);");
                 break;
             case ("itemKey") :
                 database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS itemKeyIndex ON itemKey (itemID);");
@@ -348,6 +394,13 @@ public class Database {
                 break;
             case ("rec_log_test") :
                 database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS recLogTestIndex ON rec_log_test (autoID);");
+                break;
+            case ("itemCat") :
+                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS itemCatIndex1 ON itemCat (itemID);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS itemCatIndex2 ON itemCat (cat1);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS itemCatIndex3 ON itemCat (cat2);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS itemCatIndex4 ON itemCat (cat3);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS itemCatIndex5 ON itemCat (cat4);");
                 break;
             default :
                 Debug.pl("! ERROR: Did not recognize table name.");
@@ -384,7 +437,8 @@ public class Database {
                 database.getStatement().executeUpdate("DROP INDEX IF EXISTS userProfileIndex;");
                 break;
             case ("tags") :
-                database.getStatement().executeUpdate("DROP INDEX IF EXISTS tagsIndex;");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS tagsIndex1;");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS tagsIndex2;");
                 break;
             case ("itemKey") :
                 database.getStatement().executeUpdate("DROP INDEX IF EXISTS itemKeyIndex;");
@@ -395,6 +449,13 @@ public class Database {
             case ("rec_log_test") :
                 database.getStatement().executeUpdate("DROP INDEX IF EXISTS recLogTestIndex;");
                 break;
+            case ("itemCat") :
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS itemCatIndex1;");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS itemCatIndex2;");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS itemCatIndex3;");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS itemCatIndex4;");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS itemCatIndex5;");
+                break;
             default :
                 Debug.pl("! ERROR: Did not recognize table name.");
                 break;
@@ -403,52 +464,9 @@ public class Database {
         Debug.pl("> Table " + table + " from database " + database.name + " is no longer indexed.");
     }
 
-    public static void vacuumTable(Database database, String table) throws Exception {
-        Debug.pl("> Vacuuming table " + table + " in database " + database.name);
-
-        if (!(database.hasOpenConnection())) {
-            Debug.pl("! The databases does not have an open connection.");
-            return;
-        }
-        switch (table) {
-            case ("item") :
-                database.getStatement().executeUpdate("VACUUM item;");
-                break;
-            case ("userSNS") :
-                database.getStatement().executeUpdate("VACUUM userSNS;");
-                break;
-            case ("user_action") :
-                database.getStatement().executeUpdate("VACUUM user_action;");
-                break;
-            case ("user_keywords") :
-                database.getStatement().executeUpdate("VACUUM user_keywords;");
-                break;
-            case ("user_profile") :
-                database.getStatement().executeUpdate("VACUUM user_profile;");
-                break;
-            case ("tags") :
-                database.getStatement().executeUpdate("VACUUM tags;");
-                break;
-            case ("itemKey") :
-                database.getStatement().executeUpdate("VACUUM itemKey;");
-                break;
-            case ("rec_log_train") :
-                database.getStatement().executeUpdate("VACUUM rec_log_train;");
-                break;
-            case ("rec_log_test") :
-                database.getStatement().executeUpdate("VACUUM rec_log_test;");
-                break;
-            default :
-                Debug.pl("! ERROR: Did not recognize table name.");
-                break;
-        }
-        Debug.pl("> Table " + table + " from database " + database.name + " vacuumed.");
-    }
-
-
     public static void vacuumDatabase(Database database){
         try{
-            Debug.pl("Vacuuming database " + database.name);
+            Debug.pl("Vacuuming database " + database.name + ". This will take some time...");
             database.getStatement().executeUpdate("VACUUM;");
             Debug.pl("Vacuuming completed.");
         }
@@ -466,6 +484,7 @@ public class Database {
             Database.indexTable(database,"itemKey");
             Database.indexTable(database,"rec_log_train");
             Database.indexTable(database,"rec_log_test");
+            Database.indexTable(database, "itemCat");
         }
         catch (Exception e){ e.printStackTrace();}
     }
@@ -481,6 +500,7 @@ public class Database {
             Database.dropTableIndex(database,"itemKey");
             Database.dropTableIndex(database,"rec_log_train");
             Database.dropTableIndex(database,"rec_log_test");
+            Database.dropTableIndex(database, "itemCat");
         }
         catch (Exception e){ e.printStackTrace();}
     }
@@ -493,6 +513,7 @@ public class Database {
             database.getStatement().executeUpdate("DROP INDEX IF EXISTS indFollID;");
             database.getStatement().executeUpdate("DROP INDEX IF EXISTS indAutoID;");
             database.getStatement().executeUpdate("DROP INDEX IF EXISTS userKeywordsIndex;");
+            database.getStatement().executeUpdate("DROP INDEX IF EXISTS tagsIndex;");
         }
         catch (Exception e){e.printStackTrace();}
     }
@@ -520,6 +541,7 @@ public class Database {
     	try {
 			stat = conn.createStatement();
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -572,6 +594,9 @@ public class Database {
 	        case ("itemKey") :
 	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.itemKey(autoID, itemID, key) SELECT * FROM orig.itemKey;");
 	        	break;
+            case ("itemCat") :
+                dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.itemCat(autoID, itemID, cat1, cat2, cat3, cat4) SELECT * FROM orig.itemCat;");
+                break;
 	        default :
 	        	Debug.pl("! ERROR: Did not recognize table name.");
 	        	break;
@@ -644,8 +669,10 @@ public class Database {
 			}
 			itemStat.close();
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (Exception e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -670,6 +697,7 @@ public class Database {
 			}
 			
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
@@ -692,6 +720,7 @@ public class Database {
 			rSet.close();
 			trainDataStat.close();
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

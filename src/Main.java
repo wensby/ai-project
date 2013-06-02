@@ -1,3 +1,9 @@
+import com.sun.xml.internal.bind.v2.TODO;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Vector;
+
 /**
  * The Main-class.
  * @author Lukas J. Wensby
@@ -10,15 +16,15 @@ public class Main{
     public static void main(String []args) throws Exception{
 
 
-    	Database db = new Database("DB_MAY30");
+
+    	Database db = new Database("DB_JUN2");
     	db.openConnection();
         long startTime = System.currentTimeMillis();
 
-        //Database.vacuumDatabase(db);
-        Database.refactorDatbase(db);
-        //Database.dropAllTableIndexes(db);
+        //DataPreparer dp = new DataPreparer(db,1000);
 
-        //DataPreparer dp = new DataPreparer(db,10000000);
+        SvmInterface.Example.TestSimpleSvm();
+
 
         long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;
