@@ -1,3 +1,4 @@
+import java.util.Calendar;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
@@ -9,7 +10,7 @@ import java.util.regex.Pattern;
 
 public class Feature {
 	// The amount of different possible features
-	public static final int NUM_FEATURES = 12;
+	public static final int NUM_FEATURES = 20;
 	
 	// Feature array indices
 	// Remember, ONLY add to this list, and use completely new indices (also increase the NUM_FEATURES)
@@ -25,6 +26,15 @@ public class Feature {
 	public static final int NUM_AT_ACTION_BETWEEN	= 9;
 	public static final int NUM_RETWEETS_BETWEEN	= 10;
 	public static final int NUM_FOLLOWERS_IN_COMMON = 11;
+	public static final int DIFF_YEARS 				= 12;
+	public static final int COMMENT_RATIO			= 13;
+	public static final int AT_ACTION_RATIO			= 14;
+	public static final int RETWEETS_RATIO			= 15;
+	public static final int ITEM_NUM_FOLLOWERS		= 16;
+	public static final int USER_AGE_RANK			= 17;
+	public static final int ITEM_AGE_RANK			= 18;
+	public static final int NUM_FOLLOWED_FOLLOWERS	= 19;
+
 	
 	private Double[] featureVector;
 	private User user = null;
@@ -129,7 +139,7 @@ public class Feature {
 				featureVector[USER_NUM_TWEETS] = (double) user.getNumTweets();
 				break;
 			case(USER_NUM_FOLLOWING) :
-				featureVector[USER_NUM_FOLLOWING] = (double) user.getNumFollowing();
+				featureVector[USER_NUM_FOLLOWING] = (double) user.getNumFollowees();
 				break;
 			case(ITEM_BIRTH_YEAR) :	
 				featureVector[ITEM_BIRTH_YEAR] = (double) item.getBirthYear();
@@ -141,7 +151,7 @@ public class Feature {
 				featureVector[ITEM_NUM_TWEETS] = (double) item.getNumTweets();
 				break;
 			case(ITEM_NUM_FOLLOWING) : 
-				featureVector[ITEM_NUM_FOLLOWING] = (double) item.getNumFollowing();
+				featureVector[ITEM_NUM_FOLLOWING] = (double) item.getNumFollowees();
 				break;
 			case(NUM_COMMENTS_BETWEEN) :
 				featureVector[NUM_COMMENTS_BETWEEN] = (double) calcNumCommentsBetween(user, item);
@@ -155,11 +165,35 @@ public class Feature {
 			case(NUM_FOLLOWERS_IN_COMMON) :
 				featureVector[NUM_FOLLOWERS_IN_COMMON] = (double) calcNumFolloweesInCommon(user, item);
 				break;
+			case (DIFF_YEARS):
+				featureVector[DIFF_YEARS] = (double) (user.getBirthYear() - item.getBirthYear());
+				break;
+			case (COMMENT_RATIO):
+				featureVector[COMMENT_RATIO] = ((double) calcNumCommentsBetween(user,item) / user.getNumTweets());
+				break;
+			case (AT_ACTION_RATIO):
+				featureVector[AT_ACTION_RATIO] = ((double) calcNumAtActionBetween(user,item) / user.getNumTweets());
+			break;
+			case (RETWEETS_RATIO):
+				featureVector[RETWEETS_RATIO] = ((double) calcNumReTweetsBetween(user,item) / user.getNumTweets());
+				break;
+			case (ITEM_NUM_FOLLOWERS):
+				featureVector[RETWEETS_RATIO] = ((double) item.getNumFollowers());
+				break;
+			case (USER_AGE_RANK):
+				featureVector[USER_AGE_RANK] = ((double) calcAgeRank(user.getBirthYear()));
+				break;
+			case (ITEM_AGE_RANK):
+				featureVector[ITEM_AGE_RANK] = ((double) calcAgeRank(item.getBirthYear()));
+				break;
+			case (NUM_FOLLOWED_FOLLOWERS) :
+				featureVector[ITEM_AGE_RANK] = ((double) calcNumFollowedFollowers(user, item));
+				break;
 			default :
 				Debug.pl("! ERROR: Did not recognize the featureIndex.");
 		}
 	}
-	
+
 	private static int calcNumReTweetsBetween(User user, Item item) {
 		int fromUser = 0;
 		int toUser = 0;
@@ -215,7 +249,37 @@ public class Feature {
 	 * @return an integer number that represents how many followees they have in common.
 	 */
 	private static int calcNumFolloweesInCommon(User user, Item item) {
-		return Util.calcCommonElements(user.getFollowing(), item.getFollowing());
+		return Util.calcCommonElements(user.getFollowees(), item.getFollowees());
+	}
+	
+	/**
+	 * Checks the number of followees that the user that follows the given item.
+	 * @param user is the user that will be used in this feature construction.
+	 * @param item is the item that will be used in this feature construction.
+	 * @return an integer number that represents how many user followee follows the items
+	 */
+	private static int calcNumFollowedFollowers(User user, Item item) {
+		return Util.calcCommonElements(user.getFollowees(), item.getFollowers());
+	}
+	
+	/**
+	 * Calculate an age rank
+	 * @param birthYear
+	 * @return
+	 */
+	private double calcAgeRank(int birthYear) {
+		float age = Calendar.getInstance().get(Calendar.YEAR) - birthYear;
+		int rank = 1;
+		
+		if ( age < 17)		rank = 2;
+		else if (age < 21)	rank = 3;
+		else if (age < 25)	rank = 4;
+		else if (age < 32)	rank = 5;
+		else if (age < 40)	rank = 6;
+		else if (age < 55)	rank = 7;
+		else				rank = 8;
+		
+		return rank;
 	}
 
 	
