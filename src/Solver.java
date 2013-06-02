@@ -81,7 +81,7 @@ public class Solver
 			for (IntegerPair pair : trainData)
 			{
 				dataClass.add( pair.V);
-				features.add(Feature.getFeatureVector(u, items.get(pair.K)));
+				//features.add(Feature.getFeatureVector(u, items.get(pair.K)));
 			}
 		}
 		Debug.pl("Feature found");

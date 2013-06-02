@@ -13,7 +13,8 @@ public class Util {
 	public static final int TOTAL_DATABASE_USER_ACTION_LENGTH 		= 10620243;
 	public static final int TOTAL_DATABASE_USER_KEYWORDS_LENGTH 	= 16150704;
 	public static final int TOTAL_DATABASE_USER_PROFILE_LENGTH 	    = 2320895;
-	
+	public static final int TOTAL_DATABASE_ITEM_CAT_LENGTH 	        = 6095;
+
 	/**
 	 * Calculates the amount of elements that two integer vectors have in common.
 	 */

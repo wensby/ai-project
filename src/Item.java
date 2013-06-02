@@ -27,10 +27,10 @@ public class Item extends User{
 		Statement stat_getCats = db.createStatement();
 		ResultSet res_getCats = stat_getCats.executeQuery(query_getCats);
 		if(res_getCats.next()){
-			this.categori.add(1, res_getCats.getInt("cat1"));
+			this.categori.add(0, res_getCats.getInt("cat1"));
 			this.categori.add(1, res_getCats.getInt("cat2"));
-			this.categori.add(1, res_getCats.getInt("cat3"));
-			this.categori.add(1, res_getCats.getInt("cat4"));
+			this.categori.add(2, res_getCats.getInt("cat3"));
+			this.categori.add(3, res_getCats.getInt("cat4"));
 		}else{
 			throw new Exception("could not found any entry with itemID "+Integer.toString(itemID));
 		}
@@ -46,7 +46,7 @@ public class Item extends User{
 		Statement stat = db.createStatement();
 		ResultSet res = stat.executeQuery(query_getFollowerKeys);
 		while(res.next()){
-			this.followerTags.put(res.getInt("Keyword"), res.getInt("Number"));
+			this.followerKeywords.put(res.getInt("Keyword"), res.getInt("Number"));
 		}
 		stat.close();
 	}
@@ -60,7 +60,7 @@ public class Item extends User{
 		Statement stat = db.createStatement();
 		ResultSet res = stat.executeQuery(query_getFollowerTags);
 		while(res.next()){
-			this.followerKeywords.put(res.getInt("tag"), res.getInt("Number"));
+			this.followerTags.put(res.getInt("tag"), res.getInt("Number"));
 		}
 		stat.close();
 	}

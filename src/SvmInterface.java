@@ -1,4 +1,6 @@
 import libsvm.*;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -15,7 +17,8 @@ import java.util.Vector;
  *  4. Check that the parameter and model is usable through svm.check_parameters
  *  5. Run training with a svm_problem and svm_parameter as input, giving a svm_model as output
  *  6. Save and load svm_model objects to/from files
- *  7. Predict
+ *  7. Predict result for a single data point
+ *
  */
 
 /*
@@ -31,9 +34,10 @@ Parameter options: (stripped down)
 
 public abstract class SvmInterface {
     // SVM types: (default C_SVC)
-    public static final int C_SVC = 0;
+    private static final int C_SVC = 0;
+
     //Kernel types: (default radial_basis RBF)
-    public static final int rbf = 2;
+    private static final int rbf = 2;
 
     public static class Svm_problem extends SvmInterface {
         private boolean finished;
@@ -57,7 +61,6 @@ public abstract class SvmInterface {
         /**
          * Append a data point with it's features and outcome to the svm problem (training) set.
          */
-        // TODO make sure this works correctly:
         public void AppendTrainingPoint(Integer outcome, Vector<Integer> features) throws IllegalArgumentException {
             if (finished) throw new IllegalArgumentException("The current training set is already finished, and can therefore not be appended.");
             if (outcome != 1 && outcome != -1) throw new IllegalArgumentException("Illegal outcome value: " + outcome);
@@ -120,18 +123,25 @@ public abstract class SvmInterface {
             parameter.kernel_type = rbf;
             parameter.svm_type = C_SVC;
             parameter.degree = 3;
+            parameter.cache_size = 10;
             SetGamma(gamma);
             SetC(c);
             SetStoppingTolerance(tol);
         }
 
-        public Svm_parameter() {
-            // All default
+        public Svm_parameter(int num_features) {
+            parameter.kernel_type = rbf;
+            parameter.svm_type = C_SVC;
+            parameter.degree = 3;
+            parameter.cache_size = 10;
+            parameter.eps = 0.01;
+            parameter.C = 1;
+            parameter.gamma = 1.0/(double)num_features;
         }
 
-        public void SetGamma(int gamma){
+        public void SetGamma(double gamma){
             if (gamma >= 0){
-                this.parameter.degree = gamma;
+                this.parameter.gamma = gamma;
             } else {
                 Debug.pl("> Setting parameter failed: Cannot set negative gamma.");
             }
@@ -147,7 +157,7 @@ public abstract class SvmInterface {
 
         public void SetStoppingTolerance(double tol){
             if (tol >= 0){
-                this.parameter.eps = tol;                                         //TODO this might be the wrong parameter!
+                this.parameter.eps = tol;
             } else {
                 Debug.pl("> Setting parameter failed: Cannot set negative stopping tolerance.");
             }
@@ -167,19 +177,63 @@ public abstract class SvmInterface {
         public Svm_model(Svm_problem prob, Svm_parameter param) {
             try{
                 if(prob == null || param == null) throw new NullPointerException("Svm model cannot take NULL as input.");
-                // TODO UNCOMMENT PARAMETER CHECK AFTER TEST
-                //if(svm.svm_check_parameter(prob.GetProblem(),param.GetParameter()) != null) throw new IllegalArgumentException("SVM parameter check failed.");
+                if(svm.svm_check_parameter(prob.GetProblem(),param.GetParameter()) != null) throw new IllegalArgumentException("SVM parameter check failed.");
                 this.problem = prob.GetProblem();
                 this.parameter = param.GetParameter();
                 train();
             } catch (Exception e){ e.printStackTrace();}
         }
 
-        public void Save(){
-
+        public void Save(String filename){
+            try{
+                if(filename == null || filename.equals("")) throw new IllegalArgumentException("No filename provided");
+                File path = new File("../SvmModels/");
+                if (!path.exists()) path.mkdir();
+                // Save model:
+                svm.svm_save_model("../SvmModels/"+filename+".txt",this.model);
+            }
+            catch (Exception e) {e.printStackTrace();}
         }
 
-        public void Load(){
+        public void Save(String filename, String path){
+            try{
+                if(filename == null || filename.equals("")) throw new IllegalArgumentException("No filename provided");
+                if(path == null || path.equals("")) throw new IllegalArgumentException("No path provided");
+                File dir = new File(path);
+                if (!dir.exists()) dir.mkdir();
+                // Save model:
+                svm.svm_save_model(path+"/"+filename+".txt",this.model);
+            }
+            catch (Exception e) {e.printStackTrace();}
+        }
+
+        public void Load(String filename){
+            try{
+                if(filename == null || filename.equals("")) throw new IllegalArgumentException("No filename provided");
+                File path = new File("../SvmModels/");
+                if (!path.exists()) throw new IllegalArgumentException("The default folder ../SvmModels/ does not exist");
+                String filepath  = "../SvmModels/"+filename+".txt";
+                File file = new File(filepath);
+                if (!file.exists()) throw new IllegalArgumentException("The file "+ file +" does not exist.");
+                // Load model:
+                this.model = svm.svm_load_model(filepath);
+            }
+            catch (Exception e) {e.printStackTrace();}
+        }
+
+        public void Load(String filename, String path){
+            try{
+                if(filename == null || filename.equals("")) throw new IllegalArgumentException("No filename provided");
+                if(path == null || path.equals("")) throw new IllegalArgumentException("No filename provided");
+                File dir = new File(path);
+                if (!dir.exists()) throw new IllegalArgumentException("The given folder " + path + " does not exist");
+                String filepath  = path+"/"+filename+".txt";
+                File file = new File(filepath);
+                if (!file.exists()) throw new IllegalArgumentException("The file "+ file +" does not exist.");
+                // Load model:
+                this.model = svm.svm_load_model(filepath);
+            }
+            catch (Exception e) {e.printStackTrace();}
 
         }
 
@@ -189,6 +243,61 @@ public abstract class SvmInterface {
 
         public svm_model GetModel(){
             return this.model;
+        }
+    }
+
+    public static class Example extends SvmInterface{
+        public static Vector<Integer> GetPositiveFeatureVector(){
+            Vector<Integer> v = new  Vector<Integer>();
+            v.add(1);
+            v.add(-1);
+            v.add(1);
+            v.add(-1);
+            return v;
+        }
+
+        public static Vector<Integer> GetNegativeFeatureVector(){
+            Vector<Integer> v = new  Vector<Integer>();
+            v.add(-1);
+            v.add(1);
+            v.add(-1);
+            v.add(1);
+            return v;
+        }
+
+        public static void TestSimpleSvm(){
+            int num_features = 4;
+            int num_training_samples = 100;
+            Svm_parameter param = new Svm_parameter(num_features);
+            Svm_problem prob = new Svm_problem(num_features);
+
+            for(int i=0; i<num_training_samples/2;i++){
+                prob.AppendTrainingPoint(1,GetPositiveFeatureVector());
+            }
+
+            for(int i=0; i<num_training_samples/2;i++){
+                prob.AppendTrainingPoint(-1, GetNegativeFeatureVector());
+            }
+
+            prob.FinalizeTrainingSet();
+
+            if (CheckParameterValidity(prob,param)){
+                Debug.pl("Parameter validity check passed.");
+            }
+
+            Svm_model model = new Svm_model(prob,param);
+            model.Save("model1");
+            model.Load("model1");
+
+            int correct = 0;
+            int num_test_samples = num_training_samples/10;
+            for(int i=0; i<num_test_samples/2;i++){
+                if(1 == PredictSingleDataPoint(model,GetPositiveFeatureVector())) correct++;
+                if(-1 == PredictSingleDataPoint(model, GetNegativeFeatureVector())) correct++;
+            }
+            double correctness = (double)correct/(double)num_test_samples;
+
+            Debug.pl("Finished SVM example with correctness of: " + correctness*100 + "%");
         }
     }
 
@@ -222,7 +331,6 @@ public abstract class SvmInterface {
         return node;
     }
 
-
     /**
      * This method allows for manual checking of parameter validity. Bear in mind that this will automatically
      * happen when a SVM model object is created. Returns TRUE if the model-parameter combination is valid.
@@ -232,6 +340,8 @@ public abstract class SvmInterface {
         try{
             if(svm.svm_check_parameter(prob.GetProblem(),param.GetParameter()) == null){
                 check = true;
+            } else{
+                Debug.pl("Parameter validity check ERROR: "+ svm.svm_check_parameter(prob.GetProblem(),param.GetParameter()));
             }
         } catch (Exception e){ e.printStackTrace();}
         return check;

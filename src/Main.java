@@ -1,5 +1,8 @@
+import com.sun.xml.internal.bind.v2.TODO;
+
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Vector;
 
 /**
  * The Main-class.
@@ -14,12 +17,14 @@ public class Main{
 
 
 
-    	Database db = new Database("DB_MAY31");
+    	Database db = new Database("DB_JUN2");
     	db.openConnection();
         long startTime = System.currentTimeMillis();
 
+        //DataPreparer dp = new DataPreparer(db,1000);
 
-        DataPreparer dp = new DataPreparer(db,1000);
+        SvmInterface.Example.TestSimpleSvm();
+
 
         long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;

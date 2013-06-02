@@ -117,6 +117,7 @@ public class Feature {
 	 * @param featureIndex is any of the static integers from the Feature class. For example: Feature.ITEM_BIRTH_YEAR
 	 */
 	public void useFeature(int featureIndex) {
+
 		switch(featureIndex) {
 			case(USER_BIRTH_YEAR) : 
 				featureVector.set(USER_BIRTH_YEAR, user.getBirthYear());
@@ -130,7 +131,7 @@ public class Feature {
 			case(USER_NUM_FOLLOWING) :
 				featureVector.set(USER_NUM_FOLLOWING, user.getNumFollowing());
 				break;
-			case(ITEM_BIRTH_YEAR) :	
+			case(ITEM_BIRTH_YEAR) :
 				featureVector.set(ITEM_BIRTH_YEAR, item.getBirthYear());
 				break;
 			case(ITEM_GENDER) :
@@ -139,7 +140,7 @@ public class Feature {
 			case(ITEM_NUM_TWEETS) :
 				featureVector.set(ITEM_NUM_TWEETS, item.getNumTweets());
 				break;
-			case(ITEM_NUM_FOLLOWING) : 
+			case(ITEM_NUM_FOLLOWING) :
 				featureVector.set(ITEM_NUM_FOLLOWING, item.getNumFollowing());
 				break;
 			case(NUM_COMMENTS_BETWEEN) :

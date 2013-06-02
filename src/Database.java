@@ -71,7 +71,8 @@ public class Database {
         stat.executeUpdate("CREATE TABLE \"user_profile\" (\"userID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"birthYear\" INTEGER NOT NULL , \"gender\" INTEGER NOT NULL , \"tweets\" INTEGER NOT NULL , \"tagIDstring\" TEXT NOT NULL );");
         stat.executeUpdate("CREATE TABLE \"tags\" (\"autoID\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE , \"userID\" INTEGER NOT NULL , \"tag\" INTEGER NOT NULL );");
         stat.executeUpdate("CREATE TABLE \"itemKey\" (\"autoID\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE , \"itemID\" INTEGER NOT NULL , \"key\" INTEGER NOT NULL );");
-        
+        stat.executeUpdate("CREATE TABLE \"itemCat\" (\"autoid\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL , \"itemID\" INTEGER NOT NULL , \"cat1\" INTEGER NOT NULL , \"cat2\" INTEGER NOT NULL , \"cat3\" INTEGER NOT NULL , \"cat4\" INTEGER NOT NULL )");
+
         conn.close();
         
         Debug.pl("New database created at location:  " + PROJECT_RELATIVE_PATH_WITHOUT_FILE + filename);
@@ -319,6 +320,7 @@ public class Database {
         nStat.executeUpdate("CREATE TABLE \"user_profile\" (\"userID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"birthYear\" INTEGER NOT NULL , \"gender\" INTEGER NOT NULL , \"tweets\" INTEGER NOT NULL , \"tagIDstring\" TEXT NOT NULL );");
         nStat.executeUpdate("CREATE TABLE \"tags\" (\"autoID\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE , \"userID\" INTEGER NOT NULL , \"tag\" INTEGER NOT NULL );");
         nStat.executeUpdate("CREATE TABLE \"itemKey\" (\"autoID\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE , \"itemID\" INTEGER NOT NULL , \"key\" INTEGER NOT NULL );");
+        nStat.executeUpdate("CREATE TABLE \"itemCat\" (\"autoid\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL , \"itemID\" INTEGER NOT NULL , \"cat1\" INTEGER NOT NULL , \"cat2\" INTEGER NOT NULL , \"cat3\" INTEGER NOT NULL , \"cat4\" INTEGER NOT NULL );");
 
         Debug.pl("Tables created in backup database");
 
@@ -347,6 +349,8 @@ public class Database {
         Debug.pl("Table tags transferred");
         nStat.executeUpdate("INSERT INTO newDatabase.itemKey(autoID, itemID, key) SELECT * FROM oldDatabase.itemKey;");
         Debug.pl("Table itemKey transferred");
+        nStat.executeUpdate("INSERT INTO newDatabase.itemCat(autoID, itemID, cat1, cat2, cat3, cat4) SELECT * FROM oldDatabase.itemCat;");
+
 
         Debug.pl("Backup finished!");
     }
@@ -390,6 +394,13 @@ public class Database {
                 break;
             case ("rec_log_test") :
                 database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS recLogTestIndex ON rec_log_test (autoID);");
+                break;
+            case ("itemCat") :
+                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS itemCatIndex1 ON itemCat (itemID);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS itemCatIndex2 ON itemCat (cat1);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS itemCatIndex3 ON itemCat (cat2);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS itemCatIndex4 ON itemCat (cat3);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS itemCatIndex5 ON itemCat (cat4);");
                 break;
             default :
                 Debug.pl("! ERROR: Did not recognize table name.");
@@ -438,6 +449,13 @@ public class Database {
             case ("rec_log_test") :
                 database.getStatement().executeUpdate("DROP INDEX IF EXISTS recLogTestIndex;");
                 break;
+            case ("itemCat") :
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS itemCatIndex1;");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS itemCatIndex2;");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS itemCatIndex3;");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS itemCatIndex4;");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS itemCatIndex5;");
+                break;
             default :
                 Debug.pl("! ERROR: Did not recognize table name.");
                 break;
@@ -466,6 +484,7 @@ public class Database {
             Database.indexTable(database,"itemKey");
             Database.indexTable(database,"rec_log_train");
             Database.indexTable(database,"rec_log_test");
+            Database.indexTable(database, "itemCat");
         }
         catch (Exception e){ e.printStackTrace();}
     }
@@ -481,6 +500,7 @@ public class Database {
             Database.dropTableIndex(database,"itemKey");
             Database.dropTableIndex(database,"rec_log_train");
             Database.dropTableIndex(database,"rec_log_test");
+            Database.dropTableIndex(database, "itemCat");
         }
         catch (Exception e){ e.printStackTrace();}
     }
@@ -574,6 +594,9 @@ public class Database {
 	        case ("itemKey") :
 	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.itemKey(autoID, itemID, key) SELECT * FROM orig.itemKey;");
 	        	break;
+            case ("itemCat") :
+                dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.itemCat(autoID, itemID, cat1, cat2, cat3, cat4) SELECT * FROM orig.itemCat;");
+                break;
 	        default :
 	        	Debug.pl("! ERROR: Did not recognize table name.");
 	        	break;

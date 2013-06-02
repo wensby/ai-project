@@ -115,8 +115,10 @@ public class DataPreparer {
         featureSet.finish();
         Vector<Integer> v = featureSet.getFeatureVector();
 
+        int num_features = v.size();
+
         // Create problem set (training set) for the svm: specify the number of features on creation
-        SvmInterface.Svm_problem prob = new SvmInterface.Svm_problem(v.size());
+        SvmInterface.Svm_problem prob = new SvmInterface.Svm_problem(num_features);
 
 
         for (int i= 0; i < data_size_to_use; i++){
@@ -127,7 +129,7 @@ public class DataPreparer {
             tmp_itemId = (Integer)obj_list[2];
             tmp_class  = (Integer)obj_list[3];
             featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
-            featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
+            //featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
             featureSet.useFeature(Feature.USER_BIRTH_YEAR);
             featureSet.finish();
             v = featureSet.getFeatureVector();
@@ -152,9 +154,6 @@ public class DataPreparer {
         // Now create the model for the SVM (this is in principle a trained SVM)
         Debug.pl("Training svm...");
         SvmInterface.Svm_model model = new SvmInterface.Svm_model(prob,param);
-
-        // At this point you might want to save the trained svm (the svm model)
-        model.Save();   // not yet implemented
 
 
         // You may now test the SVM with 10-fold cross-validation:
