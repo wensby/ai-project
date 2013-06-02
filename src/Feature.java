@@ -26,7 +26,7 @@ public class Feature {
 	public static final int NUM_RETWEETS_BETWEEN	= 10;
 	public static final int NUM_FOLLOWERS_IN_COMMON = 11;
 	
-	private Integer[] featureVector;
+	private Double[] featureVector;
 	private User user = null;
 	private Item item = null;
 	private boolean finished = false;
@@ -42,7 +42,7 @@ public class Feature {
 	public Feature(User user, Item item) {	
 		this.user = user;
 		this.item = item;
-		featureVector = new Integer[NUM_FEATURES];
+		featureVector = new Double[NUM_FEATURES];
 	}
 	
 	/**
@@ -98,14 +98,14 @@ public class Feature {
 	 * been "finished" 
 	 * @see Feature#finish()
 	 */
-	public Vector<Integer> getFeatureVector() {
+	public Vector<Double> getFeatureVector() {
 		if (!finished) {
 			Debug.pl("! ERROR: The Feature object instance has to be set as finished before featureVector can be retrieved.");
 			return null;
 		}
 		
-		Vector<Integer> returner = new Vector<Integer>();
-		for (Integer f : featureVector) {
+		Vector<Double> returner = new Vector<Double>();
+		for (Double f : featureVector) {
 			if (f != null) returner.add(f);
 		}
 		return returner;
@@ -120,47 +120,47 @@ public class Feature {
 
 		switch(featureIndex) {
 			case(USER_BIRTH_YEAR) : 
-				featureVector[USER_BIRTH_YEAR] = user.getBirthYear();
+				featureVector[USER_BIRTH_YEAR] = (double) user.getBirthYear();
 				break;
 			case(USER_GENDER) :
-				featureVector[USER_GENDER] = user.getGender();
+				featureVector[USER_GENDER] = (double) user.getGender();
 				break;
 			case(USER_NUM_TWEETS) :
-				featureVector[USER_NUM_TWEETS] = user.getNumTweets();
+				featureVector[USER_NUM_TWEETS] = (double) user.getNumTweets();
 				break;
 			case(USER_NUM_FOLLOWING) :
-				featureVector[USER_NUM_FOLLOWING] = user.getNumFollowing();
+				featureVector[USER_NUM_FOLLOWING] = (double) user.getNumFollowing();
 				break;
 			case(ITEM_BIRTH_YEAR) :	
-				featureVector[ITEM_BIRTH_YEAR] = item.getBirthYear();
+				featureVector[ITEM_BIRTH_YEAR] = (double) item.getBirthYear();
 				break;
 			case(ITEM_GENDER) :
-				featureVector[ITEM_GENDER] = item.getGender();
+				featureVector[ITEM_GENDER] = (double) item.getGender();
 				break;
 			case(ITEM_NUM_TWEETS) :
-				featureVector[ITEM_NUM_TWEETS] = item.getNumTweets();
+				featureVector[ITEM_NUM_TWEETS] = (double) item.getNumTweets();
 				break;
 			case(ITEM_NUM_FOLLOWING) : 
-				featureVector[ITEM_NUM_FOLLOWING] = item.getNumFollowing();
+				featureVector[ITEM_NUM_FOLLOWING] = (double) item.getNumFollowing();
 				break;
 			case(NUM_COMMENTS_BETWEEN) :
-				featureVector[NUM_COMMENTS_BETWEEN] = calcNumCommentsBetween(user, item);
+				featureVector[NUM_COMMENTS_BETWEEN] = (double) calcNumCommentsBetween(user, item);
 				break;
 			case(NUM_AT_ACTION_BETWEEN) :
-				featureVector[NUM_AT_ACTION_BETWEEN] = calcNumAtActionBetween(user, item);
+				featureVector[NUM_AT_ACTION_BETWEEN] = (double) calcNumAtActionBetween(user, item);
 				break;
 			case(NUM_RETWEETS_BETWEEN) :
-				featureVector[NUM_RETWEETS_BETWEEN] = calcNumReTweetsBetween(user, item);
+				featureVector[NUM_RETWEETS_BETWEEN] = (double) calcNumReTweetsBetween(user, item);
 				break;
 			case(NUM_FOLLOWERS_IN_COMMON) :
-				featureVector[NUM_FOLLOWERS_IN_COMMON] = calcNumFolloweesInCommon(user, item);
+				featureVector[NUM_FOLLOWERS_IN_COMMON] = (double) calcNumFolloweesInCommon(user, item);
 				break;
 			default :
 				Debug.pl("! ERROR: Did not recognize the featureIndex.");
 		}
 	}
 	
-	private static Integer calcNumReTweetsBetween(User user, Item item) {
+	private static int calcNumReTweetsBetween(User user, Item item) {
 		int fromUser = 0;
 		int toUser = 0;
 		
@@ -175,7 +175,7 @@ public class Feature {
 		return fromUser + toUser;
 	}
 
-	private static Integer calcNumAtActionBetween(User user, Item item) {
+	private static int calcNumAtActionBetween(User user, Item item) {
 		int fromUser = 0;
 		int toUser = 0;
 		
@@ -190,7 +190,7 @@ public class Feature {
 		return fromUser + toUser;
 	}
 
-	private static Integer calcNumCommentsBetween(User user, Item item) {
+	private static int calcNumCommentsBetween(User user, Item item) {
 		int fromUser = 0;
 		int toUser = 0;
 		try {
@@ -214,7 +214,7 @@ public class Feature {
 	 * @param item is the item that will be used in this feature construction.
 	 * @return an integer number that represents how many followees they have in common.
 	 */
-	private static Integer calcNumFolloweesInCommon(User user, Item item) {
+	private static int calcNumFolloweesInCommon(User user, Item item) {
 		return Util.calcCommonElements(user.getFollowing(), item.getFollowing());
 	}
 
@@ -232,7 +232,7 @@ public class Feature {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("FEATURE_STRUCTURE(");
-		for (Integer f : featureVector) {
+		for (Double f : featureVector) {
 			if (f != null) sb.append("1");
 			else sb.append("0");
 		}

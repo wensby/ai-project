@@ -44,8 +44,8 @@ public abstract class SvmInterface {
         private svm_problem problem = new svm_problem();
         private int training_set_length;
         private int num_features;
-        private ArrayList<Integer> training_outcomes = new ArrayList<>();
-        private ArrayList<ArrayList<svm_node>> training_features = new ArrayList<>();
+        private ArrayList<Integer> training_outcomes = new ArrayList<Integer>();
+        private ArrayList<ArrayList<svm_node>> training_features = new ArrayList<ArrayList<svm_node>>();
 
         /**
          * Creates a svm problem object, which can be considered the training set object for the svm.
@@ -61,15 +61,15 @@ public abstract class SvmInterface {
         /**
          * Append a data point with it's features and outcome to the svm problem (training) set.
          */
-        public void AppendTrainingPoint(Integer outcome, Vector<Integer> features) throws IllegalArgumentException {
+        public void AppendTrainingPoint(Integer outcome, Vector<Double> v) throws IllegalArgumentException {
             if (finished) throw new IllegalArgumentException("The current training set is already finished, and can therefore not be appended.");
             if (outcome != 1 && outcome != -1) throw new IllegalArgumentException("Illegal outcome value: " + outcome);
-            if(features == null) throw  new IllegalArgumentException("The input feature vector cannot have a NULL value.");
-            if(features.size()==0) throw  new IllegalArgumentException("The input feature vector is empty.");
+            if(v == null) throw  new IllegalArgumentException("The input feature vector cannot have a NULL value.");
+            if(v.size()==0) throw  new IllegalArgumentException("The input feature vector is empty.");
 
-            ArrayList<svm_node> tmp_features = new ArrayList<>();
-            for (int i = 0; i<features.size(); i++){
-                tmp_features.add(createSvmNode(i+1,features.get(i)));
+            ArrayList<svm_node> tmp_features = new ArrayList<svm_node>();
+            for (int i = 0; i<v.size(); i++){
+                tmp_features.add(createSvmNode(i+1,v.get(i)));
             }
 
             training_features.add(tmp_features);
@@ -247,21 +247,21 @@ public abstract class SvmInterface {
     }
 
     public static class Example extends SvmInterface{
-        public static Vector<Integer> GetPositiveFeatureVector(){
-            Vector<Integer> v = new  Vector<Integer>();
-            v.add(1);
-            v.add(-1);
-            v.add(1);
-            v.add(-1);
+        public static Vector<Double> GetPositiveFeatureVector(){
+            Vector<Double> v = new  Vector<Double>();
+            v.add(1.0);
+            v.add(-1.0);
+            v.add(1.0);
+            v.add(-1.0);
             return v;
         }
 
-        public static Vector<Integer> GetNegativeFeatureVector(){
-            Vector<Integer> v = new  Vector<Integer>();
-            v.add(-1);
-            v.add(1);
-            v.add(-1);
-            v.add(1);
+        public static Vector<Double> GetNegativeFeatureVector(){
+            Vector<Double> v = new  Vector<Double>();
+            v.add(-1.0);
+            v.add(1.0);
+            v.add(-1.0);
+            v.add(1.0);
             return v;
         }
 
@@ -304,21 +304,21 @@ public abstract class SvmInterface {
     /**
      * Predicts the class for a single data point, and returns the class.
      */
-    public static double PredictSingleDataPoint(Svm_model model, Vector<Integer> features){
-        return svm.svm_predict(model.GetModel(), createNodeArray(features));
+    public static double PredictSingleDataPoint(Svm_model model, Vector<Double> vector){
+        return svm.svm_predict(model.GetModel(), createNodeArray(vector));
     }
 
     public static void CrossValidate(){
 
     }
 
-    private static svm_node[] createNodeArray(Vector<Integer> v){
-        if(v == null) throw new IllegalArgumentException("Method does not accept NULL input.");
-        if(v.size() == 0) throw new IllegalArgumentException("Method does not take an input vector of zero size");
+    private static svm_node[] createNodeArray(Vector<Double> vector){
+        if(vector == null) throw new IllegalArgumentException("Method does not accept NULL input.");
+        if(vector.size() == 0) throw new IllegalArgumentException("Method does not take an input vector of zero size");
 
-        svm_node[] tmp_arr = new svm_node[v.size()];
-        for (int i = 0; i < v.size(); i++){
-            tmp_arr[i] = createSvmNode(i+1,v.get(i));
+        svm_node[] tmp_arr = new svm_node[vector.size()];
+        for (int i = 0; i < vector.size(); i++){
+            tmp_arr[i] = createSvmNode(i+1,vector.get(i));
         }
         return tmp_arr;
     }
