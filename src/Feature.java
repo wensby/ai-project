@@ -1,3 +1,4 @@
+import java.util.Calendar;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
@@ -9,7 +10,7 @@ import java.util.regex.Pattern;
 
 public class Feature {
 	// The amount of different possible features
-	public static final int NUM_FEATURES = 12;
+	public static final int NUM_FEATURES = 20;
 	
 	// Feature array indices
 	// Remember, ONLY add to this list, and use completely new indices (also increase the NUM_FEATURES)
@@ -25,8 +26,17 @@ public class Feature {
 	public static final int NUM_AT_ACTION_BETWEEN	= 9;
 	public static final int NUM_RETWEETS_BETWEEN	= 10;
 	public static final int NUM_FOLLOWERS_IN_COMMON = 11;
+	public static final int DIFF_YEARS 				= 12;
+	public static final int COMMENT_RATIO			= 13;
+	public static final int AT_ACTION_RATIO			= 14;
+	public static final int RETWEETS_RATIO			= 15;
+	public static final int ITEM_NUM_FOLLOWERS		= 16;
+	public static final int USER_AGE_RANK			= 17;
+	public static final int ITEM_AGE_RANK			= 18;
+	public static final int NUM_FOLLOWED_FOLLOWERS	= 19;
+
 	
-	private Integer[] featureVector;
+	private Double[] featureVector;
 	private User user = null;
 	private Item item = null;
 	private boolean finished = false;
@@ -42,7 +52,7 @@ public class Feature {
 	public Feature(User user, Item item) {	
 		this.user = user;
 		this.item = item;
-		featureVector = new Integer[NUM_FEATURES];
+		featureVector = new Double[NUM_FEATURES];
 	}
 	
 	/**
@@ -98,14 +108,14 @@ public class Feature {
 	 * been "finished" 
 	 * @see Feature#finish()
 	 */
-	public Vector<Integer> getFeatureVector() {
+	public Vector<Double> getFeatureVector() {
 		if (!finished) {
 			Debug.pl("! ERROR: The Feature object instance has to be set as finished before featureVector can be retrieved.");
 			return null;
 		}
 		
-		Vector<Integer> returner = new Vector<Integer>();
-		for (Integer f : featureVector) {
+		Vector<Double> returner = new Vector<Double>();
+		for (Double f : featureVector) {
 			if (f != null) returner.add(f);
 		}
 		return returner;
@@ -120,47 +130,71 @@ public class Feature {
 
 		switch(featureIndex) {
 			case(USER_BIRTH_YEAR) : 
-				featureVector[USER_BIRTH_YEAR] = user.getBirthYear();
+				featureVector[USER_BIRTH_YEAR] = (double) user.getBirthYear();
 				break;
 			case(USER_GENDER) :
-				featureVector[USER_GENDER] = user.getGender();
+				featureVector[USER_GENDER] = (double) user.getGender();
 				break;
 			case(USER_NUM_TWEETS) :
-				featureVector[USER_NUM_TWEETS] = user.getNumTweets();
+				featureVector[USER_NUM_TWEETS] = (double) user.getNumTweets();
 				break;
 			case(USER_NUM_FOLLOWING) :
-				featureVector[USER_NUM_FOLLOWING] = user.getNumFollowing();
+				featureVector[USER_NUM_FOLLOWING] = (double) user.getNumFollowees();
 				break;
 			case(ITEM_BIRTH_YEAR) :	
-				featureVector[ITEM_BIRTH_YEAR] = item.getBirthYear();
+				featureVector[ITEM_BIRTH_YEAR] = (double) item.getBirthYear();
 				break;
 			case(ITEM_GENDER) :
-				featureVector[ITEM_GENDER] = item.getGender();
+				featureVector[ITEM_GENDER] = (double) item.getGender();
 				break;
 			case(ITEM_NUM_TWEETS) :
-				featureVector[ITEM_NUM_TWEETS] = item.getNumTweets();
+				featureVector[ITEM_NUM_TWEETS] = (double) item.getNumTweets();
 				break;
 			case(ITEM_NUM_FOLLOWING) : 
-				featureVector[ITEM_NUM_FOLLOWING] = item.getNumFollowing();
+				featureVector[ITEM_NUM_FOLLOWING] = (double) item.getNumFollowees();
 				break;
 			case(NUM_COMMENTS_BETWEEN) :
-				featureVector[NUM_COMMENTS_BETWEEN] = calcNumCommentsBetween(user, item);
+				featureVector[NUM_COMMENTS_BETWEEN] = (double) calcNumCommentsBetween(user, item);
 				break;
 			case(NUM_AT_ACTION_BETWEEN) :
-				featureVector[NUM_AT_ACTION_BETWEEN] = calcNumAtActionBetween(user, item);
+				featureVector[NUM_AT_ACTION_BETWEEN] = (double) calcNumAtActionBetween(user, item);
 				break;
 			case(NUM_RETWEETS_BETWEEN) :
-				featureVector[NUM_RETWEETS_BETWEEN] = calcNumReTweetsBetween(user, item);
+				featureVector[NUM_RETWEETS_BETWEEN] = (double) calcNumReTweetsBetween(user, item);
 				break;
 			case(NUM_FOLLOWERS_IN_COMMON) :
-				featureVector[NUM_FOLLOWERS_IN_COMMON] = calcNumFolloweesInCommon(user, item);
+				featureVector[NUM_FOLLOWERS_IN_COMMON] = (double) calcNumFolloweesInCommon(user, item);
+				break;
+			case (DIFF_YEARS):
+				featureVector[DIFF_YEARS] = (double) (user.getBirthYear() - item.getBirthYear());
+				break;
+			case (COMMENT_RATIO):
+				featureVector[COMMENT_RATIO] = ((double) calcNumCommentsBetween(user,item) / user.getNumTweets());
+				break;
+			case (AT_ACTION_RATIO):
+				featureVector[AT_ACTION_RATIO] = ((double) calcNumAtActionBetween(user,item) / user.getNumTweets());
+			break;
+			case (RETWEETS_RATIO):
+				featureVector[RETWEETS_RATIO] = ((double) calcNumReTweetsBetween(user,item) / user.getNumTweets());
+				break;
+			case (ITEM_NUM_FOLLOWERS):
+				featureVector[RETWEETS_RATIO] = ((double) item.getNumFollowers());
+				break;
+			case (USER_AGE_RANK):
+				featureVector[USER_AGE_RANK] = ((double) calcAgeRank(user.getBirthYear()));
+				break;
+			case (ITEM_AGE_RANK):
+				featureVector[ITEM_AGE_RANK] = ((double) calcAgeRank(item.getBirthYear()));
+				break;
+			case (NUM_FOLLOWED_FOLLOWERS) :
+				featureVector[ITEM_AGE_RANK] = ((double) calcNumFollowedFollowers(user, item));
 				break;
 			default :
 				Debug.pl("! ERROR: Did not recognize the featureIndex.");
 		}
 	}
-	
-	private static Integer calcNumReTweetsBetween(User user, Item item) {
+
+	private static int calcNumReTweetsBetween(User user, Item item) {
 		int fromUser = 0;
 		int toUser = 0;
 		
@@ -175,7 +209,7 @@ public class Feature {
 		return fromUser + toUser;
 	}
 
-	private static Integer calcNumAtActionBetween(User user, Item item) {
+	private static int calcNumAtActionBetween(User user, Item item) {
 		int fromUser = 0;
 		int toUser = 0;
 		
@@ -190,7 +224,7 @@ public class Feature {
 		return fromUser + toUser;
 	}
 
-	private static Integer calcNumCommentsBetween(User user, Item item) {
+	private static int calcNumCommentsBetween(User user, Item item) {
 		int fromUser = 0;
 		int toUser = 0;
 		try {
@@ -214,8 +248,38 @@ public class Feature {
 	 * @param item is the item that will be used in this feature construction.
 	 * @return an integer number that represents how many followees they have in common.
 	 */
-	private static Integer calcNumFolloweesInCommon(User user, Item item) {
-		return Util.calcCommonElements(user.getFollowing(), item.getFollowing());
+	private static int calcNumFolloweesInCommon(User user, Item item) {
+		return Util.calcCommonElements(user.getFollowees(), item.getFollowees());
+	}
+	
+	/**
+	 * Checks the number of followees that the user that follows the given item.
+	 * @param user is the user that will be used in this feature construction.
+	 * @param item is the item that will be used in this feature construction.
+	 * @return an integer number that represents how many user followee follows the items
+	 */
+	private static int calcNumFollowedFollowers(User user, Item item) {
+		return Util.calcCommonElements(user.getFollowees(), item.getFollowers());
+	}
+	
+	/**
+	 * Calculate an age rank
+	 * @param birthYear
+	 * @return
+	 */
+	private double calcAgeRank(int birthYear) {
+		float age = Calendar.getInstance().get(Calendar.YEAR) - birthYear;
+		int rank = 1;
+		
+		if ( age < 17)		rank = 2;
+		else if (age < 21)	rank = 3;
+		else if (age < 25)	rank = 4;
+		else if (age < 32)	rank = 5;
+		else if (age < 40)	rank = 6;
+		else if (age < 55)	rank = 7;
+		else				rank = 8;
+		
+		return rank;
 	}
 
 	
@@ -232,7 +296,7 @@ public class Feature {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("FEATURE_STRUCTURE(");
-		for (Integer f : featureVector) {
+		for (Double f : featureVector) {
 			if (f != null) sb.append("1");
 			else sb.append("0");
 		}
