@@ -38,7 +38,7 @@ public class DataPreparer {
     	Object[] obj_list = null;
         Item tmp_item = null;
         User tmp_user = null;
-        Vector<Integer> tmp_features = null;
+        Vector<Double> tmp_features = null;
         int tmp_userId;
         int tmp_itemId;
         int tmp_class;
@@ -113,7 +113,7 @@ public class DataPreparer {
         featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
         featureSet.useFeature(Feature.USER_BIRTH_YEAR);
         featureSet.finish();
-        Vector<Integer> v = featureSet.getFeatureVector();
+        Vector<Double> v = featureSet.getFeatureVector();
 
         int num_features = v.size();
 
@@ -199,7 +199,7 @@ public class DataPreparer {
         featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
         featureSet.useFeature(Feature.USER_BIRTH_YEAR);
         featureSet.finish();
-        Vector<Integer> v = featureSet.getFeatureVector();
+        Vector<Double> v = featureSet.getFeatureVector();
 
         // Create problem set (training set) for the svm: specify the number of features on creation
         SvmInterface.Svm_problem prob = new SvmInterface.Svm_problem(v.size());
@@ -290,7 +290,7 @@ public class DataPreparer {
         writer.close();
     }
 
-    private String format_featureVector_for_SVM(Vector<Integer> v){
+    private String format_featureVector_for_SVM(Vector<Double> v){
         String out = "";
         for (int i = 0; i<v.size(); i++){
             out += " "+(i+1)+":"+v.elementAt(i);

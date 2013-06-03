@@ -15,7 +15,7 @@ public class User {
 	private int birthyear;
 	private int gender;
 	private int numTweets;
-	private int numFollowing;
+	private int numFollowee;
 	private int numFollowers;
 
 
@@ -23,7 +23,7 @@ public class User {
 	private HashMap<Integer, Integer> numAtActions = new HashMap<Integer, Integer>();
 	private HashMap<Integer, Integer> numReTweets = new HashMap<Integer, Integer>();
 	private HashSet<Integer> followers;
-	private HashSet<Integer> following;
+	private HashSet<Integer> followees;
 	
 
 	/**
@@ -38,9 +38,9 @@ public class User {
     		throw new IllegalArgumentException("Database object must have an open connection.");
     	}
     	this.followers = this.getFollowersFromDB(userID, database);
-    	this.following = this.getFolloweesFromDB(userID, database);
-    	this.numFollowing = this.followers.size();
-    	this.numFollowers = this.following.size();
+    	this.followees = this.getFolloweesFromDB(userID, database);
+    	this.numFollowee = this.followees.size();
+    	this.numFollowers = this.followers.size();
     	this.setUserID_birthYear_gender_num_Tweets_FromDB(userID, database);
     	this.setActionsFromDB(userID, database);
     }
@@ -100,21 +100,6 @@ public class User {
     	}
 	}
 
-    /**
-     * This method initializes two attributes of this user:<br>
-     * 1. The integer vector of all the user IDs that this user follows.<br>
-     * 2. The amount of users that this user follows.
-     */
-    private void initNumFollowing(ResultSet userSNSResult) throws SQLException {
-    	int numFollowing = 0;
-    	while (userSNSResult.next()) {
-    		following.add(userSNSResult.getInt(3));
-    		numFollowing++;
-    	}
-    	this.numFollowing = numFollowing;
-    	//userSNSResult.absolute(1); // move back the ResultSet cursor
-    }
-
     public int getBirthYear() {
     	return birthyear;
     }
@@ -131,12 +116,12 @@ public class User {
     	return userID;
     }
     
-    public int getNumFollowing() {
-    	return numFollowing;
+    public int getNumFollowees() {
+    	return numFollowee;
     }
     
-    public HashSet<Integer> getFollowing() {
-		return following;
+    public HashSet<Integer> getFollowees() {
+		return followees;
 	}
 
 	public HashMap<Integer, Integer> getNumComments() {
@@ -163,7 +148,7 @@ public class User {
 	}
 
 	public HashSet<Integer> getfollowing() {
-		return following;
+		return followees;
 	}
     /**
      * Returns the vector of user IDs that this user is following.
