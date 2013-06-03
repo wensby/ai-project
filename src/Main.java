@@ -15,7 +15,23 @@ public class Main{
 
     public static void main(String []args) throws Exception{
 
-
+    	Debug.start("test");
+    	Debug.start("test2");
+    	
+    	float a = 100000000;
+    	for (int i = 0; i < a; i++) {
+    		float b = 2;
+    		b = a + b;
+    		Debug.stop("test2");
+    		Debug.start("test2");
+    	}
+    	
+    	Debug.stop("test");
+    	
+    	Debug.pt("test");
+    	Debug.pt("test2");
+    	
+    	/**
 
     	Database db = new Database("DB_JUN2");
     	db.openConnection();
@@ -34,6 +50,6 @@ public class Main{
 
 
         //Tormod_classifier.test_Svm();
-
+		*/
     }
 }

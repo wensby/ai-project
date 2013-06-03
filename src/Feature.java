@@ -178,7 +178,7 @@ public class Feature {
 				featureVector[RETWEETS_RATIO] = ((double) calcNumReTweetsBetween(user,item) / user.getNumTweets());
 				break;
 			case (ITEM_NUM_FOLLOWERS):
-				featureVector[RETWEETS_RATIO] = ((double) item.getNumFollowers());
+				featureVector[ITEM_NUM_FOLLOWERS] = ((double) item.getNumFollowers());
 				break;
 			case (USER_AGE_RANK):
 				featureVector[USER_AGE_RANK] = ((double) calcAgeRank(user.getBirthYear()));
@@ -187,7 +187,7 @@ public class Feature {
 				featureVector[ITEM_AGE_RANK] = ((double) calcAgeRank(item.getBirthYear()));
 				break;
 			case (NUM_FOLLOWED_FOLLOWERS) :
-				featureVector[ITEM_AGE_RANK] = ((double) calcNumFollowedFollowers(user, item));
+				featureVector[NUM_FOLLOWED_FOLLOWERS] = ((double) calcNumFollowedFollowers(user, item));
 				break;
 			default :
 				Debug.pl("! ERROR: Did not recognize the featureIndex.");
