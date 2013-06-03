@@ -2,11 +2,6 @@ import java.util.Calendar;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
-/**
- * Feature class.
- * @author Lukas J. Wensby
- * @version 2013-06-01
- */
 
 public class Feature {
 	// The amount of different possible features

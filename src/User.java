@@ -30,7 +30,6 @@ public class User {
 	 * Constructs a User object of user with specified ID from the data in the specified database.
 	 * @throws Exception 
 	 */
-
 	
     public User(int userID, Database database) throws Exception{
     	if (!database.hasOpenConnection()) {

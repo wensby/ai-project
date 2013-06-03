@@ -17,9 +17,9 @@ public class Item extends User{
 	
 	public Item(int itemID, Database db) throws Exception{
 		super(itemID,db);
-		this.setCategoriFromDB(itemID, db);
-		this.setFollowerKeysFromDB(itemID, db);
-		this.setFollowerTagsFromDB(itemID, db);
+		//this.setCategoriFromDB(itemID, db);
+		//this.setFollowerKeysFromDB(itemID, db);
+		//this.setFollowerTagsFromDB(itemID, db);
 	}
 	private void setCategoriFromDB(int itemID, Database db) throws Exception{
 		this.categori = new ArrayList<Integer>();

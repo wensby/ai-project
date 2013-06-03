@@ -61,20 +61,22 @@ public abstract class SvmInterface {
         /**
          * Append a data point with it's features and outcome to the svm problem (training) set.
          */
-        public void AppendTrainingPoint(Integer outcome, Vector<Double> features) throws IllegalArgumentException {
-            if (finished) throw new IllegalArgumentException("The current training set is already finished, and can therefore not be appended.");
-            if (outcome != 1 && outcome != -1) throw new IllegalArgumentException("Illegal outcome value: " + outcome);
-            if(features == null) throw  new IllegalArgumentException("The input feature vector cannot have a NULL value.");
-            if(features.size()==0) throw  new IllegalArgumentException("The input feature vector is empty.");
+        public void AppendTrainingPoint(Integer outcome, Vector<Double> features){
+            try{
+                if (finished) throw new IllegalArgumentException("The current training set is already finished, and can therefore not be appended.");
+                if (outcome != 1 && outcome != -1) throw new IllegalArgumentException("Illegal outcome value: " + outcome);
+                if(features == null) throw  new IllegalArgumentException("The input feature vector cannot have a NULL value.");
+                if(features.size()==0) throw  new IllegalArgumentException("The input feature vector is empty.");
 
-            ArrayList<svm_node> tmp_features = new ArrayList<svm_node>();
-            for (int i = 0; i<features.size(); i++){
-                tmp_features.add(createSvmNode(i+1,features.get(i)));
-            }
+                ArrayList<svm_node> tmp_features = new ArrayList<svm_node>();
+                for (int i = 0; i<features.size(); i++){
+                    tmp_features.add(createSvmNode(i+1,features.get(i)));
+                }
 
-            training_features.add(tmp_features);
-            training_outcomes.add(outcome);
-            training_set_length ++;
+                training_features.add(tmp_features);
+                training_outcomes.add(outcome);
+                training_set_length ++;
+            } catch (Exception e){e.printStackTrace();}
         }
 
         /**
@@ -99,6 +101,14 @@ public abstract class SvmInterface {
         public svm_problem GetProblem() throws InstantiationException{
             if(!finished) throw new InstantiationException("The svm problem cannot be accessed as it is not finalized.");
             return this.problem;
+        }
+
+        public boolean isFinished(){
+            return this.finished;
+        }
+
+        public int GetNumFeatures(){
+            return this.num_features;
         }
 
         public void scale(){
@@ -173,13 +183,16 @@ public abstract class SvmInterface {
         private svm_problem problem;
         private svm_parameter parameter;
         private svm_model model;
+        private int num_features;
 
         public Svm_model(Svm_problem prob, Svm_parameter param) {
             try{
                 if(prob == null || param == null) throw new NullPointerException("Svm model cannot take NULL as input.");
+                if(!prob.isFinished()) throw new NullPointerException("Svm problem not finalized.");
                 if(svm.svm_check_parameter(prob.GetProblem(),param.GetParameter()) != null) throw new IllegalArgumentException("SVM parameter check failed.");
                 this.problem = prob.GetProblem();
                 this.parameter = param.GetParameter();
+                this.num_features = prob.GetNumFeatures();
                 train();
             } catch (Exception e){ e.printStackTrace();}
         }
@@ -215,6 +228,7 @@ public abstract class SvmInterface {
                 String filepath  = "../SvmModels/"+filename+".txt";
                 File file = new File(filepath);
                 if (!file.exists()) throw new IllegalArgumentException("The file "+ file +" does not exist.");
+
                 // Load model:
                 this.model = svm.svm_load_model(filepath);
             }
@@ -224,12 +238,13 @@ public abstract class SvmInterface {
         public void Load(String filename, String path){
             try{
                 if(filename == null || filename.equals("")) throw new IllegalArgumentException("No filename provided");
-                if(path == null || path.equals("")) throw new IllegalArgumentException("No filename provided");
+                if(path == null || path.equals("")) throw new IllegalArgumentException("No path provided");
                 File dir = new File(path);
                 if (!dir.exists()) throw new IllegalArgumentException("The given folder " + path + " does not exist");
                 String filepath  = path+"/"+filename+".txt";
                 File file = new File(filepath);
                 if (!file.exists()) throw new IllegalArgumentException("The file "+ file +" does not exist.");
+
                 // Load model:
                 this.model = svm.svm_load_model(filepath);
             }
@@ -238,11 +253,17 @@ public abstract class SvmInterface {
         }
 
         private void train(){
+            if(this.problem == null) throw new IllegalArgumentException("Problem object null.");
+            if(this.parameter == null) throw new IllegalArgumentException("Parameter object null");
             this.model = svm.svm_train(this.problem,this.parameter);
         }
 
         public svm_model GetModel(){
             return this.model;
+        }
+
+        public int GetNumFeatures(){
+            return this.num_features;
         }
     }
 
@@ -306,6 +327,9 @@ public abstract class SvmInterface {
      * Predicts the class for a single data point, and returns the class.
      */
     public static double PredictSingleDataPoint(Svm_model model, Vector<Double> vector){
+        if(model == null || model.GetModel() == null) throw new IllegalArgumentException("Input model NULL");
+        if(vector== null) throw new IllegalArgumentException("Input feature vector NULL");
+        if(vector.size() != model.GetNumFeatures()) throw new IllegalArgumentException("Number of features for the model and feature vector does not match");
         return svm.svm_predict(model.GetModel(), createNodeArray(vector));
     }
 
@@ -313,22 +337,24 @@ public abstract class SvmInterface {
 
     }
 
-    private static svm_node[] createNodeArray(Vector<Double> v){
-        if(v == null) throw new IllegalArgumentException("Method does not accept NULL input.");
-        if(v.size() == 0) throw new IllegalArgumentException("Method does not take an input vector of zero size");
+    private static svm_node[] createNodeArray(Vector<Double> features){
+        if(features == null) throw new IllegalArgumentException("Method does not accept NULL input.");
+        if(features.size() == 0) throw new IllegalArgumentException("Method does not take an input vector of zero size");
 
-        svm_node[] tmp_arr = new svm_node[v.size()];
-        for (int i = 0; i < v.size(); i++){
-            tmp_arr[i] = createSvmNode(i+1,v.get(i));
+        svm_node[] tmp_arr = new svm_node[features.size()];
+        for (int i = 0; i < features.size(); i++){
+            if(features.get(i) == null) throw  new IllegalArgumentException("Feature vector element null.");
+            tmp_arr[i] = createSvmNode(i+1,features.get(i));
         }
         return tmp_arr;
     }
 
-    private static svm_node createSvmNode(int index, double val){
+    private static svm_node createSvmNode(Integer index, double val){
         if(index <= 0) throw new IllegalArgumentException("A node cannot take a negative or zero index, it starts at 1.");
         svm_node node = new svm_node();
         node.value = val;
         node.index = index;
+        if(node == null) throw new NullPointerException("Null node created");
         return node;
     }
 

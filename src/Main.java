@@ -1,6 +1,9 @@
 import com.sun.xml.internal.bind.v2.TODO;
 
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -21,17 +24,16 @@ public class Main{
     	db.openConnection();
         long startTime = System.currentTimeMillis();
 
-        //DataPreparer dp = new DataPreparer(db,1000);
+        //DataPreparer dp = new DataPreparer(db,100);
 
-        SvmInterface.Example.TestSimpleSvm();
 
+        //SvmInterface.Example.TestSimpleSvm();
 
         long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;
         System.out.println("Time in Ms: " + elapsedTime);
     	db.closeConnection();
         System.out.println("Done!");
-
 
         //Tormod_classifier.test_Svm();
 

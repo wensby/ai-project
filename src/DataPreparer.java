@@ -34,7 +34,7 @@ public class DataPreparer {
         return discarded_sample_count;
     }
 
-    private void prepareTrainingSet()throws Exception{
+    private void prepareTrainingSet(Database db)throws Exception{
     	Object[] obj_list = null;
         Item tmp_item = null;
         User tmp_user = null;
@@ -54,17 +54,19 @@ public class DataPreparer {
                 tmp_userId = (Integer)obj_list[1];
                 tmp_itemId = (Integer)obj_list[2];
                 tmp_class  = (Integer)obj_list[3];
-                
+
 //              Debug.p(" (itemID: " + tmp_itemId + ", userID: " + tmp_userId + ", Class: " + tmp_class);
 
                 if (!this.Items.containsKey(tmp_itemId)){
                     tmp_item = new Item(tmp_itemId, this.db);
                     this.Items.put(tmp_item.getItemID(), tmp_item);
+                    Debug.pl("item created");
                 }
                 
                 if (this.cached_user == null || this.cached_user.getUserID() != tmp_userId){
                     tmp_user = new User(tmp_userId, this.db);
                     this.cached_user = tmp_user;
+                    Debug.pl("user created");
                 }
                 
                 // Constructing the feature
@@ -123,13 +125,16 @@ public class DataPreparer {
 
         for (int i= 0; i < data_size_to_use; i++){
 
-            obj_list = db.rand_getOneRow("rec_log_train");
+            //obj_list = db.rand_getOneRow("rec_log_train");
+            obj_list = db.iter_getOneRow("rec_log_train",i+1);
+
             //Debug.pal(obj_list);
             tmp_userId = (Integer)obj_list[1];
             tmp_itemId = (Integer)obj_list[2];
             tmp_class  = (Integer)obj_list[3];
+            Debug.pl("class: " +tmp_class);
             featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
-            //featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
+            featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
             featureSet.useFeature(Feature.USER_BIRTH_YEAR);
             featureSet.finish();
             v = featureSet.getFeatureVector();
@@ -155,16 +160,15 @@ public class DataPreparer {
         Debug.pl("Training svm...");
         SvmInterface.Svm_model model = new SvmInterface.Svm_model(prob,param);
 
-
         // You may now test the SVM with 10-fold cross-validation:
-
         double resulting_class;
-        int num_samples = data_size_to_use/10;
+        int num_samples = data_size_to_use;
         int correct_samples = 0;
         double correctness = 0.0;
-        for (int i= 0; i < data_size_to_use/10; i++){
+        for (int i= data_size_to_use; i < data_size_to_use*2; i++){
 
-            obj_list = db.rand_getOneRow("rec_log_train");
+            //obj_list = db.rand_getOneRow("rec_log_train");
+            obj_list = db.iter_getOneRow("rec_log_train",i+1);
             tmp_userId = (Integer)obj_list[1];
             tmp_itemId = (Integer)obj_list[2];
             tmp_class  = (Integer)obj_list[3];
@@ -177,6 +181,7 @@ public class DataPreparer {
 
             // Append data points (outcome, features) to the problem set. Do this for all data points.
             resulting_class = SvmInterface.PredictSingleDataPoint(model, v);
+            Debug.pl("Resulting class: " + resulting_class);
 
             if((int)resulting_class == tmp_class) correct_samples ++;
         }
@@ -185,65 +190,6 @@ public class DataPreparer {
         Debug.pl("Final correctness: " + correctness*100 + "%");
         Debug.pl("Percentage of samples of class +1: " + ((double)num_positive_samples/(double)num_samples)*100 + "%");
     }
-
-    public void gridParameterCheckForSVM() throws Exception{
-        // Get one entry from rec_log_train:
-        Object[] obj_list = db.rand_getOneRow("rec_log_train");
-        int tmp_userId = (Integer)obj_list[1];
-        int tmp_itemId = (Integer)obj_list[2];
-        int tmp_class  = (Integer)obj_list[3];
-        int num_positive_samples = 0;
-
-        // Get feature vector for the given item and user
-        Feature featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
-        featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
-        featureSet.useFeature(Feature.USER_BIRTH_YEAR);
-        featureSet.finish();
-        Vector<Double> v = featureSet.getFeatureVector();
-
-        // Create problem set (training set) for the svm: specify the number of features on creation
-        SvmInterface.Svm_problem prob = new SvmInterface.Svm_problem(v.size());
-
-
-        for (int i= 0; i < data_size_to_use; i++){
-
-            obj_list = db.rand_getOneRow("rec_log_train");
-            //Debug.pal(obj_list);
-            tmp_userId = (Integer)obj_list[1];
-            tmp_itemId = (Integer)obj_list[2];
-            tmp_class  = (Integer)obj_list[3];
-            featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
-            featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
-            featureSet.useFeature(Feature.USER_BIRTH_YEAR);
-            featureSet.finish();
-            v = featureSet.getFeatureVector();
-
-            // Append data points (outcome, features) to the problem set. Do this for all data points.
-            prob.AppendTrainingPoint(tmp_class,v);
-
-        }
-
-        // When done appending data points, finalize the problem set. The set cannot be changed after this
-        prob.FinalizeTrainingSet();
-
-
-        for( int g = 0; g<1000; g++){
-            for(double c=0; c<1000; c+=0.1){
-                // Create parameter object for the svm. This example uses all default values
-                SvmInterface.Svm_parameter param = new SvmInterface.Svm_parameter(g,c,0.01);
-
-                // See if the model with the given parameters are legal:
-                boolean valid;
-                valid = SvmInterface.CheckParameterValidity(prob,param);
-                if(valid) Debug.pl("Parameter set is valid: gamma = " + g +"   C = " + c);
-            }
-        }
-
-
-
-
-    }
-
 
 
     /**
