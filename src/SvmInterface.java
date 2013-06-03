@@ -247,7 +247,7 @@ public abstract class SvmInterface {
     }
 
     public static class Example extends SvmInterface{
-        public static Vector<Integer> GetPositiveFeatureVector(){
+        private static Vector<Integer> getPositiveFeatureVector(){
             Vector<Integer> v = new  Vector<Integer>();
             v.add(1);
             v.add(-1);
@@ -256,7 +256,7 @@ public abstract class SvmInterface {
             return v;
         }
 
-        public static Vector<Integer> GetNegativeFeatureVector(){
+        private static Vector<Integer> getNegativeFeatureVector(){
             Vector<Integer> v = new  Vector<Integer>();
             v.add(-1);
             v.add(1);
@@ -272,11 +272,11 @@ public abstract class SvmInterface {
             Svm_problem prob = new Svm_problem(num_features);
 
             for(int i=0; i<num_training_samples/2;i++){
-                prob.AppendTrainingPoint(1,GetPositiveFeatureVector());
+                prob.AppendTrainingPoint(1,getPositiveFeatureVector());
             }
 
             for(int i=0; i<num_training_samples/2;i++){
-                prob.AppendTrainingPoint(-1, GetNegativeFeatureVector());
+                prob.AppendTrainingPoint(-1, getNegativeFeatureVector());
             }
 
             prob.FinalizeTrainingSet();
@@ -292,8 +292,8 @@ public abstract class SvmInterface {
             int correct = 0;
             int num_test_samples = num_training_samples/10;
             for(int i=0; i<num_test_samples/2;i++){
-                if(1 == PredictSingleDataPoint(model,GetPositiveFeatureVector())) correct++;
-                if(-1 == PredictSingleDataPoint(model, GetNegativeFeatureVector())) correct++;
+                if(1 == PredictSingleDataPoint(model,getPositiveFeatureVector())) correct++;
+                if(-1 == PredictSingleDataPoint(model, getNegativeFeatureVector())) correct++;
             }
             double correctness = (double)correct/(double)num_test_samples;
 
