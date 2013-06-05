@@ -184,6 +184,8 @@ public class SvmTree {
 	 * Will retrieve a linked list of filepaths to the svms that pertain to the featurestrucutre specified
 	 */
 	public LinkedList<String> getSvms(String featureStructure) {
+		featureStructure = Feature.trimFeatureStructureString(featureStructure);
+		
 		// First we need to find the right SvmSetNode
 		SvmSetNode svmSet = treeCrawl(featureStructure, root);
 		

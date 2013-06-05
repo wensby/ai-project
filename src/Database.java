@@ -23,7 +23,6 @@ public class Database {
 
     private Connection conn = null;
     private Statement stat = null;
-    private ResultSet rs = null;
     private PreparedStatement prep = null;
     
     /**
