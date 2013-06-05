@@ -35,10 +35,17 @@ public class User {
     		Debug.pl("! ERROR: Can't create User object when the database connection is closed.");
     		throw new IllegalArgumentException("Database object must have an open connection.");
     	}
+
+        Debug.start("t1");
     	this.followers = this.getFollowersFromDB(userID, database);
-    	this.followees = this.getFolloweesFromDB(userID, database);
-    	this.numFollowee = this.followees.size();
-    	this.numFollowers = this.followers.size();
+        this.numFollowers = this.followers.size();
+    	Debug.stop("t1");
+        Debug.start("t2");
+        this.followees = this.getFolloweesFromDB(userID, database);
+        this.numFollowee = this.followees.size();
+        Debug.stop("t2");
+
+
     	this.setUserID_birthYear_gender_num_Tweets_FromDB(userID, database);
     	this.setActionsFromDB(userID, database);
     }

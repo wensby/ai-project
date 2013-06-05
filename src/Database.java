@@ -370,6 +370,7 @@ public class Database {
             case ("userSNS") :
                 database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS userSNSIndex1 ON userSNS (followerUserID);");
                 database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS userSNSIndex2 ON userSNS (followeeUserID);");
+                database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS userSNSIndex3 ON userSNS (followeeUserID, followerUserID);");
                 break;
             case ("user_action") :
                 database.getStatement().executeUpdate("CREATE INDEX IF NOT EXISTS userActionIndex1 ON user_action (userID);");
@@ -424,6 +425,7 @@ public class Database {
             case ("userSNS") :
                 database.getStatement().executeUpdate("DROP INDEX IF EXISTS userSNSIndex1;");
                 database.getStatement().executeUpdate("DROP INDEX IF EXISTS userSNSIndex2;");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS userSNSIndex3;");
                 break;
             case ("user_action") :
                 database.getStatement().executeUpdate("DROP INDEX IF EXISTS userActionIndex1;");

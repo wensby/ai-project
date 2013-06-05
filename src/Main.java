@@ -20,11 +20,16 @@ public class Main{
 
 
 
-    	Database db = new Database("DB_JUN2");
+    	Database db = new Database("DB_JUN3");
     	db.openConnection();
         long startTime = System.currentTimeMillis();
 
-        //DataPreparer dp = new DataPreparer(db,100);
+
+
+        DataPreparer dp = new DataPreparer(db,100);
+
+        Debug.pt("t1");
+        Debug.pt("t2");
 
 
         //SvmInterface.Example.TestSimpleSvm();

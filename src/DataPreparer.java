@@ -34,74 +34,6 @@ public class DataPreparer {
         return discarded_sample_count;
     }
 
-    private void prepareTrainingSet(Database db)throws Exception{
-    	Object[] obj_list = null;
-        Item tmp_item = null;
-        User tmp_user = null;
-        Vector<Double> tmp_features = null;
-        int tmp_userId;
-        int tmp_itemId;
-        int tmp_class;
-        StringBuilder builder = new StringBuilder();
-        long stopTime = System.currentTimeMillis();
-        long elapsedTime = stopTime;
-        long startTime = stopTime;
-        long prev_elapsed = 0;
-
-        try{
-            for (int i = 1; i < Util.TOTAL_DATABASE_REC_LOG_TRAIN_LENGTH && i < this.data_size_to_use; i++){
-                obj_list   = db.iter_getOneRow("rec_log_train",i);
-                tmp_userId = (Integer)obj_list[1];
-                tmp_itemId = (Integer)obj_list[2];
-                tmp_class  = (Integer)obj_list[3];
-
-//              Debug.p(" (itemID: " + tmp_itemId + ", userID: " + tmp_userId + ", Class: " + tmp_class);
-
-                if (!this.Items.containsKey(tmp_itemId)){
-                    tmp_item = new Item(tmp_itemId, this.db);
-                    this.Items.put(tmp_item.getItemID(), tmp_item);
-                    Debug.pl("item created");
-                }
-                
-                if (this.cached_user == null || this.cached_user.getUserID() != tmp_userId){
-                    tmp_user = new User(tmp_userId, this.db);
-                    this.cached_user = tmp_user;
-                    Debug.pl("user created");
-                }
-                
-                // Constructing the feature
-                Feature featureSet = new Feature(tmp_user, tmp_item);
-                featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
-                featureSet.useFeature(Feature.USER_BIRTH_YEAR);
-                featureSet.finish();
-                
-                tmp_features = featureSet.getFeatureVector();
-                
-                if(tmp_features != null){
-                    createLogFiles(builder,tmp_class + format_featureVector_for_SVM(tmp_features) + "\n",i);
-                } else {
-                    Debug.pl("Sample ignored");
-                    this.discarded_sample_count ++;
-                }
-
-                // Runtime information and analysis
-                startTime = System.currentTimeMillis();
-                if(i%(this.data_size_to_use/100) == 0){
-                    elapsedTime = startTime - stopTime;
-                    stopTime = startTime;
-                    Debug.pl("> Preparing training set... " + defaultFormat.format((float)(i) / data_size_to_use) + " Time increase since last progress(ms): " + (elapsedTime-prev_elapsed) + " Total running time since last progress: " + elapsedTime);
-                    prev_elapsed = elapsedTime;
-                }
-            }
-            commitRemainingLogFiles(builder);
-            Debug.pl("Number of discarded samples: " + this.discarded_sample_count);
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-
     public void SvmExample() throws Exception{
         // Get one entry from rec_log_train:
         Object[] obj_list = db.rand_getOneRow("rec_log_train");
@@ -109,15 +41,10 @@ public class DataPreparer {
         int tmp_itemId = (Integer)obj_list[2];
         int tmp_class  = (Integer)obj_list[3];
         int num_positive_samples = 0;
+        Feature featureSet;
+        Vector<Double> v = new Vector<Double>();
 
-        // Get feature vector for the given item and user
-        Feature featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
-        featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
-        featureSet.useFeature(Feature.USER_BIRTH_YEAR);
-        featureSet.finish();
-        Vector<Double> v = featureSet.getFeatureVector();
-
-        int num_features = v.size();
+        int num_features = 6;
 
         // Create problem set (training set) for the svm: specify the number of features on creation
         SvmInterface.Svm_problem prob = new SvmInterface.Svm_problem(num_features);
@@ -132,12 +59,21 @@ public class DataPreparer {
             tmp_userId = (Integer)obj_list[1];
             tmp_itemId = (Integer)obj_list[2];
             tmp_class  = (Integer)obj_list[3];
-            Debug.pl("class: " +tmp_class);
+            //Debug.pl("class: " +tmp_class);
+            Debug.reset("t2");
+            Debug.start("t2");
             featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
             featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
             featureSet.useFeature(Feature.USER_BIRTH_YEAR);
+            featureSet.useFeature(Feature.AT_ACTION_RATIO);
+            featureSet.useFeature(Feature.COMMENT_RATIO);
+            featureSet.useFeature(Feature.NUM_AT_ACTION_BETWEEN);
+            featureSet.useFeature(Feature.RETWEETS_RATIO);
+
             featureSet.finish();
             v = featureSet.getFeatureVector();
+            Debug.stop("t2");
+            //Debug.pt("t2");
 
             // Append data points (outcome, features) to the problem set. Do this for all data points.
             prob.AppendTrainingPoint(tmp_class,v);
@@ -176,12 +112,16 @@ public class DataPreparer {
             featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
             featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
             featureSet.useFeature(Feature.USER_BIRTH_YEAR);
+            featureSet.useFeature(Feature.AT_ACTION_RATIO);
+            featureSet.useFeature(Feature.COMMENT_RATIO);
+            featureSet.useFeature(Feature.NUM_AT_ACTION_BETWEEN);
+            featureSet.useFeature(Feature.RETWEETS_RATIO);
             featureSet.finish();
             v = featureSet.getFeatureVector();
 
             // Append data points (outcome, features) to the problem set. Do this for all data points.
             resulting_class = SvmInterface.PredictSingleDataPoint(model, v);
-            Debug.pl("Resulting class: " + resulting_class);
+            //Debug.pl("Resulting class: " + resulting_class);
 
             if((int)resulting_class == tmp_class) correct_samples ++;
         }
@@ -243,4 +183,74 @@ public class DataPreparer {
         }
         return out;
     }
+
+    private void prepareTrainingSet(Database db)throws Exception{
+        Object[] obj_list = null;
+        Item tmp_item = null;
+        User tmp_user = null;
+        Vector<Double> tmp_features = null;
+        int tmp_userId;
+        int tmp_itemId;
+        int tmp_class;
+        StringBuilder builder = new StringBuilder();
+        long stopTime = System.currentTimeMillis();
+        long elapsedTime = stopTime;
+        long startTime = stopTime;
+        long prev_elapsed = 0;
+
+        try{
+            for (int i = 1; i < Util.TOTAL_DATABASE_REC_LOG_TRAIN_LENGTH && i < this.data_size_to_use; i++){
+                obj_list   = db.iter_getOneRow("rec_log_train",i);
+                tmp_userId = (Integer)obj_list[1];
+                tmp_itemId = (Integer)obj_list[2];
+                tmp_class  = (Integer)obj_list[3];
+
+//              Debug.p(" (itemID: " + tmp_itemId + ", userID: " + tmp_userId + ", Class: " + tmp_class);
+
+                if (!this.Items.containsKey(tmp_itemId)){
+                    tmp_item = new Item(tmp_itemId, this.db);
+                    this.Items.put(tmp_item.getItemID(), tmp_item);
+                    Debug.pl("item created");
+                }
+
+                if (this.cached_user == null || this.cached_user.getUserID() != tmp_userId){
+                    tmp_user = new User(tmp_userId, this.db);
+                    this.cached_user = tmp_user;
+                    Debug.pl("user created");
+                }
+
+                // Constructing the feature
+                Feature featureSet = new Feature(tmp_user, tmp_item);
+                featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
+                featureSet.useFeature(Feature.USER_BIRTH_YEAR);
+                featureSet.finish();
+
+                tmp_features = featureSet.getFeatureVector();
+
+                if(tmp_features != null){
+                    createLogFiles(builder,tmp_class + format_featureVector_for_SVM(tmp_features) + "\n",i);
+                } else {
+                    Debug.pl("Sample ignored");
+                    this.discarded_sample_count ++;
+                }
+
+                // Runtime information and analysis
+                startTime = System.currentTimeMillis();
+                if(i%(this.data_size_to_use/100) == 0){
+                    elapsedTime = startTime - stopTime;
+                    stopTime = startTime;
+                    Debug.pl("> Preparing training set... " + defaultFormat.format((float)(i) / data_size_to_use) + " Time increase since last progress(ms): " + (elapsedTime-prev_elapsed) + " Total running time since last progress: " + elapsedTime);
+                    prev_elapsed = elapsedTime;
+                }
+            }
+            commitRemainingLogFiles(builder);
+            Debug.pl("Number of discarded samples: " + this.discarded_sample_count);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+
 }

@@ -59,4 +59,8 @@ public class Debug {
 			Debug.pl("Timer: " + timerName + " \t " + (timers.get(timerName) / 1000000000.0f) + " seconds.");
 		}
 	}
+
+    public static void reset(String timerName){
+        timers.put(timerName,0l);
+    }
 }
