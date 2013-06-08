@@ -299,4 +299,15 @@ public class Feature {
 		
 		return sb.toString();
 	}
+	
+	/**
+	 * Simple method that just reformats a String formated as "FEATURE_STRUCTURE(00110101)" to
+	 * a String formated as "00110101".
+	 */
+	public static String trimFeatureStructureString(String featureStructure) {
+		if (Pattern.matches("[0-9]+", featureStructure))
+		    return featureStructure;
+		else
+			return featureStructure.substring(18, featureStructure.length() - 1);
+	}
 }
