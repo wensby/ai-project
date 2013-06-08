@@ -3,9 +3,11 @@
  * @version 2013-05-31
  */
 
+import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -35,29 +37,29 @@ public class User {
     		Debug.pl("! ERROR: Can't create User object when the database connection is closed.");
     		throw new IllegalArgumentException("Database object must have an open connection.");
     	}
-
-        Debug.start("t1");
-    	this.followers = this.getFollowersFromDB(userID, database);
+        this.followers = this.getFollowersFromDB(userID, database);
         this.numFollowers = this.followers.size();
-    	Debug.stop("t1");
-        Debug.start("t2");
         this.followees = this.getFolloweesFromDB(userID, database);
         this.numFollowee = this.followees.size();
-        Debug.stop("t2");
+
 
 
     	this.setUserID_birthYear_gender_num_Tweets_FromDB(userID, database);
     	this.setActionsFromDB(userID, database);
     }
-    
+
 
 	private HashSet<Integer>  getFollowersFromDB(int userID, Database db) throws SQLException{
     	Statement statm = db.createStatement();
+        //Debug.start("t10");
     	ResultSet res = statm.executeQuery("SELECT followerUserID FROM userSNS WHERE followeeUserID = " + userID + ";");
+        //Debug.stop("t10");
 		HashSet<Integer> followers = new HashSet<Integer>();
+        Debug.start("hash");
     	while(res.next()){
 			followers.add(res.getInt("followerUserID"));
 		}
+        Debug.stop("hash");
 		statm.close();
 		res.close();
 		return followers;
@@ -66,9 +68,11 @@ public class User {
     	Statement statm = db.createStatement();
     	ResultSet res = statm.executeQuery("SELECT followeeUserID FROM userSNS WHERE followerUserID = " + userID + ";");
     	HashSet<Integer> followees = new HashSet<Integer>();
+        Debug.start("hash2");
     	while(res.next()){
 			followees.add(res.getInt("followeeUserID"));
 		}
+        Debug.stop("hash2");
 		statm.close();
 		res.close();
 		return followees;

@@ -327,9 +327,11 @@ public abstract class SvmInterface {
      * Predicts the class for a single data point, and returns the class.
      */
     public static double PredictSingleDataPoint(Svm_model model, Vector<Double> vector){
-        if(model == null || model.GetModel() == null) throw new IllegalArgumentException("Input model NULL");
         if(vector== null) throw new IllegalArgumentException("Input feature vector NULL");
+        if(model == null) throw new IllegalArgumentException("Input model NULL");
         if(vector.size() != model.GetNumFeatures()) throw new IllegalArgumentException("Number of features for the model and feature vector does not match");
+        if(model.GetModel() == null) throw new IllegalArgumentException("Input model NULL");
+
         return svm.svm_predict(model.GetModel(), createNodeArray(vector));
     }
 

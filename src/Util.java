@@ -8,6 +8,8 @@ public class Util {
 	public static final int TOTAL_DATABASE_ITEM_LENGTH 			    = 6095;
 	public static final int TOTAL_DATABASE_ITEMKEY_LENGTH 			= 202802;
 	public static final int TOTAL_DATABASE_REC_LOG_TRAIN_LENGTH 	= 73209272;
+	public static final int TOTAL_DATABASE_REC_LOG_TRAIN_POS_LENGTH = 5253828;
+	public static final int TOTAL_DATABASE_REC_LOG_TRAIN_NEG_LENGTH = 67955444;
 	public static final int TOTAL_DATABASE_REC_LOG_TEST_LENGTH 	    = 34910937;
 	public static final int TOTAL_DATABASE_USERSNS_LENGTH 			= 50655143;
 	public static final int TOTAL_DATABASE_USER_ACTION_LENGTH 		= 10620243;

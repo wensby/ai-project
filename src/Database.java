@@ -65,6 +65,8 @@ public class Database {
         stat.executeUpdate("CREATE TABLE \"item\" (\"itemID\" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , \"categoriesString\" TEXT NOT NULL , \"keywordsString\" TEXT NOT NULL );");
         stat.executeUpdate("CREATE TABLE \"rec_log_train\" (\"autoID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"UserID\" INTEGER NOT NULL , \"ItemId\" INTEGER NOT NULL , \"result\" INTEGER NOT NULL , \"timeStamp\" );");
         stat.executeUpdate("CREATE TABLE \"rec_log_test\" (\"autoID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"UserID\" INTEGER NOT NULL , \"ItemId\" INTEGER NOT NULL , \"result\" INTEGER NOT NULL , \"timeStamp\" );");
+        stat.executeUpdate("CREATE TABLE \"rec_log_train_pos\" (\"autoID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"UserID\" INTEGER NOT NULL , \"ItemId\" INTEGER NOT NULL , \"result\" INTEGER NOT NULL , \"timeStamp\" );");
+        stat.executeUpdate("CREATE TABLE \"rec_log_train_neg\" (\"autoID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"UserID\" INTEGER NOT NULL , \"ItemId\" INTEGER NOT NULL , \"result\" INTEGER NOT NULL , \"timeStamp\" );");
         stat.executeUpdate("CREATE TABLE \"userSNS\" (\"userSnsID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"followerUserID\" INTEGER NOT NULL , \"followeeUserID\" INTEGER NOT NULL );");
         stat.executeUpdate("CREATE TABLE \"user_action\" (\"actionID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , \"userID\" INTEGER NOT NULL , \"destinationUserID\" INTEGER NOT NULL , \"atAction\" INTEGER NOT NULL , \"reTweet\" INTEGER NOT NULL , \"comment\" INTEGER NOT NULL );");
         stat.executeUpdate("CREATE TABLE user_keywords (\"ID\" INTEGER PRIMARY KEY AUTOINCREMENT, \"UserID\" INTEGER NOT NULL, \"Keyword\" INTEGER NOT NULL, \"Weight\" DOUBLE NOT NULL);");
@@ -206,6 +208,34 @@ public class Database {
         return arrayResult;
     }
 
+    public Object[] rand_getOnePositive() throws Exception{
+        Random rand = new Random();
+        int index = rand.nextInt(Util.TOTAL_DATABASE_REC_LOG_TRAIN_POS_LENGTH) + 1;
+        ResultSet result = stat.executeQuery("SELECT * FROM rec_log_train_pos WHERE autoID = " + index);
+        int numColumns = result.getMetaData().getColumnCount();
+        Object[] arrayResult = new Object[numColumns];
+        for (int column = 0; column < numColumns; column++) {
+            arrayResult[column] = result.getObject(column + 1);
+        }
+        return arrayResult;
+    }
+
+    public Object[] rand_getOneNegative() throws Exception{
+        Random rand = new Random();
+        int index = rand.nextInt(Util.TOTAL_DATABASE_REC_LOG_TRAIN_NEG_LENGTH) + 1;
+        ResultSet result = stat.executeQuery("SELECT * FROM rec_log_train_neg WHERE autoID = " + index);
+        int numColumns = result.getMetaData().getColumnCount();
+        Object[] arrayResult = new Object[numColumns];
+        for (int column = 0; column < numColumns; column++) {
+            arrayResult[column] = result.getObject(column + 1);
+        }
+        return arrayResult;
+    }
+
+
+
+
+
     /**
      * Gets one random positive row from tableName. Only works with rec_log_train table....
      */
@@ -321,6 +351,9 @@ public class Database {
         nStat.executeUpdate("CREATE TABLE \"tags\" (\"autoID\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE , \"userID\" INTEGER NOT NULL , \"tag\" INTEGER NOT NULL );");
         nStat.executeUpdate("CREATE TABLE \"itemKey\" (\"autoID\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE , \"itemID\" INTEGER NOT NULL , \"key\" INTEGER NOT NULL );");
         nStat.executeUpdate("CREATE TABLE \"itemCat\" (\"autoid\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL , \"itemID\" INTEGER NOT NULL , \"cat1\" INTEGER NOT NULL , \"cat2\" INTEGER NOT NULL , \"cat3\" INTEGER NOT NULL , \"cat4\" INTEGER NOT NULL );");
+        nStat.executeUpdate("CREATE TABLE \"rec_log_train_pos\" (\"autoID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"UserID\" INTEGER NOT NULL , \"ItemId\" INTEGER NOT NULL , \"result\" INTEGER NOT NULL , \"timeStamp\" );");
+        nStat.executeUpdate("CREATE TABLE \"rec_log_train_neg\" (\"autoID\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"UserID\" INTEGER NOT NULL , \"ItemId\" INTEGER NOT NULL , \"result\" INTEGER NOT NULL , \"timeStamp\" );");
+
 
         Debug.pl("Tables created in backup database");
 
@@ -337,6 +370,10 @@ public class Database {
         Debug.pl("Table rec_log_test transferred");
         nStat.executeUpdate("INSERT INTO newDatabase.rec_log_train(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM oldDatabase.rec_log_train;");
         Debug.pl("Table rec_log_train transferred");
+        nStat.executeUpdate("INSERT INTO newDatabase.rec_log_train_pos(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM oldDatabase.rec_log_train_pos;");
+        Debug.pl("Table rec_log_train_pos transferred");
+        nStat.executeUpdate("INSERT INTO newDatabase.rec_log_train_neg(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM oldDatabase.rec_log_train_neg;");
+        Debug.pl("Table rec_log_train_neg transferred");
         nStat.executeUpdate("INSERT INTO newDatabase.userSNS(userSnsID, followerUserID, followeeUserID) SELECT * FROM oldDatabase.userSNS;");
         Debug.pl("Table userSNS transferred");
         nStat.executeUpdate("INSERT INTO newDatabase.user_action(actionID, userID, destinationUserID, atAction, reTweet, comment) SELECT * FROM oldDatabase.user_action;");
@@ -393,6 +430,12 @@ public class Database {
             case ("rec_log_train") :
                 database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS recLogTrainIndex ON rec_log_train (autoID);");
                 break;
+            case ("rec_log_train_pos") :
+                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS recLogTrainPosIndex ON rec_log_train_pos (autoID);");
+                break;
+            case ("rec_log_train_neg") :
+                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS recLogTrainNegIndex ON rec_log_train_neg (autoID);");
+                break;
             case ("rec_log_test") :
                 database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS recLogTestIndex ON rec_log_test (autoID);");
                 break;
@@ -448,6 +491,12 @@ public class Database {
             case ("rec_log_train") :
                 database.getStatement().executeUpdate("DROP INDEX IF EXISTS recLogTrainIndex;");
                 break;
+            case ("rec_log_train_pos") :
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS recLogTrainPosIndex;");
+                break;
+            case ("rec_log_train_neg") :
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS recLogTrainNegIndex;");
+                break;
             case ("rec_log_test") :
                 database.getStatement().executeUpdate("DROP INDEX IF EXISTS recLogTestIndex;");
                 break;
@@ -485,6 +534,8 @@ public class Database {
             Database.indexTable(database,"tags");
             Database.indexTable(database,"itemKey");
             Database.indexTable(database,"rec_log_train");
+            Database.indexTable(database,"rec_log_train_pos");
+            Database.indexTable(database,"rec_log_train_neg");
             Database.indexTable(database,"rec_log_test");
             Database.indexTable(database, "itemCat");
         }
@@ -501,6 +552,8 @@ public class Database {
             Database.dropTableIndex(database,"tags");
             Database.dropTableIndex(database,"itemKey");
             Database.dropTableIndex(database,"rec_log_train");
+            Database.dropTableIndex(database,"rec_log_train_pos");
+            Database.dropTableIndex(database,"rec_log_train_neg");
             Database.dropTableIndex(database,"rec_log_test");
             Database.dropTableIndex(database, "itemCat");
         }
@@ -575,6 +628,12 @@ public class Database {
 	        case ("rec_log_train") :
                 dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.rec_log_train(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM orig.rec_log_train;");
                 break;
+            case ("rec_log_train_pos") :
+                dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.rec_log_train_pos(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM orig.rec_log_train_pos;");
+                break;
+            case ("rec_log_train_neg") :
+                dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.rec_log_train_neg(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM orig.rec_log_train_neg;");
+                break;
             case ("rec_log_test") :
 	        	dest.getStatement().executeUpdate("INSERT OR IGNORE INTO dest.rec_log_test(autoID, UserID, ItemId, result, timeStamp) SELECT * FROM orig.rec_log_test;");
 	        	break;
@@ -610,11 +669,24 @@ public class Database {
         
         Debug.pl("> Transfering table " + table + " in " + from.name + " to " + dest.name + "... 100%");
     }
-    
-    /**
-     * Retrieve a user using its id
-     * @param id The user id
-     */
+
+    public void TransferRecLogTrainIntoTwoTables() throws Exception {
+        this.getStatement().executeUpdate("INSERT OR IGNORE INTO rec_log_train_pos(UserID, ItemId, result, timeStamp) SELECT UserID, ItemId, result, timeStamp FROM rec_log_train WHERE result = 1;");
+        Debug.pl("Transferring to rec_log_train_pos complete.");
+        this.getStatement().executeUpdate("INSERT OR IGNORE INTO rec_log_train_neg(UserID, ItemId, result, timeStamp) SELECT UserID, ItemId, result, timeStamp FROM rec_log_train WHERE result = -1;");
+        Debug.pl("Transferring to rec_log_train_neg complete.");
+    }
+
+    public void ResetAutoIdForRecLogTrainDividedTables() throws Exception{
+        for(int i=0;i<Util.TOTAL_DATABASE_REC_LOG_TRAIN_POS_LENGTH;i++){
+            this.getStatement().executeUpdate( "UPDATE"     );
+        }
+    }
+
+        /**
+         * Retrieve a user using its id
+         * @param id The user id
+         */
     public User getUserUsingID(int id)throws Exception{
     	User u = null;
     	

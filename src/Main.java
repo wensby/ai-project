@@ -18,18 +18,21 @@ public class Main{
 
     public static void main(String []args) throws Exception{
 
-
-
-    	Database db = new Database("DB_JUN3");
+    	Database db = new Database("DB_JUN5");
     	db.openConnection();
         long startTime = System.currentTimeMillis();
 
 
+        DataPreparer dp = new DataPreparer(db,10);
 
-        DataPreparer dp = new DataPreparer(db,100);
-
-        Debug.pt("t1");
-        Debug.pt("t2");
+        //Debug.pt("t1");
+        //Debug.p("  getFolloweesFromDB"); Debug.pt("t2");
+        //Debug.p("  setCategoriFromDB"); Debug.pt("t3");
+        //Debug.p("  setFollowerKeysFromDB"); Debug.pt("t4");
+        //Debug.p("  setFollowerTagsFromDB"); Debug.pt("t5");
+        //Debug.pt("t10");
+        Debug.pt("hash");
+        Debug.pt("hash2");
 
 
         //SvmInterface.Example.TestSimpleSvm();

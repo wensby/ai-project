@@ -36,25 +36,23 @@ public class DataPreparer {
 
     public void SvmExample() throws Exception{
         // Get one entry from rec_log_train:
-        Object[] obj_list = db.rand_getOneRow("rec_log_train");
-        int tmp_userId = (Integer)obj_list[1];
-        int tmp_itemId = (Integer)obj_list[2];
-        int tmp_class  = (Integer)obj_list[3];
+        Object[] obj_list = null;
+        int tmp_userId = 0;
+        int tmp_itemId = 0;
+        int tmp_class  = 0;
         int num_positive_samples = 0;
         Feature featureSet;
         Vector<Double> v = new Vector<Double>();
 
-        int num_features = 6;
+        int num_features = 3;
 
         // Create problem set (training set) for the svm: specify the number of features on creation
         SvmInterface.Svm_problem prob = new SvmInterface.Svm_problem(num_features);
 
 
-        for (int i= 0; i < data_size_to_use; i++){
+        for (int i= 0; i < data_size_to_use/2; i++){
 
-            //obj_list = db.rand_getOneRow("rec_log_train");
-            obj_list = db.iter_getOneRow("rec_log_train",i+1);
-
+            obj_list = db.rand_getOnePositive();
             //Debug.pal(obj_list);
             tmp_userId = (Integer)obj_list[1];
             tmp_itemId = (Integer)obj_list[2];
@@ -63,11 +61,11 @@ public class DataPreparer {
             Debug.reset("t2");
             Debug.start("t2");
             featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
-            featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
-            featureSet.useFeature(Feature.USER_BIRTH_YEAR);
+            //featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
+            //featureSet.useFeature(Feature.USER_BIRTH_YEAR);
             featureSet.useFeature(Feature.AT_ACTION_RATIO);
             featureSet.useFeature(Feature.COMMENT_RATIO);
-            featureSet.useFeature(Feature.NUM_AT_ACTION_BETWEEN);
+            //featureSet.useFeature(Feature.NUM_AT_ACTION_BETWEEN);
             featureSet.useFeature(Feature.RETWEETS_RATIO);
 
             featureSet.finish();
@@ -79,6 +77,36 @@ public class DataPreparer {
             prob.AppendTrainingPoint(tmp_class,v);
 
         }
+
+        for (int i= 0; i < data_size_to_use/2; i++){
+
+            obj_list = db.rand_getOneNegative();
+
+            //Debug.pal(obj_list);
+            tmp_userId = (Integer)obj_list[1];
+            tmp_itemId = (Integer)obj_list[2];
+            tmp_class  = (Integer)obj_list[3];
+            //Debug.pl("class: " +tmp_class);
+            Debug.reset("t2");
+            Debug.start("t2");
+            featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
+            //featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
+            //featureSet.useFeature(Feature.USER_BIRTH_YEAR);
+            featureSet.useFeature(Feature.AT_ACTION_RATIO);
+            featureSet.useFeature(Feature.COMMENT_RATIO);
+            //featureSet.useFeature(Feature.NUM_AT_ACTION_BETWEEN);
+            featureSet.useFeature(Feature.RETWEETS_RATIO);
+
+            featureSet.finish();
+            v = featureSet.getFeatureVector();
+            Debug.stop("t2");
+            //Debug.pt("t2");
+
+            // Append data points (outcome, features) to the problem set. Do this for all data points.
+            prob.AppendTrainingPoint(tmp_class,v);
+
+        }
+
 
         // When done appending data points, finalize the problem set. The set cannot be changed after this
         prob.FinalizeTrainingSet();
@@ -98,23 +126,40 @@ public class DataPreparer {
 
         // You may now test the SVM with 10-fold cross-validation:
         double resulting_class;
-        int num_samples = data_size_to_use;
+        int cross_valid_size = data_size_to_use/5;
         int correct_samples = 0;
-        double correctness = 0.0;
-        for (int i= data_size_to_use; i < data_size_to_use*2; i++){
+        for (int i= 0; i < cross_valid_size/2; i++){
 
-            //obj_list = db.rand_getOneRow("rec_log_train");
-            obj_list = db.iter_getOneRow("rec_log_train",i+1);
+            obj_list = db.rand_getOneNegative();
             tmp_userId = (Integer)obj_list[1];
             tmp_itemId = (Integer)obj_list[2];
             tmp_class  = (Integer)obj_list[3];
-            if(tmp_class == 1) num_positive_samples++;
             featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
-            featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
-            featureSet.useFeature(Feature.USER_BIRTH_YEAR);
+            //featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
+            //featureSet.useFeature(Feature.USER_BIRTH_YEAR);
             featureSet.useFeature(Feature.AT_ACTION_RATIO);
             featureSet.useFeature(Feature.COMMENT_RATIO);
-            featureSet.useFeature(Feature.NUM_AT_ACTION_BETWEEN);
+            //featureSet.useFeature(Feature.NUM_AT_ACTION_BETWEEN);
+            featureSet.useFeature(Feature.RETWEETS_RATIO);
+            featureSet.finish();
+            v = featureSet.getFeatureVector();
+
+            // Append data points (outcome, features) to the problem set. Do this for all data points.
+            resulting_class = SvmInterface.PredictSingleDataPoint(model, v);
+            //Debug.pl("Resulting class: " + resulting_class);
+
+            if((int)resulting_class == tmp_class) correct_samples ++;
+
+            obj_list = db.rand_getOnePositive();
+            tmp_userId = (Integer)obj_list[1];
+            tmp_itemId = (Integer)obj_list[2];
+            tmp_class  = (Integer)obj_list[3];
+            featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
+            //featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
+            //featureSet.useFeature(Feature.USER_BIRTH_YEAR);
+            featureSet.useFeature(Feature.AT_ACTION_RATIO);
+            featureSet.useFeature(Feature.COMMENT_RATIO);
+            //featureSet.useFeature(Feature.NUM_AT_ACTION_BETWEEN);
             featureSet.useFeature(Feature.RETWEETS_RATIO);
             featureSet.finish();
             v = featureSet.getFeatureVector();
@@ -126,9 +171,70 @@ public class DataPreparer {
             if((int)resulting_class == tmp_class) correct_samples ++;
         }
 
-        correctness = (double)correct_samples/(double)num_samples;
-        Debug.pl("Final correctness: " + correctness*100 + "%");
-        Debug.pl("Percentage of samples of class +1: " + ((double)num_positive_samples/(double)num_samples)*100 + "%");
+        double correctness = (double)correct_samples/(double)cross_valid_size;
+        Debug.pl("Final correctness balanced test set: " + correctness*100 + "%");
+
+        // You may now test the SVM with 10-fold cross-validation:
+        cross_valid_size = data_size_to_use/5;
+        correct_samples = 0;
+        for (int i= 0; i < cross_valid_size; i++){
+
+            //obj_list = db.rand_getOneRow("rec_log_train");
+            obj_list = db.rand_getOnePositive();
+            tmp_userId = (Integer)obj_list[1];
+            tmp_itemId = (Integer)obj_list[2];
+            tmp_class  = (Integer)obj_list[3];
+            featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
+            //featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
+            //featureSet.useFeature(Feature.USER_BIRTH_YEAR);
+            featureSet.useFeature(Feature.AT_ACTION_RATIO);
+            featureSet.useFeature(Feature.COMMENT_RATIO);
+            //featureSet.useFeature(Feature.NUM_AT_ACTION_BETWEEN);
+            featureSet.useFeature(Feature.RETWEETS_RATIO);
+            featureSet.finish();
+            v = featureSet.getFeatureVector();
+
+            // Append data points (outcome, features) to the problem set. Do this for all data points.
+            resulting_class = SvmInterface.PredictSingleDataPoint(model, v);
+            //Debug.pl("Resulting class: " + resulting_class);
+
+            if((int)resulting_class == tmp_class) correct_samples ++;
+        }
+
+        correctness = (double)correct_samples/(double)cross_valid_size;
+        Debug.pl("Final correctness unbalanced positive test set: " + correctness*100 + "%");
+
+        // You may now test the SVM with 10-fold cross-validation:
+        cross_valid_size = data_size_to_use/5;
+        correct_samples = 0;
+        for (int i= 0; i < cross_valid_size; i++){
+
+            //obj_list = db.rand_getOneRow("rec_log_train");
+            obj_list = db.rand_getOneNegative();
+            tmp_userId = (Integer)obj_list[1];
+            tmp_itemId = (Integer)obj_list[2];
+            tmp_class  = (Integer)obj_list[3];
+            featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
+            //featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
+            //featureSet.useFeature(Feature.USER_BIRTH_YEAR);
+            featureSet.useFeature(Feature.AT_ACTION_RATIO);
+            featureSet.useFeature(Feature.COMMENT_RATIO);
+            //featureSet.useFeature(Feature.NUM_AT_ACTION_BETWEEN);
+            featureSet.useFeature(Feature.RETWEETS_RATIO);
+            featureSet.finish();
+            v = featureSet.getFeatureVector();
+
+            // Append data points (outcome, features) to the problem set. Do this for all data points.
+            resulting_class = SvmInterface.PredictSingleDataPoint(model, v);
+            //Debug.pl("Resulting class: " + resulting_class);
+
+            if((int)resulting_class == tmp_class) correct_samples ++;
+        }
+
+        correctness = (double)correct_samples/(double)cross_valid_size;
+        Debug.pl("Final correctness unbalanced negative test set: " + correctness*100 + "%");
+
+
     }
 
 

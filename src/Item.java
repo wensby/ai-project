@@ -17,9 +17,15 @@ public class Item extends User{
 	
 	public Item(int itemID, Database db) throws Exception{
 		super(itemID,db);
-		//this.setCategoriFromDB(itemID, db);
+        Debug.start("t3");
+        //this.setCategoriFromDB(itemID, db);
+        Debug.stop("t3");
+        Debug.start("t4");
 		//this.setFollowerKeysFromDB(itemID, db);
+        Debug.stop("t4");
+        Debug.start("t5");
 		//this.setFollowerTagsFromDB(itemID, db);
+        Debug.stop("t5");
 	}
 	private void setCategoriFromDB(int itemID, Database db) throws Exception{
 		this.categori = new ArrayList<Integer>();
@@ -41,7 +47,7 @@ public class Item extends User{
 		String query_getFollowerKeys = 	"SELECT Keyword,COUNT(*) AS Number " +
 				"FROM userSNS " +
 				"INNER JOIN user_keywords ON user_keywords.userID = userSNS.followerUserID " +
-				"WHERE userSNS.followeeUserID="+itemID+" " +
+				"WHERE userSNS.followeeUserID = "+itemID+" " +
 				"GROUP BY Keyword;";
 		Statement stat = db.createStatement();
 		ResultSet res = stat.executeQuery(query_getFollowerKeys);
@@ -55,7 +61,7 @@ public class Item extends User{
 		String query_getFollowerTags = 	"SELECT tag,COUNT(*) AS number " +
 				"FROM userSNS " +
 				"INNER JOIN tags ON tags.userID = userSNS.followerUserID " +
-				"WHERE userSNS.followeeUserID"+itemID+" " +
+				"WHERE userSNS.followeeUserID = "+itemID+" " +
 				"GROUP BY tag;";
 		Statement stat = db.createStatement();
 		ResultSet res = stat.executeQuery(query_getFollowerTags);
