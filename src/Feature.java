@@ -2,8 +2,39 @@ import java.util.Calendar;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
-
+/**
+ * 
+ * @author Lukas J. Wensby
+ * @version 2013-06-09
+ */
 public class Feature {
+	/**
+	 * A singleton class that helps with generating a feature structure string.
+	 * @author Lukas J. Wensby
+	 * @version 2013-06-09
+	 */
+	public static class FeatureStructureGenerator {
+		StringBuilder structure = new StringBuilder();
+		
+		/**
+		 * This method has to be called before generating a new feature structure string
+		 */
+		public void clearNew() {
+			structure = new StringBuilder();
+			for (int i = 0; i < Feature.NUM_FEATURES; i++) {
+				structure.append('0');
+			}
+		}
+		
+		public void useFeature(int featureIndex) {
+			structure.setCharAt(featureIndex, '1');
+		}
+		
+		public String getFeatureStructure() {
+			return "FEATURE_STRUCTURE(" + structure.toString() + ")";
+		}
+	}
+	
 	// The amount of different possible features
 	public static final int NUM_FEATURES = 20;
 	
