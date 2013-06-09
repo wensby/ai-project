@@ -4,7 +4,7 @@ import java.util.regex.Pattern;
 /**
  * An SVM tree is a tree structure of svm files.
  * @author Lukas J. Wensby
- * @version 2013-06-02
+ * @version 2013-06-09
  */
 public class SvmTree {
 	private interface TreeNode { }
@@ -156,6 +156,13 @@ public class SvmTree {
 	public void printInformation() {
 		System.out.println("> SVM Tree Information");
 		System.out.println(">   Layers: " + (layers.size() + 1));
+		
+		int counter = 0;
+		for (TreeNode node : layers.getLast()) {
+			if (node.getClass() == SvmSetNode.class) counter += ((SvmSetNode)node).getNumSvms();
+		}
+		
+		System.out.println(">   Number of SVMs in total: " + counter);
 	}
 	
 	public void addSvm(String filepath, String featureStructure) {
