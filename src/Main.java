@@ -12,9 +12,13 @@ public class Main{
 
     public static void main(String []args) throws Exception{
 
+    	
+    	// ############### JUST TESTING ################### //
+    	
     	Feature.FeatureStructureGenerator.clearNew();
     	Feature.FeatureStructureGenerator.useFeature(Feature.DIFF_YEARS);
     	Feature.FeatureStructureGenerator.useFeature(Feature.ITEM_AGE_RANK);
+    	Feature.FeatureStructureGenerator.useFeature(Feature.COMMENT_RATIO);
     	String treeStruct = Feature.FeatureStructureGenerator.getFeatureStructurePure();
     	
     	Feature.FeatureStructureGenerator.clearNew();
@@ -22,7 +26,8 @@ public class Main{
     	String b = Feature.FeatureStructureGenerator.getFeatureStructurePure();
     	
     	Feature.FeatureStructureGenerator.clearNew();
-    	Feature.FeatureStructureGenerator.useFeature(Feature.USER_GENDER);
+    	Feature.FeatureStructureGenerator.useFeature(Feature.DIFF_YEARS);
+    	Feature.FeatureStructureGenerator.useFeature(Feature.COMMENT_RATIO);
     	String c = Feature.FeatureStructureGenerator.getFeatureStructurePure();
     	
     	SvmTreeNew tree = new SvmTreeNew(treeStruct);
@@ -31,7 +36,7 @@ public class Main{
     	tree.addSvm("filepath2", b);
     	tree.addSvm("filepath3", c);
     	
-    	LinkedList<SvmTreeNew.Svm> svms = tree.getSvms(b);
+    	LinkedList<SvmTreeNew.Svm> svms = tree.getSvms(c);
     	
     	for (SvmTreeNew.Svm svm : svms) {
     		Debug.pl(svm.getFilepath());
