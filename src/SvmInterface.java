@@ -18,7 +18,7 @@ import java.util.Vector;
  *  5. Run training with a svm_problem and svm_parameter as input, giving a svm_model as output
  *  6. Save and load svm_model objects to/from files
  *  7. Predict result for a single data point
- *
+ *  8. Find optimized parameters through a parameter grid search
  */
 
 /*
@@ -68,7 +68,7 @@ public abstract class SvmInterface {
                 if(features == null) throw  new IllegalArgumentException("The input feature vector cannot have a NULL value.");
                 if(features.size()==0) throw  new IllegalArgumentException("The input feature vector is empty.");
 
-                ArrayList<svm_node> tmp_features = new ArrayList<svm_node>();
+                    ArrayList<svm_node> tmp_features = new ArrayList<svm_node>();
                 for (int i = 0; i<features.size(); i++){
                     tmp_features.add(createSvmNode(i+1,features.get(i)));
                 }
@@ -111,6 +111,11 @@ public abstract class SvmInterface {
             return this.num_features;
         }
 
+
+        public int GetSize() {
+            return training_set_length;
+        }
+
         public void scale(){
             //Discontinued
         }
@@ -129,7 +134,7 @@ public abstract class SvmInterface {
          * @param c     Slack variable. A high value will allow more slack. Default 1.
          * @param tol   Termination criterion tolerance value. Default 0.01.
          */
-        public Svm_parameter(int gamma, double c, double tol) {
+        public Svm_parameter(double gamma, double c, double tol) {
             parameter.kernel_type = rbf;
             parameter.svm_type = C_SVC;
             parameter.degree = 3;
@@ -144,7 +149,7 @@ public abstract class SvmInterface {
             parameter.svm_type = C_SVC;
             parameter.degree = 3;
             parameter.cache_size = 10;
-            parameter.eps = 0.01;
+            parameter.eps = 0.001;
             parameter.C = 1;
             parameter.gamma = 1.0/(double)num_features;
         }
@@ -228,7 +233,6 @@ public abstract class SvmInterface {
                 String filepath  = "../SvmModels/"+filename+".txt";
                 File file = new File(filepath);
                 if (!file.exists()) throw new IllegalArgumentException("The file "+ file +" does not exist.");
-
                 // Load model:
                 this.model = svm.svm_load_model(filepath);
             }
@@ -244,7 +248,6 @@ public abstract class SvmInterface {
                 String filepath  = path+"/"+filename+".txt";
                 File file = new File(filepath);
                 if (!file.exists()) throw new IllegalArgumentException("The file "+ file +" does not exist.");
-
                 // Load model:
                 this.model = svm.svm_load_model(filepath);
             }
@@ -253,8 +256,6 @@ public abstract class SvmInterface {
         }
 
         private void train(){
-            if(this.problem == null) throw new IllegalArgumentException("Problem object null.");
-            if(this.parameter == null) throw new IllegalArgumentException("Parameter object null");
             this.model = svm.svm_train(this.problem,this.parameter);
         }
 
@@ -267,8 +268,64 @@ public abstract class SvmInterface {
         }
     }
 
-    public static class Example extends SvmInterface{
 
+    public static class Svm_test_obj extends SvmInterface {
+        private svm_problem set_obj = new svm_problem();
+        private int test_set_length;
+        private int num_features;
+        private ArrayList<Integer> test_outcomes = new ArrayList<>();
+        private ArrayList<ArrayList<svm_node>> test_features = new ArrayList<>();
+
+        /**
+         * Creates a svm test container object, which can be considered the test set for the svm.
+         * Use the AppendTestSet function to insert data into the training set.
+         * Unlike the Svm_problem object, this object does not require finalization, but is merely a structured way of
+         * creating test sets containing several test points.
+         */
+        public Svm_test_obj(int num_features) {
+            if(num_features <= 0) throw new IllegalArgumentException("Cannot create an svm test set with a zero or negative number of features");
+            this.num_features = num_features;
+            test_set_length = 0;
+        }
+
+        /**
+         * Append a data point with it's features and outcome to the svm problem (training) set.
+         */
+        public void AppendTestPoint(Integer outcome, Vector<Integer> features) throws IllegalArgumentException {
+            if (outcome != 1 && outcome != -1) throw new IllegalArgumentException("Illegal outcome value: " + outcome);
+            if(features == null) throw  new IllegalArgumentException("The input feature vector cannot have a NULL value.");
+            if(features.size()==0) throw  new IllegalArgumentException("The input feature vector is empty.");
+
+            ArrayList<svm_node> tmp_features = new ArrayList<>();
+            for (int i = 0; i<features.size(); i++){
+                tmp_features.add(createSvmNode(i+1,features.get(i)));
+            }
+
+            test_features.add(tmp_features);
+            test_outcomes.add(outcome);
+            test_set_length ++;
+        }
+
+        public int GetNumFeatures(){
+            return this.num_features;
+        }
+
+        public int GetSize() {
+            return test_set_length;
+        }
+
+        public int GetOutcome(int index){
+            if(index < 0 || index >= test_outcomes.size()) throw new IllegalArgumentException("Index out of bounds: " + index + " Array.size() = " + test_outcomes.size());
+            return test_outcomes.get(index);
+        }
+
+        public svm_node[] GetFeatureNodeArray(int index){
+            if(index < 0 || index >= test_features.size()) throw new IllegalArgumentException("Index out of bounds: " + index + " Array.size() = " + test_features.size());
+            return (svm_node[]) test_features.get(index).toArray(new svm_node [test_features.get(index).size()]);
+        }
+    }
+
+    public static class Example extends SvmInterface{
         private static Vector<Double> getPositiveFeatureVector(){
             Vector<Double> v = new  Vector<Double>();
             v.add(1.0);
@@ -326,37 +383,51 @@ public abstract class SvmInterface {
     /**
      * Predicts the class for a single data point, and returns the class.
      */
-    public static double PredictSingleDataPoint(Svm_model model, Vector<Double> vector){
-        if(vector== null) throw new IllegalArgumentException("Input feature vector NULL");
-        if(model == null) throw new IllegalArgumentException("Input model NULL");
-        if(vector.size() != model.GetNumFeatures()) throw new IllegalArgumentException("Number of features for the model and feature vector does not match");
-        if(model.GetModel() == null) throw new IllegalArgumentException("Input model NULL");
+    public static double PredictSingleDataPoint(Svm_model model, Vector<Double> features){
+        if(model == null) throw new IllegalArgumentException("Input model Null");
+        if(model.GetModel() == null) throw new IllegalArgumentException("Input model GetModel Null");
+        if(model.GetNumFeatures() != features.size()) throw new IllegalArgumentException("The number of features in the feature vector and the model does not match.");
+        return svm.svm_predict(model.GetModel(), createNodeArray(features));
+    }
 
-        return svm.svm_predict(model.GetModel(), createNodeArray(vector));
+    /**
+     * Calculates the average correctness for the model on the test_object set.
+     */
+    public static double PredictDataSets(Svm_model model, Svm_test_obj test){
+        if(model == null || test == null) throw new IllegalArgumentException("Input model or test set Null");
+        if(model.GetModel() == null) throw new IllegalArgumentException("Input model GetModel Null");
+        int test_length = test.GetSize();
+
+        double avg_corr = 0.0;
+        for(int i = 0; i < test_length; i++){
+            if(test.GetOutcome(i) == svm.svm_predict(model.GetModel(), test.GetFeatureNodeArray(i))){
+                avg_corr +=1;
+            }
+        }
+        avg_corr = (double)avg_corr/(double)test_length;
+        return avg_corr;
     }
 
     public static void CrossValidate(){
 
     }
 
-    private static svm_node[] createNodeArray(Vector<Double> features){
-        if(features == null) throw new IllegalArgumentException("Method does not accept NULL input.");
-        if(features.size() == 0) throw new IllegalArgumentException("Method does not take an input vector of zero size");
+    private static svm_node[] createNodeArray(Vector<Double> v){
+        if(v == null) throw new IllegalArgumentException("Method does not accept NULL input.");
+        if(v.size() == 0) throw new IllegalArgumentException("Method does not take an input vector of zero size");
 
-        svm_node[] tmp_arr = new svm_node[features.size()];
-        for (int i = 0; i < features.size(); i++){
-            if(features.get(i) == null) throw  new IllegalArgumentException("Feature vector element null.");
-            tmp_arr[i] = createSvmNode(i+1,features.get(i));
+        svm_node[] tmp_arr = new svm_node[v.size()];
+        for (int i = 0; i < v.size(); i++){
+            tmp_arr[i] = createSvmNode(i+1,v.get(i));
         }
         return tmp_arr;
     }
 
-    private static svm_node createSvmNode(Integer index, double val){
+    private static svm_node createSvmNode(int index, double val){
         if(index <= 0) throw new IllegalArgumentException("A node cannot take a negative or zero index, it starts at 1.");
         svm_node node = new svm_node();
         node.value = val;
         node.index = index;
-        if(node == null) throw new NullPointerException("Null node created");
         return node;
     }
 
@@ -374,5 +445,91 @@ public abstract class SvmInterface {
             }
         } catch (Exception e){ e.printStackTrace();}
         return check;
+    }
+
+    public static void Use_custom_print(){
+        svm_print_interface my_print_func = new svm_print_interface(){
+            public void print(String s)
+            {
+                // your own format
+            }
+        };
+        svm.svm_set_print_string_function(my_print_func);
+    }
+
+    public static void Disable_prints(){
+        svm_print_interface my_print_func = new svm_print_interface(){
+            public void print(String s)
+            {
+                // Empty print function
+            }
+        };
+        svm.svm_set_print_string_function(my_print_func);
+    }
+
+    public static void Enable_prints(){
+        svm.svm_set_print_string_function(null);
+    }
+
+    /**
+     * Evaluates the input problem and test set for a parameter range above and below the default parameters.
+     * @param prob              Problem (training set) to be tested for different parameters.
+     * @param test              Test set containing all test points that will be used to get parameter accuracy.
+     * @param num_runs          Number of runs for the given parameter range. Will in practice affect the granularity of the search.
+     * @param c_prec_offset     Offset from the default C parameter value to test for - in (decimal) percentage above and below the default value.
+     * @param g_prec_offset     Offset from the default gamma parameter value to test for - in (decimal) percentage above and below the default value.
+     * @return                  The set of parameters that yielded the best result from the grid search. If no parameters are found, default parameters are returned.
+     */
+    public static Svm_parameter GridOptimizeParameters(Svm_problem prob, Svm_test_obj test, int num_runs, double c_prec_offset, double g_prec_offset){
+        if (prob == null || test  == null) throw new IllegalArgumentException("Input test or training set null");
+        if (num_runs < 1 ) throw new IllegalArgumentException("Cannot run grid search with 0 or negative runs.");
+        if (c_prec_offset < 0.0 || g_prec_offset < 0.0 ) throw new IllegalArgumentException("Negative percentage values.");
+        if (c_prec_offset > 10.0 || g_prec_offset > 10.0 ) throw new IllegalArgumentException("Percentage values too high, please set the percentages as decimal values, ie. 0.5 for 50% etc.");
+
+        int num_features = prob.GetNumFeatures();
+        int num_training_samples = prob.GetSize();
+        Svm_parameter param = new Svm_parameter(num_features);
+
+        Svm_parameter best_param = new Svm_parameter(num_features);
+        double best_correctness = 0.0;
+        double correctness;
+
+        double tol = 0.001;                             //Default tolerance
+        double gamma = (double)1/(double)num_features;  //Default gamma
+        double c = 1.0;                                 //Default c
+
+        // Set search boundaries
+        double upper_g = gamma + gamma*g_prec_offset;
+        double upper_c = c + c*c_prec_offset;
+        double lower_g = gamma - gamma*g_prec_offset;
+        double lower_c = c - c*c_prec_offset;
+        double range_g = upper_g - lower_g;
+        double range_c = upper_c - lower_c;
+        double step_g = range_g/num_runs;
+        double step_c = range_c/num_runs;
+
+        Disable_prints();
+        // Test within search boundaries
+        for(double ind_g = lower_g; ind_g < upper_g; ind_g += step_g ){
+            for (double ind_c = lower_c; ind_c < upper_c; ind_c += step_c){
+                if(ind_g>0 && ind_c>0){
+                    Debug.toggle = false;
+                    param.SetC(ind_c);
+                    param.SetGamma(ind_g);
+                    Debug.toggle = true;
+                    if (CheckParameterValidity(prob,param)){
+                        Svm_model model = new Svm_model(prob,param);
+                        correctness = PredictDataSets(model,test);
+                        if(correctness > best_correctness){
+                            best_correctness = correctness;
+                            best_param = param;
+                            Debug.pl("Correctness = " + best_correctness + " with parameters: c = " + ind_c + ", g = " + ind_g);
+                        }
+                    }
+                }
+            }
+        }
+        Debug.pl("Grid search done");
+        return best_param;
     }
 }

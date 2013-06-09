@@ -39,12 +39,12 @@ public class Main{
 
         //Tormod_classifier.test_Svm();
 
-        /*
+
     	SvmTree tree = new SvmTree("1110");
     	tree.addSvm("filepath1", "1000");
     	tree.addSvm("filepath2", "0100");
     	LinkedList<String> svms = tree.getSvms("0100");
     	Debug.pl(svms.getFirst());
-        */
+
     }
 }

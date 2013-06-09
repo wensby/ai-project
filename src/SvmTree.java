@@ -112,7 +112,7 @@ public class SvmTree {
 	
 	/**
 	 * Will perform a branching of the SVM tree based on the specified feature
-	 * @param featureSeparator
+	 * @param featureIndex
 	 */
 	private void branch(int featureIndex) {
 		// If this is the first branch, set it as the root
