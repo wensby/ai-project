@@ -33,6 +33,10 @@ public class Feature {
 		public String getFeatureStructure() {
 			return "FEATURE_STRUCTURE(" + structure.toString() + ")";
 		}
+		
+		public String getFeatureStructurePure() {
+			return structure.toString();
+		}
 	}
 	
 	// The amount of different possible features
