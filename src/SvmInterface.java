@@ -20,7 +20,6 @@ import java.util.Vector;
  *  7. Predict result for a single data point
  *  8. Find optimized parameters through a parameter grid search
  */
-
 /*
 
 Parameter options: (stripped down)
@@ -480,7 +479,7 @@ public abstract class SvmInterface {
      * @param g_prec_offset     Offset from the default gamma parameter value to test for - in (decimal) percentage above and below the default value.
      * @return                  The set of parameters that yielded the best result from the grid search. If no parameters are found, default parameters are returned.
      */
-    public static Svm_parameter GridOptimizeParameters(Svm_problem prob, Svm_test_obj test, int num_runs, double c_prec_offset, double g_prec_offset){
+    public static Svm_model GridOptimizeParameters(Svm_problem prob, Svm_test_obj test, int num_runs, double c_prec_offset, double g_prec_offset){
         if (prob == null || test  == null) throw new IllegalArgumentException("Input test or training set null");
         if (num_runs < 1 ) throw new IllegalArgumentException("Cannot run grid search with 0 or negative runs.");
         if (c_prec_offset < 0.0 || g_prec_offset < 0.0 ) throw new IllegalArgumentException("Negative percentage values.");
@@ -491,6 +490,7 @@ public abstract class SvmInterface {
         Svm_parameter param = new Svm_parameter(num_features);
 
         Svm_parameter best_param = new Svm_parameter(num_features);
+        Svm_model best_model = new Svm_model(prob,param);
         double best_correctness = 0.0;
         double correctness;
 
@@ -509,6 +509,7 @@ public abstract class SvmInterface {
         double step_c = range_c/num_runs;
 
         Disable_prints();
+
         // Test within search boundaries
         for(double ind_g = lower_g; ind_g < upper_g; ind_g += step_g ){
             for (double ind_c = lower_c; ind_c < upper_c; ind_c += step_c){
@@ -523,6 +524,7 @@ public abstract class SvmInterface {
                         if(correctness > best_correctness){
                             best_correctness = correctness;
                             best_param = param;
+                            best_model = model;
                             Debug.pl("Correctness = " + best_correctness + " with parameters: c = " + ind_c + ", g = " + ind_g);
                         }
                     }
@@ -530,6 +532,7 @@ public abstract class SvmInterface {
             }
         }
         Debug.pl("Grid search done");
-        return best_param;
+        //return best_param;
+        return best_model;
     }
 }
