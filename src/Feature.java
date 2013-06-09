@@ -14,27 +14,27 @@ public class Feature {
 	 * @version 2013-06-09
 	 */
 	public static class FeatureStructureGenerator {
-		StringBuilder structure = new StringBuilder();
+		private static StringBuilder structure = new StringBuilder();
 		
 		/**
 		 * This method has to be called before generating a new feature structure string
 		 */
-		public void clearNew() {
+		public static void clearNew() {
 			structure = new StringBuilder();
 			for (int i = 0; i < Feature.NUM_FEATURES; i++) {
 				structure.append('0');
 			}
 		}
 		
-		public void useFeature(int featureIndex) {
+		public static void useFeature(int featureIndex) {
 			structure.setCharAt(featureIndex, '1');
 		}
 		
-		public String getFeatureStructure() {
+		public static String getFeatureStructure() {
 			return "FEATURE_STRUCTURE(" + structure.toString() + ")";
 		}
 		
-		public String getFeatureStructurePure() {
+		public static String getFeatureStructurePure() {
 			return structure.toString();
 		}
 	}
