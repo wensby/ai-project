@@ -4,33 +4,64 @@ public class Main{
 
 
     public static void main(String []args) throws Exception{
+    	Database db = new Database("DB_JUN5");
+    	db.openConnection();
+        long startTime = System.currentTimeMillis();
 
-    	
-    	// ############### JUST TESTING ################### //
-    	
-    	String treeStruct = Feature.FeatureStructureGenerator.getAllOnes();
-    	
-    	Feature.FeatureStructureGenerator.clearNew();
-    	Feature.FeatureStructureGenerator.useFeature(Feature.ITEM_BIRTH_YEAR);
-    	String b = Feature.FeatureStructureGenerator.getFeatureStructurePure();
-    	
-    	Feature.FeatureStructureGenerator.clearNew();
-    	Feature.FeatureStructureGenerator.useFeature(Feature.DIFF_YEARS);
-    	Feature.FeatureStructureGenerator.useFeature(Feature.COMMENT_RATIO);
-    	String c = Feature.FeatureStructureGenerator.getFeatureStructurePure();
-    	
-    	SvmTreeNew tree = new SvmTreeNew(treeStruct);
-    	
-    	tree.addSvm("filepath1", treeStruct);
-    	tree.addSvm("filepath2", b);
-    	tree.addSvm("filepath3", c);
-    	
-    	LinkedList<SvmTreeNew.Svm> svms = tree.getSvms(c);
-    	
-    	for (SvmTreeNew.Svm svm : svms) {
-    		Debug.pl(svm.getFilepath());
-    	}
-    	
+        Feature.FeatureStructureGenerator.clearNew();
+        //Feature.FeatureStructureGenerator.useFeature(0);
+        //Feature.FeatureStructureGenerator.useFeature(1);
+        //Feature.FeatureStructureGenerator.useFeature(2);
+        //Feature.FeatureStructureGenerator.useFeature(3);
+        Feature.FeatureStructureGenerator.useFeature(4);
+        Feature.FeatureStructureGenerator.useFeature(5);
+        Feature.FeatureStructureGenerator.useFeature(6);
+        Feature.FeatureStructureGenerator.useFeature(7);
+        Feature.FeatureStructureGenerator.useFeature(8);
+        Feature.FeatureStructureGenerator.useFeature(9);
+        Feature.FeatureStructureGenerator.useFeature(10);
+        Feature.FeatureStructureGenerator.useFeature(11);
+        Feature.FeatureStructureGenerator.useFeature(12);
+        Feature.FeatureStructureGenerator.useFeature(13);
+        Feature.FeatureStructureGenerator.useFeature(14);
+        Feature.FeatureStructureGenerator.useFeature(15);
+        Feature.FeatureStructureGenerator.useFeature(15);
+        Feature.FeatureStructureGenerator.useFeature(16);
+        Feature.FeatureStructureGenerator.useFeature(17);
+        Feature.FeatureStructureGenerator.useFeature(18);
+        Feature.FeatureStructureGenerator.useFeature(19);
+        String ft_string = Feature.FeatureStructureGenerator.getFeatureStructurePure();
+
+
+
+        SvmInterface.Svm_model model = SvmInterface.CreateSvm.GetBestOfRandomizedSVMs(db, ft_string,100,100,50);
+        model.Save("testSvm1");
+        //SvmInterface.CreateSvm.deleteThisIsPurelyATest(db);
+
+
+        long stopTime = System.currentTimeMillis();
+        long elapsedTime = stopTime - startTime;
+        System.out.println("Time in Ms: " + elapsedTime);
+        db.closeConnection();
+        System.out.println("Done!");
+
+
+
+
+
+
+
+        /*  EXAMPLE IMPLEMENTATION OF THE SVM TREE
+        Feature.FeatureStructureGenerator.clearNew();
+        Feature.FeatureStructureGenerator.useFeature(Feature.ITEM_GENDER);
+
+        String ft_string = Feature.FeatureStructureGenerator.getFeatureStructurePure();
+
+        Debug.pl(ft_string);
+
+        SvmTree tree = new SvmTree(ft_string);
+        tree.addSvm("asdfSVM", ft_string);
+        tree.getSvms(ft_string);*/
 
     }
 }

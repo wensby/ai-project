@@ -58,10 +58,10 @@ public class Feature {
 	// Remember, ONLY add to this list, and use completely new indices (also increase the NUM_FEATURES)
 	public static final int USER_BIRTH_YEAR		 	= 0;
 	public static final int USER_GENDER 			= 1;
-	public static final int USER_NUM_TWEETS		 	= 2;
-	public static final int USER_NUM_FOLLOWING		= 3;
-	public static final int ITEM_BIRTH_YEAR		 	= 4;
-	public static final int ITEM_GENDER			 	= 5;
+    public static final int ITEM_BIRTH_YEAR		 	= 2;
+    public static final int ITEM_GENDER			 	= 3;
+	public static final int USER_NUM_TWEETS		 	= 4;
+	public static final int USER_NUM_FOLLOWING		= 5;
 	public static final int ITEM_NUM_TWEETS		 	= 6;
 	public static final int ITEM_NUM_FOLLOWING 	 	= 7;
 	public static final int NUM_COMMENTS_BETWEEN 	= 8;
@@ -346,6 +346,24 @@ public class Feature {
 		
 		return sb.toString();
 	}
+
+    /**
+     * Will construct a featureStructure String that specifies the set of features this Feature
+     * object has used. This method only works if this object has been set as finished.<br>
+     * The string will look like: "00110101"
+     */
+    public String generateFeatureStructureStringPure() {
+        if (!finished) {
+            Debug.pl("! ERROR: The Feature object instance has to be set as finished before the feature structure string can be generated.");
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Double f : featureVector) {
+            if (f != null) sb.append("1");
+            else sb.append("0");
+        }
+        return sb.toString();
+    }
 	
 	/**
 	 * Simple method that just reformats a String formated as "FEATURE_STRUCTURE(00110101)" to
@@ -357,4 +375,14 @@ public class Feature {
 		else
 			return featureStructure.substring(18, featureStructure.length() - 1);
 	}
+
+    /**
+     * Counts the number of active features (ones) in the input feature structure string.
+     */
+    public static int countNumFeatures(String featureStructure){
+        int count = 0;
+        for(int i = 0; i<featureStructure.length();i++) if(featureStructure.charAt(i) == '1') count ++;
+        return count;
+    }
+
 }

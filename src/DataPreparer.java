@@ -12,7 +12,6 @@ import java.util.Vector;
 public class DataPreparer {
     private final int data_size_to_use;
     private final int MAX_RW_BULK_SIZE = 3000000;   // This is the maximum size that can be read at a time as one unit before Java runs out of heap space
-    private int discarded_sample_count;
     private int log_files_created = 0;
 
     private final Database db;
@@ -24,15 +23,8 @@ public class DataPreparer {
     public DataPreparer(Database db ,int data_size_to_use) throws Exception{
         this.db = db;
         this.data_size_to_use = data_size_to_use;
-        this.discarded_sample_count = 0;
-        //prepareTrainingSet();
-        SvmExample();
-        //gridParameterCheckForSVM();
     }
 
-    public int getDiscarded_sample_count() {
-        return discarded_sample_count;
-    }
 
     public void SvmExample() throws Exception{
         // Get one entry from rec_log_train:
@@ -40,74 +32,40 @@ public class DataPreparer {
         int tmp_userId = 0;
         int tmp_itemId = 0;
         int tmp_class  = 0;
-        int num_positive_samples = 0;
-        Feature featureSet;
         Vector<Double> v = new Vector<Double>();
-
         int num_features = 3;
 
         // Create problem set (training set) for the svm: specify the number of features on creation
         SvmInterface.Svm_problem prob = new SvmInterface.Svm_problem(num_features);
 
-
+        // Set features to use:
+        Feature featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
+        featureSet.useFeature(Feature.AT_ACTION_RATIO);
+        featureSet.useFeature(Feature.COMMENT_RATIO);
+        featureSet.useFeature(Feature.RETWEETS_RATIO);
+        featureSet.finish();
+        String feature_string = featureSet.generateFeatureStructureStringPure();
         for (int i= 0; i < data_size_to_use/2; i++){
-
             obj_list = db.rand_getOnePositive();
-            //Debug.pal(obj_list);
             tmp_userId = (Integer)obj_list[1];
             tmp_itemId = (Integer)obj_list[2];
             tmp_class  = (Integer)obj_list[3];
-            //Debug.pl("class: " +tmp_class);
-            Debug.reset("t2");
-            Debug.start("t2");
-            featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
-            //featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
-            //featureSet.useFeature(Feature.USER_BIRTH_YEAR);
-            featureSet.useFeature(Feature.AT_ACTION_RATIO);
-            featureSet.useFeature(Feature.COMMENT_RATIO);
-            //featureSet.useFeature(Feature.NUM_AT_ACTION_BETWEEN);
-            featureSet.useFeature(Feature.RETWEETS_RATIO);
-
-            featureSet.finish();
             v = featureSet.getFeatureVector();
-            Debug.stop("t2");
-            //Debug.pt("t2");
 
             // Append data points (outcome, features) to the problem set. Do this for all data points.
             prob.AppendTrainingPoint(tmp_class,v);
-
         }
-
         for (int i= 0; i < data_size_to_use/2; i++){
-
             obj_list = db.rand_getOneNegative();
-
-            //Debug.pal(obj_list);
             tmp_userId = (Integer)obj_list[1];
             tmp_itemId = (Integer)obj_list[2];
             tmp_class  = (Integer)obj_list[3];
-            //Debug.pl("class: " +tmp_class);
-            Debug.reset("t2");
-            Debug.start("t2");
-            featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
-            //featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
-            //featureSet.useFeature(Feature.USER_BIRTH_YEAR);
-            featureSet.useFeature(Feature.AT_ACTION_RATIO);
-            featureSet.useFeature(Feature.COMMENT_RATIO);
-            //featureSet.useFeature(Feature.NUM_AT_ACTION_BETWEEN);
-            featureSet.useFeature(Feature.RETWEETS_RATIO);
-
-            featureSet.finish();
+            featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db), feature_string);
             v = featureSet.getFeatureVector();
-            Debug.stop("t2");
-            //Debug.pt("t2");
 
             // Append data points (outcome, features) to the problem set. Do this for all data points.
             prob.AppendTrainingPoint(tmp_class,v);
-
         }
-
-
         // When done appending data points, finalize the problem set. The set cannot be changed after this
         prob.FinalizeTrainingSet();
 
@@ -115,10 +73,7 @@ public class DataPreparer {
         SvmInterface.Svm_parameter param = new SvmInterface.Svm_parameter(1,10,0.01);
 
         // See if the model with the given parameters are legal:
-        boolean valid;
-        valid = SvmInterface.CheckParameterValidity(prob,param);
-
-        Debug.pl("Parameter set is valid: " + valid);
+        Debug.pl("Parameter set is valid: " + SvmInterface.CheckParameterValidity(prob,param));
 
         // Now create the model for the SVM (this is in principle a trained SVM)
         Debug.pl("Training svm...");
@@ -134,43 +89,24 @@ public class DataPreparer {
             tmp_userId = (Integer)obj_list[1];
             tmp_itemId = (Integer)obj_list[2];
             tmp_class  = (Integer)obj_list[3];
-            featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
-            //featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
-            //featureSet.useFeature(Feature.USER_BIRTH_YEAR);
-            featureSet.useFeature(Feature.AT_ACTION_RATIO);
-            featureSet.useFeature(Feature.COMMENT_RATIO);
-            //featureSet.useFeature(Feature.NUM_AT_ACTION_BETWEEN);
-            featureSet.useFeature(Feature.RETWEETS_RATIO);
-            featureSet.finish();
+            featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db), feature_string);
             v = featureSet.getFeatureVector();
 
             // Append data points (outcome, features) to the problem set. Do this for all data points.
             resulting_class = SvmInterface.PredictSingleDataPoint(model, v);
-            //Debug.pl("Resulting class: " + resulting_class);
-
             if((int)resulting_class == tmp_class) correct_samples ++;
 
             obj_list = db.rand_getOnePositive();
             tmp_userId = (Integer)obj_list[1];
             tmp_itemId = (Integer)obj_list[2];
             tmp_class  = (Integer)obj_list[3];
-            featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
-            //featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
-            //featureSet.useFeature(Feature.USER_BIRTH_YEAR);
-            featureSet.useFeature(Feature.AT_ACTION_RATIO);
-            featureSet.useFeature(Feature.COMMENT_RATIO);
-            //featureSet.useFeature(Feature.NUM_AT_ACTION_BETWEEN);
-            featureSet.useFeature(Feature.RETWEETS_RATIO);
-            featureSet.finish();
+            featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db), feature_string);
             v = featureSet.getFeatureVector();
 
             // Append data points (outcome, features) to the problem set. Do this for all data points.
             resulting_class = SvmInterface.PredictSingleDataPoint(model, v);
-            //Debug.pl("Resulting class: " + resulting_class);
-
             if((int)resulting_class == tmp_class) correct_samples ++;
         }
-
         double correctness = (double)correct_samples/(double)cross_valid_size;
         Debug.pl("Final correctness balanced test set: " + correctness*100 + "%");
 
@@ -179,28 +115,16 @@ public class DataPreparer {
         correct_samples = 0;
         for (int i= 0; i < cross_valid_size; i++){
 
-            //obj_list = db.rand_getOneRow("rec_log_train");
             obj_list = db.rand_getOnePositive();
             tmp_userId = (Integer)obj_list[1];
             tmp_itemId = (Integer)obj_list[2];
             tmp_class  = (Integer)obj_list[3];
-            featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
-            //featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
-            //featureSet.useFeature(Feature.USER_BIRTH_YEAR);
-            featureSet.useFeature(Feature.AT_ACTION_RATIO);
-            featureSet.useFeature(Feature.COMMENT_RATIO);
-            //featureSet.useFeature(Feature.NUM_AT_ACTION_BETWEEN);
-            featureSet.useFeature(Feature.RETWEETS_RATIO);
-            featureSet.finish();
+            featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db), feature_string);
             v = featureSet.getFeatureVector();
-
             // Append data points (outcome, features) to the problem set. Do this for all data points.
             resulting_class = SvmInterface.PredictSingleDataPoint(model, v);
-            //Debug.pl("Resulting class: " + resulting_class);
-
             if((int)resulting_class == tmp_class) correct_samples ++;
         }
-
         correctness = (double)correct_samples/(double)cross_valid_size;
         Debug.pl("Final correctness unbalanced positive test set: " + correctness*100 + "%");
 
@@ -208,35 +132,20 @@ public class DataPreparer {
         cross_valid_size = data_size_to_use/5;
         correct_samples = 0;
         for (int i= 0; i < cross_valid_size; i++){
-
-            //obj_list = db.rand_getOneRow("rec_log_train");
             obj_list = db.rand_getOneNegative();
             tmp_userId = (Integer)obj_list[1];
             tmp_itemId = (Integer)obj_list[2];
             tmp_class  = (Integer)obj_list[3];
-            featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db));
-            //featureSet.useFeature(Feature.ITEM_BIRTH_YEAR);
-            //featureSet.useFeature(Feature.USER_BIRTH_YEAR);
-            featureSet.useFeature(Feature.AT_ACTION_RATIO);
-            featureSet.useFeature(Feature.COMMENT_RATIO);
-            //featureSet.useFeature(Feature.NUM_AT_ACTION_BETWEEN);
-            featureSet.useFeature(Feature.RETWEETS_RATIO);
-            featureSet.finish();
+            featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db), feature_string);
             v = featureSet.getFeatureVector();
 
             // Append data points (outcome, features) to the problem set. Do this for all data points.
             resulting_class = SvmInterface.PredictSingleDataPoint(model, v);
-            //Debug.pl("Resulting class: " + resulting_class);
-
             if((int)resulting_class == tmp_class) correct_samples ++;
         }
-
         correctness = (double)correct_samples/(double)cross_valid_size;
         Debug.pl("Final correctness unbalanced negative test set: " + correctness*100 + "%");
-
-
     }
-
 
     /**
      * Creates a set of log files that does not go above the max_heap_size of Java by creating several text files
@@ -335,9 +244,6 @@ public class DataPreparer {
 
                 if(tmp_features != null){
                     createLogFiles(builder,tmp_class + format_featureVector_for_SVM(tmp_features) + "\n",i);
-                } else {
-                    Debug.pl("Sample ignored");
-                    this.discarded_sample_count ++;
                 }
 
                 // Runtime information and analysis
@@ -350,12 +256,14 @@ public class DataPreparer {
                 }
             }
             commitRemainingLogFiles(builder);
-            Debug.pl("Number of discarded samples: " + this.discarded_sample_count);
         }
         catch (Exception e){
             e.printStackTrace();
         }
     }
+
+
+
 
 
 

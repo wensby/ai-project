@@ -191,7 +191,68 @@ public class toDB {
         database.turn_autoCommit_on();
         Database.indexTable(database,"rec_log_test");
     }
-	
+
+    public static void rec_log_test2DB_with_result_values(Database database) throws Exception{
+        Debug.pl("> Parsing rec_log_test into database " + database.name + " ");
+
+
+        Debug.pl("NOT IMPLEMENTED FUNCTION!!!!");
+        Debug.pl("NOT IMPLEMENTED FUNCTION!!!!");
+        Debug.pl("NOT IMPLEMENTED FUNCTION!!!!");
+        Debug.pl("NOT IMPLEMENTED FUNCTION!!!!");
+        Debug.pl("NOT IMPLEMENTED FUNCTION!!!!");
+        Debug.pl("NOT IMPLEMENTED FUNCTION!!!!");
+
+
+        if (!database.hasOpenConnection()) {
+            Debug.pl("Error: Database don't have an open connection");
+            return;
+        }
+        String file_place = "../data/rec_log_test.txt";
+        //String file_place = "/Volumes/Ram Disk/rec_log_test.txt";
+        String table_name = "rec_log_test";
+        Parser.txt file = new Parser.txt(file_place);
+        String values;
+        int autoid=1;
+
+        database.turn_autoCommit_off();
+        Database.dropTableIndex(database,"rec_log_test");
+
+        // counter
+        int counter = 0;
+
+        while(file.hasNext()){
+            ArrayList<String> entry_values = new ArrayList<String>();
+
+            Parser.rec_log_train u_p = new Parser.rec_log_train(file.next());
+
+            entry_values.add(Integer.toString(autoid));
+            entry_values.add(Integer.toString(u_p.userID));
+            entry_values.add(Integer.toString(u_p.ItemID));
+            entry_values.add(Integer.toString(u_p.result));
+            entry_values.add(Integer.toString(u_p.timeStamp));
+            values = Database.valueFormatter(entry_values);         //This is a string
+            database.addToBatch(table_name,values);
+
+            // counter
+            if(counter%100000 == 0){
+                System.out.println("Progression:   " + counter);
+                database.executeBatch();
+                database.commitTransaction();
+            }
+            counter++;
+            autoid++;
+        }
+        database.executeBatch();
+        database.commitTransaction();
+        database.turn_autoCommit_on();
+        Database.indexTable(database,"rec_log_test");
+    }
+
+
+
+
+
 	public static void user_action2DB(Database database, int offset) throws Exception{
 		Debug.pl("> Parsing user_action into database " + database.name + " (offset: " + offset + ")");
 		
@@ -429,6 +490,8 @@ public class toDB {
 		}
 		insertstmt.executeBatch();
 	}
+
+
 
 
 

@@ -41,9 +41,6 @@ public class User {
         this.numFollowers = this.followers.size();
         this.followees = this.getFolloweesFromDB(userID, database);
         this.numFollowee = this.followees.size();
-
-
-
     	this.setUserID_birthYear_gender_num_Tweets_FromDB(userID, database);
     	this.setActionsFromDB(userID, database);
     }
@@ -51,15 +48,11 @@ public class User {
 
 	private HashSet<Integer>  getFollowersFromDB(int userID, Database db) throws SQLException{
     	Statement statm = db.createStatement();
-        //Debug.start("t10");
     	ResultSet res = statm.executeQuery("SELECT followerUserID FROM userSNS WHERE followeeUserID = " + userID + ";");
-        //Debug.stop("t10");
 		HashSet<Integer> followers = new HashSet<Integer>();
-        Debug.start("hash");
     	while(res.next()){
 			followers.add(res.getInt("followerUserID"));
 		}
-        Debug.stop("hash");
 		statm.close();
 		res.close();
 		return followers;
@@ -68,11 +61,9 @@ public class User {
     	Statement statm = db.createStatement();
     	ResultSet res = statm.executeQuery("SELECT followeeUserID FROM userSNS WHERE followerUserID = " + userID + ";");
     	HashSet<Integer> followees = new HashSet<Integer>();
-        Debug.start("hash2");
     	while(res.next()){
 			followees.add(res.getInt("followeeUserID"));
 		}
-        Debug.stop("hash2");
 		statm.close();
 		res.close();
 		return followees;

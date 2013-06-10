@@ -1,5 +1,6 @@
 import java.io.File;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Vector;
 
 public class Util {
@@ -45,5 +46,15 @@ public class Util {
     	if (f.exists()) return true;
 		return false;
     }
+
+    /**
+     * Get random value between lower and upper bound, including both bound values.
+     */
+    public static int GetRand(int lower_bound, int upper_bound){
+        Random rand = new Random();
+        int range = upper_bound-lower_bound+1;
+        return lower_bound+ rand.nextInt(range);
+    }
+
 
 }
