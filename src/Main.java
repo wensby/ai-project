@@ -1,12 +1,5 @@
 import java.util.LinkedList;
 
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Vector;
-
 public class Main{
 
 
@@ -15,11 +8,7 @@ public class Main{
     	
     	// ############### JUST TESTING ################### //
     	
-    	Feature.FeatureStructureGenerator.clearNew();
-    	Feature.FeatureStructureGenerator.useFeature(Feature.DIFF_YEARS);
-    	Feature.FeatureStructureGenerator.useFeature(Feature.ITEM_AGE_RANK);
-    	Feature.FeatureStructureGenerator.useFeature(Feature.COMMENT_RATIO);
-    	String treeStruct = Feature.FeatureStructureGenerator.getFeatureStructurePure();
+    	String treeStruct = Feature.FeatureStructureGenerator.getAllOnes();
     	
     	Feature.FeatureStructureGenerator.clearNew();
     	Feature.FeatureStructureGenerator.useFeature(Feature.ITEM_BIRTH_YEAR);
