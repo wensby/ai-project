@@ -16,35 +16,60 @@ public class Main{
     	db.openConnection();
         long startTime = System.currentTimeMillis();
 
+        Feature.FeatureStructureGenerator.clearNew();
+        //Feature.FeatureStructureGenerator.useFeature(0);
+        //Feature.FeatureStructureGenerator.useFeature(1);
+        //Feature.FeatureStructureGenerator.useFeature(2);
+        //Feature.FeatureStructureGenerator.useFeature(3);
+        Feature.FeatureStructureGenerator.useFeature(4);
+        Feature.FeatureStructureGenerator.useFeature(5);
+        Feature.FeatureStructureGenerator.useFeature(6);
+        Feature.FeatureStructureGenerator.useFeature(7);
+        Feature.FeatureStructureGenerator.useFeature(8);
+        Feature.FeatureStructureGenerator.useFeature(9);
+        Feature.FeatureStructureGenerator.useFeature(10);
+        Feature.FeatureStructureGenerator.useFeature(11);
+        Feature.FeatureStructureGenerator.useFeature(12);
+        Feature.FeatureStructureGenerator.useFeature(13);
+        Feature.FeatureStructureGenerator.useFeature(14);
+        Feature.FeatureStructureGenerator.useFeature(15);
+        Feature.FeatureStructureGenerator.useFeature(15);
+        Feature.FeatureStructureGenerator.useFeature(16);
+        Feature.FeatureStructureGenerator.useFeature(17);
+        Feature.FeatureStructureGenerator.useFeature(18);
+        Feature.FeatureStructureGenerator.useFeature(19);
+        String ft_string = Feature.FeatureStructureGenerator.getFeatureStructurePure();
 
-        DataPreparer dp = new DataPreparer(db,10);
-
-        //Debug.pt("t1");
-        //Debug.p("  getFolloweesFromDB"); Debug.pt("t2");
-        //Debug.p("  setCategoriFromDB"); Debug.pt("t3");
-        //Debug.p("  setFollowerKeysFromDB"); Debug.pt("t4");
-        //Debug.p("  setFollowerTagsFromDB"); Debug.pt("t5");
-        //Debug.pt("t10");
-        Debug.pt("hash");
-        Debug.pt("hash2");
 
 
-        //SvmInterface.Example.TestSimpleSvm();
+        SvmInterface.Svm_model model = SvmInterface.CreateSvm.GetBestOfRandomizedSVMs(db, ft_string,100,100,50);
+        model.Save("testSvm1");
+        //SvmInterface.CreateSvm.deleteThisIsPurelyATest(db);
+
 
         long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;
         System.out.println("Time in Ms: " + elapsedTime);
-    	db.closeConnection();
+        db.closeConnection();
         System.out.println("Done!");
 
-        //Tormod_classifier.test_Svm();
 
 
-    	SvmTree tree = new SvmTree("1110");
-    	tree.addSvm("filepath1", "1000");
-    	tree.addSvm("filepath2", "0100");
-    	LinkedList<String> svms = tree.getSvms("0100");
-    	Debug.pl(svms.getFirst());
+
+
+
+
+        /*  EXAMPLE IMPLEMENTATION OF THE SVM TREE
+        Feature.FeatureStructureGenerator.clearNew();
+        Feature.FeatureStructureGenerator.useFeature(Feature.ITEM_GENDER);
+
+        String ft_string = Feature.FeatureStructureGenerator.getFeatureStructurePure();
+
+        Debug.pl(ft_string);
+
+        SvmTree tree = new SvmTree(ft_string);
+        tree.addSvm("asdfSVM", ft_string);
+        tree.getSvms(ft_string);*/
 
     }
 }

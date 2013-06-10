@@ -103,7 +103,7 @@ public class Database {
         stat.close();
     	conn.close();
     	openConnection = false;
-    	Debug.pl("> Closed the connection to database " + name);
+    	Debug.pl("Closed the connection to database " + name);
         // If user exists, then update user
     }
     
@@ -231,10 +231,6 @@ public class Database {
         return arrayResult;
     }
 
-
-
-
-
     /**
      * Gets one random positive row from tableName. Only works with rec_log_train table....
      */
@@ -243,9 +239,6 @@ public class Database {
          return null;
     }
 
-
-
-    
     //Queries 
     public void insert(String table, String values) throws SQLException{
     	stat.executeUpdate("INSERT OR IGNORE INTO "+ table + " VALUES " +values+ ";");

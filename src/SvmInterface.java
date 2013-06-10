@@ -1,7 +1,9 @@
+import com.oracle.jrockit.jfr.InvalidEventDefinitionException;
 import libsvm.*;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Vector;
 
 /**
@@ -181,6 +183,11 @@ public abstract class SvmInterface {
             return this.parameter;
         }
 
+        public Svm_parameter Copy(){
+            return new Svm_parameter(parameter.gamma, parameter.C, parameter.eps);
+        }
+
+
     }
 
     public static class Svm_model extends SvmInterface {
@@ -198,7 +205,7 @@ public abstract class SvmInterface {
                 this.parameter = param.GetParameter();
                 this.num_features = prob.GetNumFeatures();
                 train();
-            } catch (Exception e){ e.printStackTrace();}
+            } catch (Exception e){e.printStackTrace();}
         }
 
         public void Save(String filename){
@@ -265,6 +272,11 @@ public abstract class SvmInterface {
         public int GetNumFeatures(){
             return this.num_features;
         }
+
+        public Svm_model Copy(Svm_problem prob, Svm_parameter param){
+            return new Svm_model(prob,param);
+        }
+
     }
 
 
@@ -290,7 +302,7 @@ public abstract class SvmInterface {
         /**
          * Append a data point with it's features and outcome to the svm problem (training) set.
          */
-        public void AppendTestPoint(Integer outcome, Vector<Integer> features) throws IllegalArgumentException {
+        public void AppendTestPoint(Integer outcome, Vector<Double> features) throws IllegalArgumentException {
             if (outcome != 1 && outcome != -1) throw new IllegalArgumentException("Illegal outcome value: " + outcome);
             if(features == null) throw  new IllegalArgumentException("The input feature vector cannot have a NULL value.");
             if(features.size()==0) throw  new IllegalArgumentException("The input feature vector is empty.");
@@ -491,7 +503,7 @@ public abstract class SvmInterface {
 
         Svm_parameter best_param = new Svm_parameter(num_features);
         Svm_model best_model = new Svm_model(prob,param);
-        double best_correctness = 0.0;
+        double best_correctness = 0.5;
         double correctness;
 
         double tol = 0.001;                             //Default tolerance
@@ -523,16 +535,248 @@ public abstract class SvmInterface {
                         correctness = PredictDataSets(model,test);
                         if(correctness > best_correctness){
                             best_correctness = correctness;
-                            best_param = param;
-                            best_model = model;
-                            Debug.pl("Correctness = " + best_correctness + " with parameters: c = " + ind_c + ", g = " + ind_g);
+                            best_param = param.Copy();
+                            best_model = model.Copy(prob,best_param);
+                            Debug.pl("> > Grid search: Correctness = " + best_correctness*100 + " with parameters: c = " + ind_c + ", g = " + ind_g);
                         }
                     }
                 }
             }
         }
-        Debug.pl("Grid search done");
-        //return best_param;
-        return best_model;
+        //Debug.pl("Grid search done");
+        return new Svm_model(prob,best_param);
     }
+
+    /**
+     * Class designated to create the
+     */
+    public static class CreateSvm{
+        private static ArrayList<Integer> test_user_set = new ArrayList<>();
+        private static ArrayList<Integer> test_item_set = new ArrayList<>();
+        private static ArrayList<Integer> test_classes = new ArrayList<>();
+        private static int test_set_size;
+        private static ArrayList<Integer> training_user_set = new ArrayList<>();
+        private static ArrayList<Integer> training_item_set = new ArrayList<>();
+        private static ArrayList<Integer> training_classes = new ArrayList<>();
+        private static int training_set_size;
+
+        /**
+         * Randomizes the active features of the input string. The first 4 digits will always remain unchanged.
+         */
+        public static String RandomizeFeatureString(String feature_string){
+            if(feature_string.length() != Feature.NUM_FEATURES) throw new IllegalArgumentException("Feature string does has an illegal number of features or length.");
+            StringBuilder sb = new StringBuilder(Feature.NUM_FEATURES);
+            sb.insert(0,feature_string);
+
+            // Randomize active features
+            for(int i = 4; i<Feature.NUM_FEATURES; i++) if(sb.charAt(i) != '0') sb.setCharAt(i, Character.forDigit(getRand(0,1),10));
+            return sb.toString();
+        }
+
+        /**
+         * Get random value between, and including, the lower and upper bound.
+         */
+        private static int getRand(int lower_bound, int upper_bound){
+            Random rand = new Random();
+            int range = upper_bound-lower_bound+1;
+            return lower_bound+ rand.nextInt(range);
+        }
+
+        /**
+         *  This method does the following procedure:
+         *  1. Get one training and test set to evaluate all svms with.
+         *  2. Randomize the feature selection for each svm
+         *  3. Optimize the parameters for each svm
+         *  3. Test the performance, and return the best
+         *  @param db                       Database to get training samples from
+         *  @param features_string          Features to randomize. All features set to 1 will be randomized.
+         *  @param training_set_size        Size of the training set to train each svm from.
+         *  @param test_set_size            Size of the test set to evaluate each svm with.
+         */
+        public static Svm_model GetBestOfRandomizedSVMs(Database db, String features_string, int num_svms, int training_set_size, int test_set_size){
+            Svm_model best_model = null;
+            Double best_correctness = 0.01;
+            SvmInterface.Disable_prints();
+
+            // Collect samples for constant training and test sets
+            collectRandomBalancedTestSet(db, test_set_size);
+            collectRandomBalancedTrainingSet(db, training_set_size);
+            Debug.pl("> Test and training set loaded");
+
+            for(int i = 0; i< num_svms; i++){
+                Debug.pl("> Svm " + (i+1) + " ...");
+                // Get features for training and test set
+                String rand_ft_string = RandomizeFeatureString(features_string);
+                Svm_problem prob = generateTrainingSet(db, rand_ft_string);
+                Svm_test_obj test_obj = generateTestObject(db, rand_ft_string);
+
+                // Find locally optimal model around default parameters
+                Svm_model model = GridOptimizeParameters(prob,test_obj,51,4.0,4.0);
+
+                // Check correctness, keep if better
+                Double correctness = PredictDataSets(model,test_obj);
+                if(best_correctness < correctness){
+                    best_model = model;
+                    best_correctness = correctness;
+                    Debug.pl("> Best correctness so far: " + PredictDataSets(best_model,test_obj)*100);
+                }
+            }
+            Debug.pl("> Final best correctness = " + best_correctness*100);
+            return best_model;
+        }
+
+        public static void deleteThisIsPurelyATest(Database db){
+            collectRandomBalancedTrainingSet(db,10);
+            collectRandomBalancedTestSet(db,10);
+            Svm_problem prob = generateTrainingSet(db,"1111");
+            Svm_test_obj test_obj = generateTestObject(db,"1111");
+            Svm_model model = new Svm_model(prob, new Svm_parameter(prob.GetNumFeatures()));
+        }
+
+
+        /**
+         * Generates a Svm-problem object (training set) consisting of equally many negative and positive samples.
+         * The samples are picked at random.
+         * @param db                Database to extract the samples from
+         * @param size              Total size of the desired training set
+         * @param feature_string    FeatureStructure string; a bit string containing what features to calculate
+         * @return
+         */
+        public static Svm_problem  GenerateRandomBalancedTrainingSet(Database db, int size, String feature_string){
+            Svm_problem prob = new Svm_problem(Feature.countNumFeatures(feature_string));
+            try{
+                for(int i = 0; i < size/2; i++){
+                    // Get negative sample
+                    Object[] obj_list = db.rand_getOneNegative();
+                    int tmp_userId = (Integer)obj_list[1];
+                    int tmp_itemId = (Integer)obj_list[2];
+                    int tmp_class  = (Integer)obj_list[3];
+                    Feature featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db), feature_string);
+                    featureSet.getFeatureVector();
+                    prob.AppendTrainingPoint(tmp_class,featureSet.getFeatureVector());
+                    // Get positive sample
+                    obj_list = db.rand_getOnePositive();
+                    tmp_userId = (Integer)obj_list[1];
+                    tmp_itemId = (Integer)obj_list[2];
+                    tmp_class  = (Integer)obj_list[3];
+                    featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db), feature_string);
+                    featureSet.getFeatureVector();
+                    prob.AppendTrainingPoint(tmp_class,featureSet.getFeatureVector());
+                }
+            } catch (Exception e){e.printStackTrace();}
+            prob.FinalizeTrainingSet();
+            return prob;
+        }
+
+        public static Svm_test_obj  GenerateRandomBalancedTestObject(Database db, int size, String feature_string){
+            Svm_test_obj test_obj = new Svm_test_obj(Feature.countNumFeatures(feature_string));
+            try{
+                for(int i = 0; i < size/2; i++){
+                    // Get negative sample
+                    Object[] obj_list = db.rand_getOneNegative();
+                    int tmp_userId = (Integer)obj_list[1];
+                    int tmp_itemId = (Integer)obj_list[2];
+                    int tmp_class  = (Integer)obj_list[3];
+                    Feature featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db), feature_string);
+                    featureSet.getFeatureVector();
+                    test_obj.AppendTestPoint(tmp_class, featureSet.getFeatureVector());
+                    // Get positive sample
+                    obj_list = db.rand_getOnePositive();
+                    tmp_userId = (Integer)obj_list[1];
+                    tmp_itemId = (Integer)obj_list[2];
+                    tmp_class  = (Integer)obj_list[3];
+                    featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db), feature_string);
+                    featureSet.getFeatureVector();
+                    test_obj.AppendTestPoint(tmp_class, featureSet.getFeatureVector());
+                }
+            } catch (Exception e){e.printStackTrace();}
+            return test_obj;
+        }
+
+        private static void collectRandomBalancedTestSet(Database db, int size){
+            test_user_set.clear();
+            test_item_set.clear();
+            test_classes.clear();
+            test_set_size = size;
+            try{
+                for(int i = 0; i < size/2; i++){
+                    // Get negative sample
+                    Object[] obj_list = db.rand_getOneNegative();
+                    int tmp_userId = (Integer)obj_list[1];
+                    int tmp_itemId = (Integer)obj_list[2];
+                    int tmp_class  = (Integer)obj_list[3];
+                    test_user_set.add(tmp_userId);
+                    test_item_set.add(tmp_itemId);
+                    test_classes.add(tmp_class);
+
+                    // Get positive sample
+                    obj_list = db.rand_getOnePositive();
+                    tmp_userId = (Integer)obj_list[1];
+                    tmp_itemId = (Integer)obj_list[2];
+                    tmp_class  = (Integer)obj_list[3];
+                    test_user_set.add(tmp_userId);
+                    test_item_set.add(tmp_itemId);
+                    test_classes.add(tmp_class);
+                }
+            } catch (Exception e){e.printStackTrace();}
+        }
+
+        private static void collectRandomBalancedTrainingSet(Database db, int size){
+            training_user_set.clear();
+            training_item_set.clear();
+            training_classes.clear();
+            training_set_size = size;
+            try{
+                for(int i = 0; i < size/2; i++){
+                    // Get negative sample
+                    Object[] obj_list = db.rand_getOneNegative();
+                    int tmp_userId = (Integer)obj_list[1];
+                    int tmp_itemId = (Integer)obj_list[2];
+                    int tmp_class  = (Integer)obj_list[3];
+                    training_user_set.add(tmp_userId);
+                    training_item_set.add(tmp_itemId);
+                    training_classes.add(tmp_class);
+
+                    // Get positive sample
+                    obj_list = db.rand_getOnePositive();
+                    tmp_userId = (Integer)obj_list[1];
+                    tmp_itemId = (Integer)obj_list[2];
+                    tmp_class  = (Integer)obj_list[3];
+                    training_user_set.add(tmp_userId);
+                    training_item_set.add(tmp_itemId);
+                    training_classes.add(tmp_class);
+                }
+            } catch (Exception e){e.printStackTrace();}
+        }
+
+        private static Svm_test_obj generateTestObject(Database db, String feature_string){
+            Svm_test_obj test_obj = new Svm_test_obj(Feature.countNumFeatures(feature_string));
+            try{
+                for(int i = 0; i < test_set_size; i++){
+                    // Create features for each sample to fit the feature string
+                    Feature featureSet = new Feature(new User(test_user_set.get(i),db), new Item(test_item_set.get(i),db), feature_string);
+                    featureSet.getFeatureVector();
+                    test_obj.AppendTestPoint(test_classes.get(i), featureSet.getFeatureVector());
+                }
+            } catch (Exception e){e.printStackTrace();}
+            return test_obj;
+        }
+
+        private static Svm_problem generateTrainingSet(Database db, String feature_string){
+            Svm_problem prob = new Svm_problem(Feature.countNumFeatures(feature_string));
+            try{
+                for(int i = 0; i < training_set_size; i++){
+                    // Create features for each sample to fit the feature string
+                    Feature featureSet = new Feature(new User(training_user_set.get(i),db), new Item(training_item_set.get(i),db), feature_string);
+                    featureSet.getFeatureVector();
+                    prob.AppendTrainingPoint(training_classes.get(i), featureSet.getFeatureVector());
+                }
+            } catch (Exception e){e.printStackTrace();}
+            prob.FinalizeTrainingSet();
+            return prob;
+        }
+
+
+    }
+
 }
