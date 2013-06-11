@@ -1,17 +1,17 @@
-import java.util.LinkedList;
-
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Vector;
 
 public class Main{
 
 
     public static void main(String []args) throws Exception{
-
+    	
+    	SvmSet set = new SvmSet("test.txt");
+    	set.add("filepath1", "000111000111");
+    	set.add("filepath2", "000111111111");
+    	set.save();
+    	set = set.load("test.txt");
+    	set.save();
+    	
+    	
     	Database db = new Database("DB_JUN5");
     	db.openConnection();
         long startTime = System.currentTimeMillis();
@@ -53,7 +53,7 @@ public class Main{
         int num_features = feat_st.length();
 
         SvmInterface.Svm_model model = SvmInterface.Svm_model.LoadModel(svm, num_features);
-        Double corr = SvmInterface.TestSvm.RunSingleSvm(db,model,feat_st,100000);
+        Double corr = SvmInterface.TestSvm.RunSingleSvm(db, model, feat_st, 100000);
         Debug.pl("Correctness: " + corr*100 + " %");
 
         long stopTime = System.currentTimeMillis();

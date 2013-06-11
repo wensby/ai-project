@@ -26,6 +26,18 @@ public class Feature {
 			}
 		}
 		
+		public static String getAllOnes() {
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < Feature.NUM_FEATURES; i++) sb.append('1');
+			return sb.toString();
+		}
+		
+		public static String getAllZeros() {
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < Feature.NUM_FEATURES; i++) sb.append('0');
+			return sb.toString();
+		}
+		
 		public static void useFeature(int featureIndex) {
 			structure.setCharAt(featureIndex, '1');
 		}
@@ -114,7 +126,6 @@ public class Feature {
 			if (parsed.charAt(i) != '0') useFeature(i);
 		}
 
-		
 		finish();
 	}
 	
