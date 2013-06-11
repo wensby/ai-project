@@ -126,7 +126,6 @@ public class Feature {
 			if (parsed.charAt(i) != '0') useFeature(i);
 		}
 
-		
 		finish();
 	}
 	
