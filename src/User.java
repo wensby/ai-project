@@ -45,10 +45,9 @@ public class User {
     	this.setActionsFromDB(userID, database);
     }
 
-
 	private HashSet<Integer>  getFollowersFromDB(int userID, Database db) throws SQLException{
     	Statement statm = db.createStatement();
-    	ResultSet res = statm.executeQuery("SELECT followerUserID FROM userSNS WHERE followeeUserID = " + userID + ";");
+    	ResultSet res = statm.executeQuery("SELECT followerUserID FROM userSNS WHERE followeeUserID = " + userID + " LIMIT 2000;");
 		HashSet<Integer> followers = new HashSet<Integer>();
     	while(res.next()){
 			followers.add(res.getInt("followerUserID"));
@@ -57,6 +56,7 @@ public class User {
 		res.close();
 		return followers;
     }
+
     private HashSet<Integer>  getFolloweesFromDB(int userID, Database db) throws SQLException{
     	Statement statm = db.createStatement();
     	ResultSet res = statm.executeQuery("SELECT followeeUserID FROM userSNS WHERE followerUserID = " + userID + ";");
@@ -68,6 +68,7 @@ public class User {
 		res.close();
 		return followees;
     }
+
 	private void setUserID_birthYear_gender_num_Tweets_FromDB(int userID, Database database) throws Exception{
 		ResultSet userProfileResult; // will contain the result set from the user_profile query
 		Statement statProfile = database.createStatement();

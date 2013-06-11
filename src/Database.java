@@ -178,6 +178,30 @@ public class Database {
         return arrayResult;
     }
 
+    public Object[] iter_getOneNegativeRow(int index) throws Exception {
+        if(index == 0) throw new Exception("The autoID numeration does not start from 0, but 1. Set the input index accordingly.");
+        ResultSet result = stat.executeQuery("SELECT * FROM rec_log_train_neg WHERE autoID = " + index);
+        int numColumns = result.getMetaData().getColumnCount();
+        Object[] arrayResult = new Object[numColumns];
+        for (int column = 0; column < numColumns; column++) {
+            arrayResult[column] = result.getObject(column + 1);
+        }
+        return arrayResult;
+    }
+
+    public Object[] iter_getOnePositiveRow(int index) throws Exception {
+        if(index == 0) throw new Exception("The autoID numeration does not start from 0, but 1. Set the input index accordingly.");
+        ResultSet result = stat.executeQuery("SELECT * FROM rec_log_train_pos WHERE autoID = " + index);
+        int numColumns = result.getMetaData().getColumnCount();
+        Object[] arrayResult = new Object[numColumns];
+        for (int column = 0; column < numColumns; column++) {
+            arrayResult[column] = result.getObject(column + 1);
+        }
+        return arrayResult;
+    }
+
+
+
     /**
      * Gets one random row from tableName. Only works with rec_log_train and rec_log_test.
      * @param tableName

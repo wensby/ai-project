@@ -146,7 +146,11 @@ public class Feature {
 		
 		Vector<Double> returner = new Vector<Double>();
 		for (Double f : featureVector) {
-			if (f != null) returner.add(f);
+			if (f != null) {
+                returner.add(f);
+            } else {
+                returner.add(-1.0);
+            }
 		}
 		return returner;
 	}
@@ -370,7 +374,9 @@ public class Feature {
     public static int countNumFeatures(String featureStructure){
         int count = 0;
         for(int i = 0; i<featureStructure.length();i++) if(featureStructure.charAt(i) == '1') count ++;
-        return count;
+        //return count;       //TODO CHANGE BACK IF NEEDED. This change was made to incorporate the new getFeatureVector method
+                              //TODO that sets all null feature values to -1 instead of leaving them out.
+        return featureStructure.length();
     }
 
 }

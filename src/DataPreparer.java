@@ -25,7 +25,6 @@ public class DataPreparer {
         this.data_size_to_use = data_size_to_use;
     }
 
-
     public void SvmExample() throws Exception{
         // Get one entry from rec_log_train:
         Object[] obj_list = null;
