@@ -53,7 +53,7 @@ public class Main{
         int num_features = feat_st.length();
 
         SvmInterface.Svm_model model = SvmInterface.Svm_model.LoadModel(svm, num_features);
-        Double corr = SvmInterface.TestSvm.RunSingleSvm(db,model,feat_st,100000);
+        Double corr = SvmInterface.TestSvm.RunSingleSvm(db, model, feat_st, 100000);
         Debug.pl("Correctness: " + corr*100 + " %");
 
         long stopTime = System.currentTimeMillis();

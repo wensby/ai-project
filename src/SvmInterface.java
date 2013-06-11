@@ -463,10 +463,6 @@ public abstract class SvmInterface {
         return avg_corr;
     }
 
-    public static void CrossValidate(){
-
-    }
-
     private static svm_node[] createNodeArray(Vector<Double> v){
         if(v == null) throw new IllegalArgumentException("Method does not accept NULL input.");
         if(v.size() == 0) throw new IllegalArgumentException("Method does not take an input vector of zero size");
