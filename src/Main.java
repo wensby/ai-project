@@ -8,7 +8,7 @@ public class Main{
     	db.openConnection();
         long startTime = System.currentTimeMillis();
 
-        Feature.FeatureStructureGenerator.clearNew();
+      /*  Feature.FeatureStructureGenerator.clearNew();
         //Feature.FeatureStructureGenerator.useFeature(0);
         //Feature.FeatureStructureGenerator.useFeature(1);
         //Feature.FeatureStructureGenerator.useFeature(2);
@@ -34,18 +34,25 @@ public class Main{
 
 
 
-        SvmInterface.Svm_model model = SvmInterface.CreateSvm.GetBestOfRandomizedSVMs(db, ft_string,100,100,50);
-        model.Save("testSvm1");
+        SvmInterface.Svm_model model = SvmInterface.CreateSvm.GetBestOfRandomizedSVMs(db, ft_string,100,1000,1000);
+        model.Save("testSvm2");
         //SvmInterface.CreateSvm.deleteThisIsPurelyATest(db);
 
+*/
+
+        String feat_st = "00000110101000001011";
+        String svm = "test_1000_train_1000_corr_0.569_fts_00000110101000001011";
+        int num_features = feat_st.length();
+
+        SvmInterface.Svm_model model = SvmInterface.Svm_model.LoadModel(svm, num_features);
+        Double corr = SvmInterface.TestSvm.RunSingleSvm(db, model, feat_st, 100000);
+        Debug.pl("Correctness: " + corr*100 + " %");
 
         long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;
         System.out.println("Time in Ms: " + elapsedTime);
         db.closeConnection();
         System.out.println("Done!");
-
-
 
 
 

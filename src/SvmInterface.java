@@ -2,6 +2,7 @@ import com.oracle.jrockit.jfr.InvalidEventDefinitionException;
 import libsvm.*;
 
 import java.io.File;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Vector;
@@ -208,6 +209,8 @@ public abstract class SvmInterface {
             } catch (Exception e){e.printStackTrace();}
         }
 
+        private Svm_model(){};
+
         public void Save(String filename){
             try{
                 if(filename == null || filename.equals("")) throw new IllegalArgumentException("No filename provided");
@@ -261,6 +264,44 @@ public abstract class SvmInterface {
 
         }
 
+        public static Svm_model LoadModel(String filename, String path, int num_features){
+            Svm_model new_model = new Svm_model();
+            try{
+                if(filename == null || filename.equals("")) throw new IllegalArgumentException("No filename provided");
+                if(path == null || path.equals("")) throw new IllegalArgumentException("No path provided");
+                File dir = new File(path);
+                if (!dir.exists()) throw new IllegalArgumentException("The given folder " + path + " does not exist");
+                String filepath  = path+"/"+filename+".txt";
+                File file = new File(filepath);
+                if (!file.exists()) throw new IllegalArgumentException("The file "+ file +" does not exist.");
+                // Load model:
+                new_model.model = svm.svm_load_model(filepath);
+                new_model.num_features = num_features;
+            }
+            catch (Exception e) {e.printStackTrace();}
+            return new_model;
+        }
+
+        public static Svm_model LoadModel(String filename, int num_features){
+            Svm_model new_model = new Svm_model();
+            try{
+                if(filename == null || filename.equals("")) throw new IllegalArgumentException("No filename provided");
+                File path = new File("../SvmModels/");
+                if (!path.exists()) throw new IllegalArgumentException("The default folder ../SvmModels/ does not exist");
+                String filepath  = "../SvmModels/"+filename+".txt";
+                File file = new File(filepath);
+                if (!file.exists()) throw new IllegalArgumentException("The file "+ file +" does not exist.");
+                // Load model:
+                new_model.model = svm.svm_load_model(filepath);
+                new_model.num_features = num_features;
+            }
+            catch (Exception e) {e.printStackTrace();}
+            return new_model;
+        }
+
+
+
+
         private void train(){
             this.model = svm.svm_train(this.problem,this.parameter);
         }
@@ -270,6 +311,9 @@ public abstract class SvmInterface {
         }
 
         public int GetNumFeatures(){
+            try {
+                if(this.num_features == 0) throw new InstantiationException("Num features for the given model not set. Was the model instantiated correctly?");
+            } catch (Exception e){e.printStackTrace();};
             return this.num_features;
         }
 
@@ -417,10 +461,6 @@ public abstract class SvmInterface {
         }
         avg_corr = (double)avg_corr/(double)test_length;
         return avg_corr;
-    }
-
-    public static void CrossValidate(){
-
     }
 
     private static svm_node[] createNodeArray(Vector<Double> v){
@@ -618,7 +658,8 @@ public abstract class SvmInterface {
                 if(best_correctness < correctness){
                     best_model = model;
                     best_correctness = correctness;
-                    Debug.pl("> Best correctness so far: " + PredictDataSets(best_model,test_obj)*100);
+                    Debug.pl("> Best correctness so far: " + PredictDataSets(best_model,test_obj)*100 + " Feature string: " + rand_ft_string);
+                    best_model.Save("test_"+test_set_size+"_train_"+training_set_size+"_corr_"+best_correctness+"_fts_"+rand_ft_string);
                 }
             }
             Debug.pl("> Final best correctness = " + best_correctness*100);
@@ -632,7 +673,6 @@ public abstract class SvmInterface {
             Svm_test_obj test_obj = generateTestObject(db,"1111");
             Svm_model model = new Svm_model(prob, new Svm_parameter(prob.GetNumFeatures()));
         }
-
 
         /**
          * Generates a Svm-problem object (training set) consisting of equally many negative and positive samples.
@@ -776,6 +816,45 @@ public abstract class SvmInterface {
             return prob;
         }
 
+
+    }
+
+    public static class TestSvm{
+
+        public static double RunSingleSvm(Database db, Svm_model model, String feat_string, int training_set_size){
+            int num_correct = 0;
+            for(int i = 1; i<training_set_size/2;i++){
+                try{
+                    Object[] obj_list = db.iter_getOneNegativeRow(i);
+                    int tmp_userId = (Integer)obj_list[1];
+                    int tmp_itemId = (Integer)obj_list[2];
+                    int tmp_class  = (Integer)obj_list[3];
+                    Feature featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db), feat_string);
+                    int res = (int)PredictSingleDataPoint(model,featureSet.getFeatureVector());
+                    if(res == tmp_class) num_correct++;
+
+                    //if(res != tmp_class) Debug.pl("Class: " + tmp_class + " result: " + res);
+
+                    obj_list = db.iter_getOnePositiveRow(i);
+                    tmp_userId = (Integer)obj_list[1];
+                    tmp_itemId = (Integer)obj_list[2];
+                    tmp_class  = (Integer)obj_list[3];
+                    featureSet = new Feature(new User(tmp_userId,db), new Item(tmp_itemId,db), feat_string);
+                    res = (int)PredictSingleDataPoint(model,featureSet.getFeatureVector());
+                    if(res == tmp_class) num_correct++;
+
+                    //if(res != tmp_class) Debug.pl("Class: " + tmp_class + " result: " + res);
+
+
+
+
+                    if(i%(training_set_size/2/100) == 0){
+                       Debug.pl("> > Progress: " + (i/(training_set_size/2/100)) + " %");
+                    }
+                } catch (Exception e) {e.printStackTrace();}
+            }
+            return (double)num_correct/(double)training_set_size;
+        }
 
     }
 
