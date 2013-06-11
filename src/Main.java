@@ -1,9 +1,17 @@
-import java.util.LinkedList;
 
 public class Main{
 
 
     public static void main(String []args) throws Exception{
+    	
+    	SvmSet set = new SvmSet("test.txt");
+    	set.add("filepath1", "000111000111");
+    	set.add("filepath2", "000111111111");
+    	set.save();
+    	set = set.load("test.txt");
+    	set.save();
+    	
+    	
     	Database db = new Database("DB_JUN5");
     	db.openConnection();
         long startTime = System.currentTimeMillis();
