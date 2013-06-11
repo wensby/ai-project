@@ -618,7 +618,7 @@ public abstract class SvmInterface {
                 if(best_correctness < correctness){
                     best_model = model;
                     best_correctness = correctness;
-                    Debug.pl("> Best correctness so far: " + PredictDataSets(best_model,test_obj)*100);
+                    Debug.pl("> Best correctness so far: " + PredictDataSets(best_model,test_obj)*100 + " Feature string: " + rand_ft_string);
                 }
             }
             Debug.pl("> Final best correctness = " + best_correctness*100);

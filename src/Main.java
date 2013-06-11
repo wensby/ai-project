@@ -42,8 +42,8 @@ public class Main{
 
 
 
-        SvmInterface.Svm_model model = SvmInterface.CreateSvm.GetBestOfRandomizedSVMs(db, ft_string,100,100,50);
-        model.Save("testSvm1");
+        SvmInterface.Svm_model model = SvmInterface.CreateSvm.GetBestOfRandomizedSVMs(db, ft_string,100,1000,1000);
+        model.Save("testSvm2");
         //SvmInterface.CreateSvm.deleteThisIsPurelyATest(db);
 
 
