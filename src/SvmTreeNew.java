@@ -174,6 +174,7 @@ public class SvmTreeNew {
 
         private int loadNumSvms(){
 
+            return 0;
         }
 
         private void loadSvms(){

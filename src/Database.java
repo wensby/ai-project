@@ -453,7 +453,8 @@ public class Database {
                 database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS recLogTrainNegIndex ON rec_log_train_neg (autoID);");
                 break;
             case ("rec_log_test") :
-                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS recLogTestIndex ON rec_log_test (autoID);");
+                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS recLogTestIndex1 ON rec_log_test (autoID);");
+                database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS recLogTestIndex2 ON rec_log_test (userID);");
                 break;
             case ("itemCat") :
                 database.getStatement().executeUpdate("CREATE UNIQUE INDEX IF NOT EXISTS itemCatIndex1 ON itemCat (itemID);");
@@ -514,7 +515,8 @@ public class Database {
                 database.getStatement().executeUpdate("DROP INDEX IF EXISTS recLogTrainNegIndex;");
                 break;
             case ("rec_log_test") :
-                database.getStatement().executeUpdate("DROP INDEX IF EXISTS recLogTestIndex;");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS recLogTestIndex1;");
+                database.getStatement().executeUpdate("DROP INDEX IF EXISTS recLogTestIndex2;");
                 break;
             case ("itemCat") :
                 database.getStatement().executeUpdate("DROP INDEX IF EXISTS itemCatIndex1;");
@@ -585,6 +587,7 @@ public class Database {
             database.getStatement().executeUpdate("DROP INDEX IF EXISTS indAutoID;");
             database.getStatement().executeUpdate("DROP INDEX IF EXISTS userKeywordsIndex;");
             database.getStatement().executeUpdate("DROP INDEX IF EXISTS tagsIndex;");
+            database.getStatement().executeUpdate("DROP INDEX IF EXISTS recLogTestIndex;");
         }
         catch (Exception e){e.printStackTrace();}
     }
