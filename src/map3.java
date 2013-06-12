@@ -40,7 +40,6 @@ public class map3 {
 			//Read the file line
 			ArrayList<String> line = this.solutionParser(txt.next());
 			this.currentUser = Integer.getInteger(line.get(0));
-            Debug.pl(line.get(1));
 			this.currentItemsClicked = Parser.spaceInteger2HashsetParser(line.get(1));
 			this.currenttype = line.get(2);
 			this.currentAP3 = 0.0;
@@ -96,21 +95,19 @@ public class map3 {
         StringTokenizer st = new StringTokenizer(input,",");
         ArrayList<String> data = new ArrayList<String>();
         for(int i=0;i<3;i++){
-            Debug.pl(i);
             data.add(i,"");
         }
         
-        st.hasMoreTokens();
+
         data.set(0,st.nextToken());
-        
-        st.hasMoreTokens();
-        boolean isNotType = st.nextToken() !="Public" || st.nextToken() != "Private";
-        if(isNotType){
-        	data.set(1,st.nextToken());
-        	st.hasMoreTokens();
-        	data.set(2, st.nextToken());
+        String data1 = st.nextToken();
+        boolean isType = data1.contains("P");
+        if(!isType){
+        	data.set(1,data1);
+        	String data2=st.nextToken();
+        	data.set(2, data2);
         }else{
-        	data.set(2,st.nextToken());
+        	data.set(2,data1);
         }
         return data;
     }
