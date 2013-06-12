@@ -10,15 +10,15 @@ public class map3 {
 	ArrayList<Integer> currentItems;
 	Iterator<Integer> it;
 	HashSet<Integer> currentItemsClicked;
-	Integer currentUser;
+	int currentUser;
 	String currenttype;
-	Integer currentNumberRecommend;
-	Integer currentNumberClick;
+	Double currentNumberRecommend;
+	Double currentNumberClick;
 	Double currentAP3=0.0;
 	Double totalAP3=0.0;
-	Integer N = 0;
-	Integer N_private =0;
-	Integer N_public = 0;
+	double N = 0;
+	double N_private =0;
+	double N_public = 0;
 
 	public map3(String solutionFile, Database db) throws IOException{
 		this.txt= new Parser.txt(solutionFile);
@@ -37,8 +37,6 @@ public class map3 {
 	 */
 	public Boolean hasNextLine() throws Exception{
 		Debug.pl("Total AP3:"+totalAP3);
-		totalAP3=+currentAP3;
-		N++;
 		
 		if(this.txt.hasNext()){
 			//Read the file line
@@ -49,8 +47,8 @@ public class map3 {
 			if(currenttype.contains("Priv")) N_private++;
 			if(currenttype.contains("Pub")) N_public++;
 			this.currentAP3 = 0.0;
-			this.currentNumberRecommend = 0;
-			this.currentNumberClick = 0;
+			this.currentNumberRecommend = 0.0;
+			this.currentNumberClick = 0.0;
 			//Read corresponding rec_log_test from DB
 			Statement stat = db.getStatement();
 			String sql = "SELECT itemId  FROM  rec_log_test WHERE UserID = "+this.currentUser+";";
@@ -62,7 +60,12 @@ public class map3 {
 				currentItems.add(itemID);
 			}
 			this.it = this.currentItems.iterator();
-		return true;
+		
+			totalAP3+=currentAP3;
+			N++; 
+			return true;
+			  
+		
 		}
 	return false;
 	}
