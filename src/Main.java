@@ -1,22 +1,14 @@
-import java.util.LinkedList;
-
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Vector;
 
 public class Main{
 
 
     public static void main(String []args) throws Exception{
 
-    	Database db = new Database("DB_JUN5");
+    	Database db = new Database("DB_JUN11");
     	db.openConnection();
         long startTime = System.currentTimeMillis();
 
-      /*  Feature.FeatureStructureGenerator.clearNew();
+        Feature.FeatureStructureGenerator.clearNew();
         //Feature.FeatureStructureGenerator.useFeature(0);
         //Feature.FeatureStructureGenerator.useFeature(1);
         //Feature.FeatureStructureGenerator.useFeature(2);
@@ -42,12 +34,13 @@ public class Main{
 
 
 
-        SvmInterface.Svm_model model = SvmInterface.CreateSvm.GetBestOfRandomizedSVMs(db, ft_string,100,1000,1000);
-        model.Save("testSvm2");
+       // SvmInterface.Svm_model model = SvmInterface.CreateSvm.GetBestOfRandomizedSVMs(db, ft_string,100,1000,1000);
+       // model.Save("testSvm2");
         //SvmInterface.CreateSvm.deleteThisIsPurelyATest(db);
 
-*/
 
+
+        /*
         String feat_st = "00000110101000001011";
         String svm = "test_1000_train_1000_corr_0.569_fts_00000110101000001011";
         int num_features = feat_st.length();
@@ -55,6 +48,35 @@ public class Main{
         SvmInterface.Svm_model model = SvmInterface.Svm_model.LoadModel(svm, num_features);
         Double corr = SvmInterface.TestSvm.RunSingleSvm(db, model, feat_st, 100000);
         Debug.pl("Correctness: " + corr*100 + " %");
+
+        */
+
+
+
+
+
+
+        /*
+        SvmSet set = SvmSet.load("../SvmModels/mySet2.txt");
+        SvmInterface.DoWithSvm.TrainSvmSet(db, set, 10000);
+        set.save();
+        double corr = SvmInterface.DoWithSvm.RunSvmSet(db,set,10000);
+        Debug.pl("Correctness: " + corr);
+        */
+
+        int counter = 0;
+        while(Debug.toggle){
+            SvmInterface.CreateSvm.GetBestOfRandomizedSVMs(db,ft_string, 50, 100, 100);
+
+            if(counter == 10){
+                System.gc();
+                counter = 0;
+            }
+            counter++;
+
+        }
+
+
 
         long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;
