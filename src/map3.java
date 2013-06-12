@@ -26,6 +26,9 @@ public class map3 {
 		this.db = db;
 		txt.hasNext();
 	}
+	
+	
+	
 	/**
 	 * 
 	 * @param txt
@@ -59,6 +62,8 @@ public class map3 {
 	return false;
 	}
 
+	
+	
 	public boolean add_recommend(int recommendedItem){
 		this.currentNumberRecommend++;
 		if(this.currentItemsClicked.contains(recommendedItem) && !(this.currentNumberClick>3)){
@@ -70,12 +75,19 @@ public class map3 {
 		}
 		return true;
 	}
+	
+	
 	public boolean hasNextItem(){
 		return this.it.hasNext(); 
 	}
+	
+	
 	public int nextItem(){
 		return this.it.next();
 	}
+	
+	
+	
 	public double getMAP3(){
 		return this.totalAP3/this.N;
 	}

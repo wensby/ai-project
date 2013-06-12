@@ -213,10 +213,6 @@ public class SvmTreeNew {
         private void saveFeatStrings(){
 
         }
-
-
-
-
         public void Add(Svm_model model, String feature_string){
             if( !(model == null || feature_string.equals("")) ){
                 this.models.add(model);
@@ -244,11 +240,6 @@ public class SvmTreeNew {
                 if((int)res == (int)outcome) svm_weights.set(i, svm_weights.get(i)+1);
             }
         }
-
-
-
-
-
     }
 
 
