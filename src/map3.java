@@ -98,12 +98,19 @@ public class map3 {
         for(int i=0;i<3;i++){
             Debug.pl(i);
             data.add(i,"");
-            if(st.hasMoreTokens()){
-                boolean isNotType = st.nextToken() !="Public" || st.nextToken() != "Private";
-                if(isNotType){
-                    data.set(i,st.nextToken());
-                }
-            }
+        }
+        
+        st.hasMoreTokens();
+        data.set(0,st.nextToken());
+        
+        st.hasMoreTokens();
+        boolean isNotType = st.nextToken() !="Public" || st.nextToken() != "Private";
+        if(isNotType){
+        	data.set(1,st.nextToken());
+        	st.hasMoreTokens();
+        	data.set(2, st.nextToken());
+        }else{
+        	data.set(2,st.nextToken());
         }
         return data;
     }
