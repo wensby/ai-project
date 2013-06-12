@@ -99,10 +99,20 @@ public class SvmSet extends SvmInterface {
 	}
 
     public double ClassifySample(Database db, int userID, int itemID){
+        try {
+			return ClassifySample(db, new User(userID,db),itemID);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return 1;
+    }
+    
+    public double ClassifySample(Database db, User user,int itemID){
         int sum = 0;
         try {
             for(Svm svm : svms) {
-                Feature featureSet = new Feature(new User(userID,db), new Item(itemID,db), svm.getFeatureStructure());
+                Feature featureSet = new Feature(user, new Item(itemID,db), svm.getFeatureStructure());
                 Svm_model opened = Svm_model.LoadModel(svm.getFilepath(), svm.getFeatureStructure().length());
                 sum += svm.getWeight() * PredictSingleDataPoint(opened, featureSet.getFeatureVector());
             }

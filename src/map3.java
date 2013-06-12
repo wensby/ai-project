@@ -17,6 +17,8 @@ public class map3 {
 	Double currentAP3=0.0;
 	Double totalAP3=0.0;
 	Integer N = 0;
+	Integer N_private =0;
+	Integer N_public = 0;
 
 	public map3(String solutionFile, Database db) throws IOException{
 		this.txt= new Parser.txt(solutionFile);
@@ -34,20 +36,25 @@ public class map3 {
 	 * @throws Exception
 	 */
 	public Boolean hasNextLine() throws Exception{
+		Debug.pl("Total AP3:"+totalAP3);
 		totalAP3=+currentAP3;
 		N++;
+		
 		if(this.txt.hasNext()){
 			//Read the file line
-			ArrayList<String> line = this.solutionParser(txt.next());
-			this.currentUser = Integer.getInteger(line.get(0));
+			ArrayList<String> line = map3.solutionParser(txt.next());
+			this.currentUser = Integer.parseInt(line.get(0));
 			this.currentItemsClicked = Parser.spaceInteger2HashsetParser(line.get(1));
 			this.currenttype = line.get(2);
+			if(currenttype.contains("Priv")) N_private++;
+			if(currenttype.contains("Pub")) N_public++;
 			this.currentAP3 = 0.0;
 			this.currentNumberRecommend = 0;
 			this.currentNumberClick = 0;
 			//Read corresponding rec_log_test from DB
 			Statement stat = db.getStatement();
 			String sql = "SELECT itemId  FROM  rec_log_test WHERE UserID = "+this.currentUser+";";
+
 			ResultSet res = stat.executeQuery(sql);
 			this.currentItems = new ArrayList<Integer>();
 			while(res.next()){
@@ -64,9 +71,13 @@ public class map3 {
 	
 	public boolean add_recommend(int recommendedItem){
 		this.currentNumberRecommend++;
+		Debug.pl("Recommended item exist in list: "+this.currentItemsClicked.contains(recommendedItem));
+		Debug.pl("Current clicks: "+this.currentNumberClick);
+		Debug.pl("Current recommend: "+currentNumberRecommend);
 		if(this.currentItemsClicked.contains(recommendedItem) && !(this.currentNumberClick>3)){
 			this.currentNumberClick++;
-			this.currentAP3 = ((this.currentNumberClick-1)*currentAP3+(this.currentNumberClick/this.currentNumberRecommend))/(this.currentNumberClick);
+			this.currentAP3 += ((this.currentNumberClick-1)*currentAP3+(this.currentNumberClick/this.currentNumberRecommend))/(this.currentNumberClick);
+			Debug.pl(currentAP3);
 		}
 		if(this.currentNumberClick>=3){
 			return false;
@@ -98,8 +109,9 @@ public class map3 {
             data.add(i,"");
         }
         
-
-        data.set(0,st.nextToken());
+        String data3 = st.nextToken();
+        data.set(0,data3);
+        
         String data1 = st.nextToken();
         boolean isType = data1.contains("P");
         if(!isType){

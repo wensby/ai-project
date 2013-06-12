@@ -1,3 +1,5 @@
+import java.util.HashMap;
+
 
 public class Main{
 
@@ -126,18 +128,23 @@ public class Main{
         map3 m = new map3("../data/KDD_Track1_solution.csv", db);
         while(m.hasNextLine() && m.N < num_runs){
             boolean cont = true;
+            Debug.pl("Start Line!!");
+            int user_id = m.currentUser;
+            User user = new User(user_id,db);
+            
             while(m.hasNextItem() && cont){
-
                 int item_id = m.nextItem();
-                int user_id = m.currentUser;
-
+                Debug.pl("Start classify");
                 // CLASSIFY
-                int result = (int)set.ClassifySample(db,user_id,item_id);
-
+                int result = (int)set.ClassifySample(db,user,item_id);
+                Debug.pl("Finnished classify");
                 if(result == +1){
+                	Debug.pl("Add recommend");
                     cont = m.add_recommend(item_id);
                 }
+                Debug.pl("===================");
             }
+            Debug.pl("Finnished Line!!");
             num_runs++;
         }
         double correctness = m.getMAP3();
