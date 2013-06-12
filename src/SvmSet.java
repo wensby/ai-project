@@ -47,6 +47,10 @@ public class SvmSet extends SvmInterface {
 		public void incrementWeight() {
 			weight++;
 		}
+
+        public void setWeight(int i) {
+            weight = i;
+        }
 	}
 	
 	private LinkedList<Svm> svms;
@@ -66,17 +70,18 @@ public class SvmSet extends SvmInterface {
 		Svm svm = new Svm(filepath, featureStructure, 1);
 		svms.add(svm);
 		numSvms++;
+        resetWeights();
 	}
 	
-	public void add(String filepath, String featureStucture, int weight) {
+	private void add(String filepath, String featureStucture, int weight) {
 		Svm svm = new Svm(filepath, featureStucture, weight);
 		svms.add(svm);
 		numSvms++;
 	}
 	
-	public void save() throws IOException{
+	public void save(){
         File file = new File(structureFilepath);
-        
+        try{
 		BufferedWriter bw = new BufferedWriter(new FileWriter(file));
         
         for (Svm svm : svms) {
@@ -86,45 +91,60 @@ public class SvmSet extends SvmInterface {
         
         bw.flush();
         bw.close();
+        } catch (Exception e){e.printStackTrace();}
     }
 	
 	public int size() {
 		return numSvms;
 	}
 
-    public double ClassifySample(Vector<Double> features){
+    public double ClassifySample(Database db, int userID, int itemID){
         int sum = 0;
-        for(Svm svm : svms) {
-        	Svm_model opened = Svm_model.LoadModel(svm.getFilepath(), svm.getFeatureStructure().length());
-        	sum += svm.getWeight() * PredictSingleDataPoint(opened, features);
-        }
-        
+        try {
+            for(Svm svm : svms) {
+                Feature featureSet = new Feature(new User(userID,db), new Item(itemID,db), svm.getFeatureStructure());
+                Svm_model opened = Svm_model.LoadModel(svm.getFilepath(), svm.getFeatureStructure().length());
+                sum += svm.getWeight() * PredictSingleDataPoint(opened, featureSet.getFeatureVector());
+            }
+        } catch (Exception e){e.printStackTrace();}
         if (sum < 0) return -1.0;
         else return 1.0;
     }
 
-    public void TrainFromSample(double outcome, Vector<Double> features){
+    public void TrainFromSample(double outcome, Database db, int userID, int itemID){
         double res = 0.0;
-        for(Svm svm : svms) {
-        	Svm_model opened = Svm_model.LoadModel(svm.getFilepath(), svm.getFeatureStructure().length());
-            res = PredictSingleDataPoint(opened, features);
-            if ((int)res == (int)outcome) svm.incrementWeight();
-        }
+        try {
+            for(Svm svm : svms) {
+                Feature featureSet = new Feature(new User(userID,db), new Item(itemID,db), svm.getFeatureStructure());
+                Svm_model opened = Svm_model.LoadModel(svm.getFilepath(), svm.getFeatureStructure().length());
+                res = PredictSingleDataPoint(opened, featureSet.getFeatureVector());
+                if ((int)res == (int)outcome) svm.incrementWeight();
+            }
+        } catch (Exception e){e.printStackTrace();}
     }
     
-    public static SvmSet load(String filepath) throws NumberFormatException, IOException {
+    public static SvmSet load(String filepath){
+
     	File file = new File(filepath);
     	if (!file.exists()) throw new IllegalArgumentException("tried to load non-existing svms structure... its not very effective");
 
     	SvmSet returner = new SvmSet(filepath);
-    	
+
+        try{
     	BufferedReader br = new BufferedReader(new FileReader(file));
     	String line;
     	while ((line = br.readLine()) != null) {
     		String split[] = line.split("@");
     		returner.add(split[0], split[1], Integer.parseInt(split[2]));
     	}
+        } catch (Exception e){e.printStackTrace();}
     	
     	return returner;
+    }
+
+    public void resetWeights(){
+        for(Svm svm : svms){
+            svm.setWeight(1);
+        }
     }
 }

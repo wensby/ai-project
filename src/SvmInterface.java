@@ -635,6 +635,7 @@ public abstract class SvmInterface {
          */
         public static Svm_model GetBestOfRandomizedSVMs(Database db, String features_string, int num_svms, int training_set_size, int test_set_size){
             Svm_model best_model = null;
+            String best_ft_string = "";
             Double best_correctness = 0.01;
             SvmInterface.Disable_prints();
 
@@ -657,12 +658,20 @@ public abstract class SvmInterface {
                 Double correctness = PredictDataSets(model,test_obj);
                 if(best_correctness < correctness){
                     best_model = model;
+                    best_ft_string = rand_ft_string;
                     best_correctness = correctness;
                     Debug.pl("> Best correctness so far: " + PredictDataSets(best_model,test_obj)*100 + " Feature string: " + rand_ft_string);
-                    best_model.Save("test_"+test_set_size+"_train_"+training_set_size+"_corr_"+best_correctness+"_fts_"+rand_ft_string);
+                    //best_model.Save("test_"+test_set_size+"_train_"+training_set_size+"_corr_"+best_correctness+"_fts_"+rand_ft_string);
                 }
             }
             Debug.pl("> Final best correctness = " + best_correctness*100);
+            String save_path = "test_"+test_set_size+"_train_"+training_set_size+"_corr_"+best_correctness+"_fts_"+best_ft_string;
+            best_model.Save(save_path);
+
+            SvmSet set = SvmSet.load("../SvmModels/mySet2.txt");
+            set.add(save_path,best_ft_string);
+            set.save();
+
             return best_model;
         }
 
@@ -819,7 +828,7 @@ public abstract class SvmInterface {
 
     }
 
-    public static class TestSvm{
+    public static class DoWithSvm{
 
         public static double RunSingleSvm(Database db, Svm_model model, String feat_string, int training_set_size){
             int num_correct = 0;
@@ -845,15 +854,69 @@ public abstract class SvmInterface {
 
                     //if(res != tmp_class) Debug.pl("Class: " + tmp_class + " result: " + res);
 
-
-
-
                     if(i%(training_set_size/2/100) == 0){
                        Debug.pl("> > Progress: " + (i/(training_set_size/2/100)) + " %");
                     }
                 } catch (Exception e) {e.printStackTrace();}
             }
             return (double)num_correct/(double)training_set_size;
+        }
+
+        public static double RunSvmSet(Database db, SvmSet set, int training_set_size){
+            int num_correct = 0;
+            for(int i = 1; i<training_set_size/2;i++){
+                try{
+                    Object[] obj_list = db.iter_getOneNegativeRow(i);
+                    int tmp_userId = (Integer)obj_list[1];
+                    int tmp_itemId = (Integer)obj_list[2];
+                    int tmp_class  = (Integer)obj_list[3];
+                    int res = (int)set.ClassifySample(db,tmp_userId,tmp_itemId);
+                    if(res == tmp_class) num_correct++;
+
+                    //if(res != tmp_class) Debug.pl("Class: " + tmp_class + " result: " + res);
+
+                    obj_list = db.iter_getOnePositiveRow(i);
+                    tmp_userId = (Integer)obj_list[1];
+                    tmp_itemId = (Integer)obj_list[2];
+                    tmp_class  = (Integer)obj_list[3];
+                    res = (int)set.ClassifySample(db,tmp_userId,tmp_itemId);
+                    if(res == tmp_class) num_correct++;
+
+                    //if(res != tmp_class) Debug.pl("Class: " + tmp_class + " result: " + res);
+
+                    if(i%(training_set_size/2/100) == 0){
+                        Debug.pl("> > Progress: " + (i/(training_set_size/2/100)) + " %");
+                    }
+                } catch (Exception e) {e.printStackTrace();}
+            }
+            return (double)num_correct/(double)training_set_size;
+        }
+
+        public static void TrainSvmSet(Database db, SvmSet set, int training_set_size){
+            for(int i = 1; i<training_set_size/2;i++){
+                try{
+                    Object[] obj_list = db.rand_getOneNegative();
+                    int tmp_userId = (Integer)obj_list[1];
+                    int tmp_itemId = (Integer)obj_list[2];
+                    int tmp_class  = (Integer)obj_list[3];
+                    set.TrainFromSample(tmp_class ,db,tmp_userId,tmp_itemId);
+
+                    //if(res != tmp_class) Debug.pl("Class: " + tmp_class + " result: " + res);
+
+                    obj_list = db.rand_getOnePositive();
+                    tmp_userId = (Integer)obj_list[1];
+                    tmp_itemId = (Integer)obj_list[2];
+                    tmp_class  = (Integer)obj_list[3];
+                    set.TrainFromSample(tmp_class ,db,tmp_userId,tmp_itemId);
+
+                    //if(res != tmp_class) Debug.pl("Class: " + tmp_class + " result: " + res);
+
+                    if(i%(training_set_size/2/100) == 0){
+                        Debug.pl("> > Progress: " + (i/(training_set_size/2/100)) + " %");
+                        set.save();
+                    }
+                } catch (Exception e) {e.printStackTrace();}
+            }
         }
 
     }

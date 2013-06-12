@@ -91,6 +91,7 @@ public class Parser {
     public static ArrayList<String> colon2Listparser(String input){
     	StringTokenizer st = new StringTokenizer(input,",");
     	ArrayList<String> data = new ArrayList<String>();
+
     	while(st.hasMoreTokens())
     	{
     		data.add(st.nextToken());

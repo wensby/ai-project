@@ -2,11 +2,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public class map3 {
 	Parser.txt txt;
@@ -21,6 +17,7 @@ public class map3 {
 	Double currentAP3=0.0;
 	Double totalAP3=0.0;
 	Integer N = 0;
+
 	public map3(String solutionFile, Database db) throws IOException{
 		this.txt= new Parser.txt(solutionFile);
 		this.db = db;
@@ -29,9 +26,10 @@ public class map3 {
 	
 	
 	
+
 	/**
 	 * 
-	 * @param txt
+	 * @param
 	 * @return set next line, returns false when there are no next line
 	 * @throws Exception
 	 */
@@ -40,8 +38,9 @@ public class map3 {
 		N++;
 		if(this.txt.hasNext()){
 			//Read the file line
-			ArrayList<String> line = Parser.colon2Listparser(txt.next());
+			ArrayList<String> line = this.solutionParser(txt.next());
 			this.currentUser = Integer.getInteger(line.get(0));
+            Debug.pl(line.get(1));
 			this.currentItemsClicked = Parser.spaceInteger2HashsetParser(line.get(1));
 			this.currenttype = line.get(2);
 			this.currentAP3 = 0.0;
@@ -91,4 +90,21 @@ public class map3 {
 	public double getMAP3(){
 		return this.totalAP3/this.N;
 	}
+
+
+    public static ArrayList<String> solutionParser(String input){
+        StringTokenizer st = new StringTokenizer(input,",");
+        ArrayList<String> data = new ArrayList<String>();
+        for(int i=0;i<3;i++){
+            Debug.pl(i);
+            data.add(i,"");
+            if(st.hasMoreTokens()){
+                boolean isNotType = st.nextToken() !="Public" || st.nextToken() != "Private";
+                if(isNotType){
+                    data.set(i,st.nextToken());
+                }
+            }
+        }
+        return data;
+    }
 }
