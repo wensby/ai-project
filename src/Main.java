@@ -8,6 +8,7 @@ public class Main{
     	db.openConnection();
         long startTime = System.currentTimeMillis();
 
+        /*
         Feature.FeatureStructureGenerator.clearNew();
         //Feature.FeatureStructureGenerator.useFeature(0);
         //Feature.FeatureStructureGenerator.useFeature(1);
@@ -31,7 +32,7 @@ public class Main{
         Feature.FeatureStructureGenerator.useFeature(18);
         Feature.FeatureStructureGenerator.useFeature(19);
         String ft_string = Feature.FeatureStructureGenerator.getFeatureStructurePure();
-
+        */
 
 
        // SvmInterface.Svm_model model = SvmInterface.CreateSvm.GetBestOfRandomizedSVMs(db, ft_string,100,1000,1000);
@@ -55,15 +56,22 @@ public class Main{
 
 
 
+        runMAP();
+
+
+
+
+
+        //SvmSet set = SvmSet.load("../SvmModels/mySet2.txt");
+        //SvmInterface.DoWithSvm.TrainSvmSet(db, set, 1000);
+        //set.save();
+
+
+        //double corr = SvmInterface.DoWithSvm.RunSvmSet(db,set,10000);
+        //Debug.pl("Correctness: " + corr);
+
 
         /*
-        SvmSet set = SvmSet.load("../SvmModels/mySet2.txt");
-        SvmInterface.DoWithSvm.TrainSvmSet(db, set, 10000);
-        set.save();
-        double corr = SvmInterface.DoWithSvm.RunSvmSet(db,set,10000);
-        Debug.pl("Correctness: " + corr);
-        */
-
         int counter = 0;
         while(Debug.toggle){
             SvmInterface.CreateSvm.GetBestOfRandomizedSVMs(db,ft_string, 50, 100, 100);
@@ -75,6 +83,8 @@ public class Main{
             counter++;
 
         }
+
+        */
 
 
 
@@ -101,4 +111,46 @@ public class Main{
         tree.getSvms(ft_string);*/
 
     }
+
+
+    public static void runMAP() throws Exception{
+        Database db = new Database("DB_JUN11");
+        db.openConnection();
+        long startTime = System.currentTimeMillis();
+
+
+        SvmSet set = SvmSet.load("../SvmModels/mySet2.txt");
+
+        int num_runs = 10;
+
+        map3 m = new map3("../data/KDD_Track1_solution.csv", db);
+        while(m.hasNextLine() && m.N < num_runs){
+            boolean cont = true;
+            while(m.hasNextItem() && cont){
+
+                int item_id = m.nextItem();
+                int user_id = m.currentUser;
+
+                // CLASSIFY
+                int result = (int)set.ClassifySample(db,user_id,item_id);
+
+                if(result == +1){
+                    cont = m.add_recommend(item_id);
+                }
+            }
+            num_runs++;
+        }
+        double correctness = m.getMAP3();
+        Debug.pl(correctness);
+
+
+        long stopTime = System.currentTimeMillis();
+        long elapsedTime = stopTime - startTime;
+        System.out.println("Time in Ms: " + elapsedTime);
+        db.closeConnection();
+        System.out.println("Done!");
+
+    }
+
+
 }

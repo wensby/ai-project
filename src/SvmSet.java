@@ -73,11 +73,10 @@ public class SvmSet extends SvmInterface {
         resetWeights();
 	}
 	
-	public void add(String filepath, String featureStucture, int weight) {
+	private void add(String filepath, String featureStucture, int weight) {
 		Svm svm = new Svm(filepath, featureStucture, weight);
 		svms.add(svm);
 		numSvms++;
-        resetWeights();
 	}
 	
 	public void save(){

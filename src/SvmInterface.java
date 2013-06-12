@@ -895,7 +895,7 @@ public abstract class SvmInterface {
         public static void TrainSvmSet(Database db, SvmSet set, int training_set_size){
             for(int i = 1; i<training_set_size/2;i++){
                 try{
-                    Object[] obj_list = db.iter_getOneNegativeRow(i);
+                    Object[] obj_list = db.rand_getOneNegative();
                     int tmp_userId = (Integer)obj_list[1];
                     int tmp_itemId = (Integer)obj_list[2];
                     int tmp_class  = (Integer)obj_list[3];
@@ -903,7 +903,7 @@ public abstract class SvmInterface {
 
                     //if(res != tmp_class) Debug.pl("Class: " + tmp_class + " result: " + res);
 
-                    obj_list = db.iter_getOnePositiveRow(i);
+                    obj_list = db.rand_getOnePositive();
                     tmp_userId = (Integer)obj_list[1];
                     tmp_itemId = (Integer)obj_list[2];
                     tmp_class  = (Integer)obj_list[3];
