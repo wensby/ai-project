@@ -4,6 +4,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -77,9 +78,26 @@ public class Parser {
     	}
 		return cat;
     }
+	public static HashSet<Integer> spaceInteger2HashsetParser(String input){
+		HashSet<Integer> output = new HashSet<Integer>();
+		StringTokenizer stTagID = new StringTokenizer(input," ");
+		while(stTagID.hasMoreTokens()){
+			Integer id = Integer.parseInt(stTagID.nextToken());
+			output.add(id);
+		}
+		return output;
+	}
+    
+    public static ArrayList<String> colon2Listparser(String input){
+    	StringTokenizer st = new StringTokenizer(input,",");
+    	ArrayList<String> data = new ArrayList<String>();
+    	while(st.hasMoreTokens())
+    	{
+    		data.add(st.nextToken());
+    	}
+		return data;
+    }
 	
-    
-    
 	public static class User_profile{
 		public int userID;
 		public int birthYear;//Check if characters, check if all four character are digits, return 0 if not
