@@ -126,7 +126,7 @@ public class Main{
         int num_runs = 10;
 
         map3 m = new map3("../data/KDD_Track1_solution.csv", db);
-        while(m.hasNextLine() && m.N < num_runs){
+        while(m.N < num_runs && m.hasNextLine()){
             boolean cont = true;
             Debug.pl("Start Line!!");
             int user_id = m.currentUser;

@@ -60,9 +60,9 @@ public class map3 {
 				currentItems.add(itemID);
 			}
 			this.it = this.currentItems.iterator();
-		
-			totalAP3+=currentAP3;
 			N++; 
+			totalAP3+=currentAP3;
+			
 			return true;
 			  
 		

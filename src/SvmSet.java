@@ -111,8 +111,9 @@ public class SvmSet extends SvmInterface {
     public double ClassifySample(Database db, User user,int itemID){
         int sum = 0;
         try {
+        	Item item = new Item(itemID,db);
             for(Svm svm : svms) {
-                Feature featureSet = new Feature(user, new Item(itemID,db), svm.getFeatureStructure());
+                Feature featureSet = new Feature(user, item, svm.getFeatureStructure());
                 Svm_model opened = Svm_model.LoadModel(svm.getFilepath(), svm.getFeatureStructure().length());
                 sum += svm.getWeight() * PredictSingleDataPoint(opened, featureSet.getFeatureVector());
             }
